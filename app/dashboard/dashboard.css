@@ -139,3 +139,5 @@
     animation-play-state: paused;
   }
 }
+
+.dashboard-page .account-form{display:flex;align-items:center;gap:10px}.dashboard-page .account-email{max-width:170px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:11px}@media(max-width:1000px){.dashboard-page .account-email{display:none}}

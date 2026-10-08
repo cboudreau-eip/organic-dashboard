@@ -1,7 +1,17 @@
 'use client';
-import { useState } from 'react';
-export default function Login() {
-const [message, setMessage] = useState(false);
+import { useEffect, useState } from 'react';
+import AuthForm from './AuthForm';
+export default function Login({ configured }) {
+const [notice, setNotice] = useState('');
+useEffect(() => {
+  const hash = new URLSearchParams(window.location.hash.slice(1));
+  const query = new URLSearchParams(window.location.search);
+  if (hash.has('access_token') || hash.has('error') || query.has('code')) {
+    window.location.replace('/auth/callback' + window.location.search + window.location.hash);
+    return;
+  }
+  if (query.get('notice') === 'password-updated') setNotice('Your password is saved. Sign in with your new password.');
+}, []);
 return <div className="login-page">
 <main className="login-layout">
 <section className="story" aria-label="Organic Growth workspace">
@@ -10,12 +20,10 @@ return <div className="login-page">
 <footer>Marketing intelligence, built for your team.</footer>
 </section>
 <section className="signin" aria-labelledby="signin-title">
-<div className="signin-card"><span className="workspace-tag">TEAM WORKSPACE</span><h2 id="signin-title">Welcome back</h2><p className="intro">Use your Microsoft 365 work account to access Organic Growth.</p>
-<button onClick={() => setMessage(true)} id="microsoft-signin" type="button" aria-describedby="setup-note"><svg width="20" height="20" viewBox="0 0 21 21" aria-hidden="true"><path fill="#f25022" d="M0 0h10v10H0z"/><path fill="#7fba00" d="M11 0h10v10H11z"/><path fill="#00a4ef" d="M0 11h10v10H0z"/><path fill="#ffb900" d="M11 11h10v10H11z"/></svg>Sign in with Microsoft</button>
-<p className="account-note">For your organization's approved team members.</p>
-<div className="setup-note" id="setup-note"><strong>Microsoft sign-in is being set up</strong><p>This preview does not authenticate users yet. Explore the demo while your workspace is being connected.</p></div>
-<p id="login-status" role="status" aria-live="polite" hidden={!message}>{message ? "Microsoft sign-in is not connected yet. Authentication will be configured separately; use the demo link to explore sample data." : ""}</p>
-<div className="demo"><span>Take a look around</span><a href="/dashboard">Explore the demo dashboard <span aria-hidden="true">→</span></a><small>Sample data · No sign-in required</small></div>
+<div className="signin-card"><span className="workspace-tag">TEAM WORKSPACE</span><h2 id="signin-title">Welcome back</h2><p className="intro">Sign in with your work email and password to access Organic Growth.</p>
+{notice && <p role="status">{notice}</p>}
+<AuthForm configured={configured} />
+<p className="account-note">Access is managed by your workspace administrator.</p>
 </div><p className="help">Need access? Contact your workspace administrator.</p>
 </section>
 </main>

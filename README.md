@@ -1,32 +1,46 @@
 # Organic Growth
 
-Next.js App Router application for the existing Organic Growth prototype.
+Next.js App Router application for the Organic Growth team dashboard.
 
 ## Local development
 
-Use Node.js 22 or newer. Run `npm ci`, then `npm run dev` and visit http://localhost:3000.
-Run `npm run build` for a production build; `npm start` serves that build.
+Use Node.js 22 or newer. Run npm ci, copy .env.example to .env.local and supply your Supabase project URL and **publishable** key, then run npm run dev. Without credentials the login form is disabled and protected routes fail closed.
 
-## Routes and implementation
+Run npm test for regression tests, npm run build for production, and npm start to serve it. After a build, node scripts/test-auth-flow.mjs checks real HTTP forms and cookies against an isolated local mock Auth API (ports 3002 and 3003). It never sends real emails or touches Supabase accounts.
 
-- `/`: React login preview. No authentication provider is connected.
-- `/dashboard`: interactive dashboard with synthetic data only.
-- `/index.html` and `/dashboard.html`: redirects for previous URLs.
-- `components/Login.jsx`: login component.
-- `components/dashboard/Dashboard.jsx`: React lifecycle boundary for the prototype.
-- `components/dashboard/runtime.js`: preserved demo calculations and rendering.
-- `components/dashboard/markup.js`: trusted static dashboard shell.
-- Route styles are scoped to prevent login/dashboard CSS collisions.
-- `legacy/`: original static files retained as migration references; Next.js does not serve them.
+## Authentication
 
-The dashboard still uses its existing imperative renderer within a React-owned boundary. It is not yet decomposed into React chart/table components. Event listeners are scoped to the dashboard and removed on unmount. Existing saved views remain browser-local. Browser storage on the old GitHub Pages origin does not transfer to a Vercel domain.
+- /: email/password sign-in. There is no public demo bypass or sign-up form.
+- /dashboard: verified Supabase email session required on the server.
+- /forgot-password: requests a recovery email without revealing account existence.
+- /auth/callback: exchanges PKCE recovery codes or default invitation fragments for a cookie session. Invitation fragments landing at / are forwarded here. Invalid links show a recovery option.
+- /update-password: authenticated password setup/reset, minimum 12 characters, followed by local sign-out.
+- Sign out in the dashboard header revokes the current refresh session.
+- Proxy refreshes cookies; requireUser checks the Auth server before protected rendering/actions. Future private API/data operations must also enforce this check and database row-level security.
 
-## Vercel
+### Supabase / Vercel setup
 
-Import this repository, select the Next.js framework preset, and leave the root directory at the repository root. Use the default build/output settings. No environment variables are required for the demo. No deployment or provider configuration is included in this migration.
+Connect the Supabase integration to the Vercel production project. Supported environment names: NEXT_PUBLIC_SUPABASE_URL or SUPABASE_URL; NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY, NEXT_PUBLIC_SUPABASE_ANON_KEY or SUPABASE_ANON_KEY. Never supply a service-role/secret key as a public key. No database password or admin key is needed for these login flows.
 
-This is a server-capable Next.js app, not a GitHub Pages static export. The existing GitHub Pages deployment remains a separate static prototype until hosting is switched; do not use its branch-root publishing workflow to deploy this app.
+SITE_URL defaults to https://organic-dashboard-psi.vercel.app. Set it explicitly for another deployment. In Supabase, use that origin for Site URL and allow these exact redirect URLs:
 
-## Authentication and data
+- https://organic-dashboard-psi.vercel.app/auth/callback
+- https://organic-dashboard-psi.vercel.app/update-password
 
-The login screen remains a preview, and `/dashboard` is public sample data. This migration does not add access protection, database connections, or live PostHog data. Configure authentication and enforce authorization in backend/database access before adding private data. Keep service credentials out of public client configuration.
+For local email-flow testing, set SITE_URL to your actual localhost origin and add its /auth/callback URL to the Supabase allowlist. Preview deployments also need matching environment variables and an allowed callback URL.
+
+In Authentication → Sign In / Providers, enable Email, disable new user signups and anonymous sign-ins, and keep email confirmation enabled. **Disabling Supabase public signups is necessary to make this team-only**, since the API is public even without a signup form. All verified email users in this Supabase project have the same dashboard access; roles are not implemented yet.
+
+Create the first account privately in Supabase → Authentication → Users → Add user → Create new user (choose email/password and confirm the email). Alternatively, invite users so they can set their own password through the callback. Do not share passwords in chat or commit them.
+
+Supabase default SMTP is restricted to project-team recipients and low sending limits. Configure custom SMTP before relying on invitations/reset emails for the broader team. PKCE reset links should be opened in the browser that requested them. Default Supabase email templates are supported; this application does not implement custom token_hash templates.
+
+After deployment verify with a real account: login, refresh, sign out, direct /dashboard redirect, and an actual recovery/invitation email. Automated checks use a mock provider and do not confirm real email delivery.
+
+## Dashboard and hosting
+
+Charts and Ask Charlie still use synthetic sample data. Saved views are browser-local. Auth does not yet add live PostHog data or database-backed application records.
+
+The existing imperative demo renderer lives inside a React boundary. Charlie's animations and chat remain intact. The original files in legacy/ are migration references and are not served by Next.js.
+
+Vercel deploys codex/nextjs-migration. GitHub Pages on main remains a separate public static prototype; this login protects the Vercel Next.js application only. /index.html and /dashboard.html redirect to the current Next.js routes.
