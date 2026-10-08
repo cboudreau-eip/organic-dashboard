@@ -83,7 +83,7 @@
   position: relative;
   pointer-events: auto;
   width: 210px;
-  min-height: 58px;
+  min-height: 64px;
   padding: 10px 14px;
   border: 2px solid #c9e66d;
   border-radius: 18px;
@@ -110,7 +110,7 @@
 @media (max-width: 760px) {
   .dashboard-page .charlie-dock { right: 15px; bottom: 69px; width: 180px; }
   .dashboard-page .charlie-presence .portrait-stage { height: min(240px, calc(100dvh - 260px)); }
-  .dashboard-page .portrait-speech { width: 180px; font-size: 12px; min-height: 54px; }
+  .dashboard-page .portrait-speech { width: 180px; font-size: 12px; min-height: 58px; }
 }
 @media print {
   .dashboard-page .charlie-dock { display: none !important; }
@@ -160,3 +160,7 @@
 /* Normalize visible silhouettes to the standing pose's height and shoe baseline. */
 .dashboard-page .portrait-stage .portrait-dancing { transform-origin: 50% 0; transform: translate(2.3%, .855%) scale(.9881); }
 .dashboard-page .portrait-stage .portrait-swole { transform-origin: 50% 0; transform: translate(1.4%, .13%) scale(1.0013); }
+
+/* The jumping guitar asset has more empty canvas below its feet. */
+.dashboard-page .portrait-stage .portrait-guitar { transform-origin: 50% 0; transform: translate(-1%, -.5%) scale(1.1313); }
+.dashboard-page .portrait-stage .portrait-horse { transform-origin: 50% 0; transform: translate(0, .856%) scale(.9907); }

@@ -69,17 +69,19 @@ test('poses alternate only when loaded and respect pause and cleanup', t => {
 });
 
 
-test('each new pose keeps its matching line throughout the four-pose rotation', t => {
+test('each new pose keeps its matching line throughout the six-pose rotation', t => {
   t.mock.timers.enable({ apis: ['setInterval'] });
-  const dom = new JSDOM('<div class="charlie-presence"><button><span></span></button><div class="portrait-stage"><img class="portrait-pose is-active"><img class="portrait-pose portrait-kick"><img class="portrait-pose portrait-dancing"><img class="portrait-pose portrait-swole"></div></div>');
+  const dom = new JSDOM('<div class="charlie-presence"><button><span></span></button><div class="portrait-stage"><img class="portrait-pose is-active"><img class="portrait-pose portrait-kick"><img class="portrait-pose portrait-dancing"><img class="portrait-pose portrait-swole"><img class="portrait-pose portrait-guitar"><img class="portrait-pose portrait-horse"></div></div>');
   const button = dom.window.document.querySelector('button');
   const poses = [...dom.window.document.querySelectorAll('img')];
   poses.forEach(img => { Object.defineProperty(img, 'complete', {value: true}); Object.defineProperty(img, 'naturalWidth', {value: 1024}); });
   const stop = startPortraitSpeech(button);
-  for (const [index, line] of [[1,'Kapow!!!'],[2,'These numbers got me dancing!'],[3,'Check out these gains!'],[0,"What ya' looking at?"]]) {
+  for (const [index, line] of [[1,'Kapow!!!'],[2,'These numbers got me dancing!'],[3,'Check out these gains!'],[4,'Let’s rock these rankings!'],[5,'Saddle up! We’ve got leads to chase!'],[0,"What ya' looking at?"]]) {
     t.mock.timers.tick(10000);
     assert.equal(button.textContent,line);
     assert.deepEqual(poses.map(img=>img.classList.contains('is-active')),poses.map((_,i)=>i===index));
   }
+  t.mock.timers.tick(60000);
+  assert.equal(button.textContent, "What's brown and sticky? A stick!", 'standing lines still rotate independently of the six poses');
   stop(); dom.window.close();
 });

@@ -8,6 +8,8 @@ const poseMessages = {
   'portrait-kick': 'Kapow!!!',
   'portrait-dancing': 'These numbers got me dancing!',
   'portrait-swole': 'Check out these gains!',
+  'portrait-guitar': 'Let’s rock these rankings!',
+  'portrait-horse': 'Saddle up! We’ve got leads to chase!',
 };
 
 export function startPortraitSpeech(button) {
@@ -36,9 +38,9 @@ export function startPortraitSpeech(button) {
   text.textContent = messages[index];
   const start = () => {
     timer = setInterval(() => {
-      index = (index + 1) % messages.length;
       showNextPose();
       const poseMessage = Object.entries(poseMessages).find(([className]) => poses[poseIndex]?.classList.contains(className));
+      if (!poseMessage) index = (index + 1) % messages.length;
       text.textContent = poseMessage ? poseMessage[1] : messages[index];
       portrait?.classList.add('is-speaking');
     }, 10000);
