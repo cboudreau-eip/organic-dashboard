@@ -1,0 +1,30 @@
+import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import { JSDOM } from 'jsdom';
+import { startPortraitSpeech } from '../components/dashboard/speech.js';
+
+test('speech cycles every ten seconds, pauses, resumes, and stops on unmount', t => {
+  t.mock.timers.enable({ apis: ['setInterval'] });
+  const dom = new JSDOM('<button><span></span></button>');
+  const button = dom.window.document.querySelector('button');
+  const stop = startPortraitSpeech(button);
+  assert.equal(button.textContent, 'Get back to work!');
+  t.mock.timers.tick(9999);
+  assert.equal(button.textContent, 'Get back to work!');
+  t.mock.timers.tick(1);
+  assert.equal(button.textContent, "What ya' looking at?");
+  t.mock.timers.tick(10000);
+  assert.equal(button.textContent, "What's brown and sticky? A stick!");
+  t.mock.timers.tick(10000);
+  assert.equal(button.textContent, 'Get back to work!');
+  button.click();
+  t.mock.timers.tick(20000);
+  assert.equal(button.textContent, 'Get back to work!');
+  button.click();
+  t.mock.timers.tick(10000);
+  assert.equal(button.textContent, "What ya' looking at?");
+  stop();
+  t.mock.timers.tick(20000);
+  assert.equal(button.textContent, "What ya' looking at?");
+  dom.window.close();
+});

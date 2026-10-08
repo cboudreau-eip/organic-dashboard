@@ -1,3 +1,4 @@
+import { startPortraitSpeech } from './speech.js';
 // Existing demo behavior, isolated to the dashboard lifecycle.
 export function initializeDashboard(root) {
 const controller = new AbortController();
@@ -175,5 +176,6 @@ $('chat-launcher').addEventListener('click',()=>toggleChat($('data-chat').hidden
 
 let navHTML=views.map(([key,label])=>`<button data-nav="${key}" aria-label="${label}"><svg viewBox="0 0 24 24" aria-hidden="true">${icons[key]}</svg><span>${label}</span></button>`).join('');$('nav').innerHTML=navHTML;$('mobile-nav').innerHTML=views.map(([key,label])=>`<button data-nav="${key}">${label}</button>`).join('');listen('click',e=>{let nav=e.target.closest('[data-nav]');if(nav){state.view=nav.dataset.nav;render();scrollTo({top:0,behavior:'smooth'})}let go=e.target.closest('[data-go]');if(go){state.view=go.dataset.go;render();scrollTo({top:0,behavior:'smooth'})}let trend=e.target.closest('[data-trend]');if(trend){state.trend=trend.dataset.trend;render()}let tab=e.target.closest('[data-optab]');if(tab){state.opTab=tab.dataset.optab;render()}let pg=e.target.closest('[data-page]');if(pg)openPage(pg.dataset.page);if(e.target===$('drawer')||e.target.closest('[data-close]'))closeDrawer()});listen('change',e=>{if(['site','range','grain','pageType','device'].includes(e.target.id)){if(e.target.id==='range'){state.customStart=null;state.customEnd=null;state.compareMode='previous'}state[e.target.id]=e.target.id==='range'?Number(e.target.value):e.target.value;render()}if(e.target.dataset.status)setStatus(e.target.dataset.status,e.target.value)});listen('keydown',e=>{if(e.key==='Escape')closeDrawer()});render();
 
-return () => { controller.abort(); document.body.style.overflow = ''; };
+const stopSpeech = startPortraitSpeech(root.querySelector('.portrait-speech'));
+return () => { stopSpeech(); controller.abort(); document.body.style.overflow = ''; };
 }
