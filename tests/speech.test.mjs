@@ -40,7 +40,7 @@ test('speech cycles every ten seconds, pauses, resumes, and stops on unmount', t
 
 test('poses alternate only when loaded and respect pause and cleanup', t => {
   t.mock.timers.enable({ apis: ['setInterval'] });
-  const dom = new JSDOM('<div class="charlie-presence"><button><span></span></button><div class="portrait-stage"><img class="portrait-pose is-active"><img class="portrait-pose"></div></div>');
+  const dom = new JSDOM('<div class="charlie-presence"><button><span></span></button><div class="portrait-stage"><img class="portrait-pose is-active"><img class="portrait-pose portrait-kick"></div></div>');
   const button = dom.window.document.querySelector('button');
   const [standing, kicking] = dom.window.document.querySelectorAll('img');
   for (const img of [standing, kicking]) Object.defineProperty(img, 'complete', { value: true });
@@ -53,12 +53,15 @@ test('poses alternate only when loaded and respect pause and cleanup', t => {
   t.mock.timers.tick(10000);
   assert.ok(kicking.classList.contains('is-active'));
   assert.equal(standing.classList.contains('is-active'), false);
+  assert.equal(button.textContent, 'Kapow!!!');
   button.click();
   t.mock.timers.tick(20000);
   assert.ok(kicking.classList.contains('is-active'));
+  assert.equal(button.textContent, 'Kapow!!!');
   button.click();
   t.mock.timers.tick(10000);
   assert.ok(standing.classList.contains('is-active'));
+  assert.notEqual(button.textContent, 'Kapow!!!');
   stop();
   t.mock.timers.tick(20000);
   assert.ok(standing.classList.contains('is-active'));

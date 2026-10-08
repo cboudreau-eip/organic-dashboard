@@ -31,8 +31,8 @@ export function startPortraitSpeech(button) {
   const start = () => {
     timer = setInterval(() => {
       index = (index + 1) % messages.length;
-      text.textContent = messages[index];
       showNextPose();
+      text.textContent = poses[poseIndex]?.classList.contains('portrait-kick') ? 'Kapow!!!' : messages[index];
       portrait?.classList.add('is-speaking');
     }, 10000);
   };
