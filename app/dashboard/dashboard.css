@@ -100,3 +100,17 @@
 @media print {
   .dashboard-page .charlie-dock { display: none !important; }
 }
+
+.dashboard-page .chat-header-avatar {
+  display: block;
+  flex: 0 0 40px;
+  width: 40px;
+  height: 60px;
+  object-fit: contain;
+}
+.dashboard-page .chat-heading { min-width: 0; }
+.dashboard-page .chat-header > button { flex-shrink: 0; }
+@media (max-width: 400px) {
+  .dashboard-page .chat-header { gap: 8px; }
+  .dashboard-page .chat-header-avatar { flex-basis: 32px; width: 32px; height: 48px; }
+}
