@@ -114,3 +114,28 @@
   .dashboard-page .chat-header { gap: 8px; }
   .dashboard-page .chat-header-avatar { flex-basis: 32px; width: 32px; height: 48px; }
 }
+
+/* Independent translate/rotate animations keep the feet anchored near the button. */
+@keyframes charlie-bob {
+  0%, 100% { translate: 0 0; }
+  50% { translate: 0 -6px; }
+}
+@keyframes charlie-wiggle {
+  0%, 100% { rotate: 0deg; }
+  20% { rotate: -4deg; }
+  40% { rotate: 4deg; }
+  60% { rotate: -3deg; }
+  80% { rotate: 2deg; }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .dashboard-page .charlie-presence img {
+    transform-origin: 50% 95%;
+    animation: charlie-bob 3.6s ease-in-out infinite;
+  }
+  .dashboard-page .charlie-presence img.is-speaking {
+    animation: charlie-bob 3.6s ease-in-out infinite, charlie-wiggle 650ms ease-in-out;
+  }
+  .dashboard-page .charlie-presence.motion-paused img {
+    animation-play-state: paused;
+  }
+}
