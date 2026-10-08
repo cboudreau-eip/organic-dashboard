@@ -36,3 +36,31 @@ test('speech cycles every ten seconds, pauses, resumes, and stops on unmount', t
   assert.equal(button.textContent, "What ya' looking at?");
   dom.window.close();
 });
+
+
+test('poses alternate only when loaded and respect pause and cleanup', t => {
+  t.mock.timers.enable({ apis: ['setInterval'] });
+  const dom = new JSDOM('<div class="charlie-presence"><button><span></span></button><div class="portrait-stage"><img class="portrait-pose is-active"><img class="portrait-pose"></div></div>');
+  const button = dom.window.document.querySelector('button');
+  const [standing, kicking] = dom.window.document.querySelectorAll('img');
+  for (const img of [standing, kicking]) Object.defineProperty(img, 'complete', { value: true });
+  Object.defineProperty(standing, 'naturalWidth', { value: 1024 });
+  Object.defineProperty(kicking, 'naturalWidth', { value: 0, configurable: true });
+  const stop = startPortraitSpeech(button);
+  t.mock.timers.tick(10000);
+  assert.ok(standing.classList.contains('is-active'), 'failed/unloaded image must not blank portrait');
+  Object.defineProperty(kicking, 'naturalWidth', { value: 1024 });
+  t.mock.timers.tick(10000);
+  assert.ok(kicking.classList.contains('is-active'));
+  assert.equal(standing.classList.contains('is-active'), false);
+  button.click();
+  t.mock.timers.tick(20000);
+  assert.ok(kicking.classList.contains('is-active'));
+  button.click();
+  t.mock.timers.tick(10000);
+  assert.ok(standing.classList.contains('is-active'));
+  stop();
+  t.mock.timers.tick(20000);
+  assert.ok(standing.classList.contains('is-active'));
+  dom.window.close();
+});

@@ -8,7 +8,18 @@ export function startPortraitSpeech(button) {
   if (!button) return () => {};
   const text = button.querySelector('span');
   const presence = button.closest('.charlie-presence');
-  const portrait = presence?.querySelector('img');
+  const portrait = presence?.querySelector('.portrait-stage') || presence?.querySelector('img');
+  const poses = [...(presence?.querySelectorAll('.portrait-pose') || [])];
+  let poseIndex = 0;
+  const showNextPose = () => {
+    if (poses.length < 2) return;
+    const next = (poseIndex + 1) % poses.length;
+    // Retain the current pose if another asset is still loading or failed.
+    if (!poses[next].complete || !poses[next].naturalWidth) return;
+    poses[poseIndex].classList.remove('is-active');
+    poses[next].classList.add('is-active');
+    poseIndex = next;
+  };
   const finishWiggle = event => {
     if (event.animationName === 'charlie-wiggle') portrait?.classList.remove('is-speaking');
   };
@@ -21,6 +32,7 @@ export function startPortraitSpeech(button) {
     timer = setInterval(() => {
       index = (index + 1) % messages.length;
       text.textContent = messages[index];
+      showNextPose();
       portrait?.classList.add('is-speaking');
     }, 10000);
   };
@@ -30,7 +42,7 @@ export function startPortraitSpeech(button) {
     portrait?.classList.remove('is-speaking');
     clearInterval(timer);
     button.setAttribute('aria-pressed', String(paused));
-    button.setAttribute('aria-label', `${paused ? 'Resume' : 'Pause'} Charlie's speech bubble`);
+    button.setAttribute('aria-label', `${paused ? 'Resume' : 'Pause'} Charlie's speech and poses`);
     if (!paused) start();
   };
   button.addEventListener('click', toggle);
