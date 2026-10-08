@@ -156,3 +156,7 @@
 }
 
 .dashboard-page .account-form{display:flex;align-items:center;gap:10px}.dashboard-page .account-email{max-width:170px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:11px}@media(max-width:1000px){.dashboard-page .account-email{display:none}}
+
+/* Normalize visible silhouettes to the standing pose's height and shoe baseline. */
+.dashboard-page .portrait-stage .portrait-dancing { transform-origin: 50% 0; transform: translate(2.3%, .855%) scale(.9881); }
+.dashboard-page .portrait-stage .portrait-swole { transform-origin: 50% 0; transform: translate(1.4%, .13%) scale(1.0013); }

@@ -67,3 +67,19 @@ test('poses alternate only when loaded and respect pause and cleanup', t => {
   assert.ok(standing.classList.contains('is-active'));
   dom.window.close();
 });
+
+
+test('each new pose keeps its matching line throughout the four-pose rotation', t => {
+  t.mock.timers.enable({ apis: ['setInterval'] });
+  const dom = new JSDOM('<div class="charlie-presence"><button><span></span></button><div class="portrait-stage"><img class="portrait-pose is-active"><img class="portrait-pose portrait-kick"><img class="portrait-pose portrait-dancing"><img class="portrait-pose portrait-swole"></div></div>');
+  const button = dom.window.document.querySelector('button');
+  const poses = [...dom.window.document.querySelectorAll('img')];
+  poses.forEach(img => { Object.defineProperty(img, 'complete', {value: true}); Object.defineProperty(img, 'naturalWidth', {value: 1024}); });
+  const stop = startPortraitSpeech(button);
+  for (const [index, line] of [[1,'Kapow!!!'],[2,'These numbers got me dancing!'],[3,'Check out these gains!'],[0,"What ya' looking at?"]]) {
+    t.mock.timers.tick(10000);
+    assert.equal(button.textContent,line);
+    assert.deepEqual(poses.map(img=>img.classList.contains('is-active')),poses.map((_,i)=>i===index));
+  }
+  stop(); dom.window.close();
+});

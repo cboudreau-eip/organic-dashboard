@@ -4,6 +4,12 @@ const messages = [
   "What's brown and sticky? A stick!",
 ];
 
+const poseMessages = {
+  'portrait-kick': 'Kapow!!!',
+  'portrait-dancing': 'These numbers got me dancing!',
+  'portrait-swole': 'Check out these gains!',
+};
+
 export function startPortraitSpeech(button) {
   if (!button) return () => {};
   const text = button.querySelector('span');
@@ -32,7 +38,8 @@ export function startPortraitSpeech(button) {
     timer = setInterval(() => {
       index = (index + 1) % messages.length;
       showNextPose();
-      text.textContent = poses[poseIndex]?.classList.contains('portrait-kick') ? 'Kapow!!!' : messages[index];
+      const poseMessage = Object.entries(poseMessages).find(([className]) => poses[poseIndex]?.classList.contains(className));
+      text.textContent = poseMessage ? poseMessage[1] : messages[index];
       portrait?.classList.add('is-speaking');
     }, 10000);
   };
