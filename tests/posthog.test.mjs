@@ -28,3 +28,22 @@ test('missing or malformed provider data never becomes synthetic or zero', () =>
   assert.equal(metricChange({value:10,previous:0,format:'count'}),'No prior baseline');
   assert.equal(metricChange({value:11,previous:12,format:'percent'}),'-1.0 pp');
 });
+import { detailQueries, parseTrend, parseLandingPages } from '../lib/posthog/details.js';
+test('traffic detail queries reuse organic scope and align previous period', () => {
+  const period=overviewPeriod(7,new Date('2026-10-09T12:00:00Z'));
+  const queries=detailQueries(period);
+  for(const query of queries) assert.deepEqual(query.properties,overviewQuery(period).properties);
+  assert.deepEqual(queries[1].dateRange,{date_from:period.priorStart,date_to:period.priorEnd});
+  assert.equal(queries[2].breakdownBy,'InitialPage');
+  assert.equal(queries[2].limit,10);
+});
+test('daily parser rejects missing, invalid and shifted buckets without inventing zeros', () => {
+  const valid={results:[{days:['2026-10-02','2026-10-03'],data:[10,0]}]};
+  assert.deepEqual(parseTrend(valid,'2026-10-02','2026-10-03'),[{date:'2026-10-02',views:10},{date:'2026-10-03',views:0}]);
+  assert.throws(()=>parseTrend(valid,'2026-10-01','2026-10-03'));
+  assert.throws(()=>parseTrend(valid,'2026-10-03','2026-10-04'));
+  assert.throws(()=>parseTrend({results:[{days:['2026-10-02'],data:[null]}]},'2026-10-02','2026-10-02'));
+  assert.deepEqual(parseLandingPages({results:[]}),[]);
+  assert.deepEqual(parseLandingPages({results:[['www.medicarefaq.com/test/',[12,null],[30,null]]]}),[{page:'www.medicarefaq.com/test/',visitors:12}]);
+  assert.throws(()=>parseLandingPages({results:[['/test/',[null,null]]]}));
+});

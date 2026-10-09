@@ -78,3 +78,18 @@ results. The UI shows retrieval/source calculation times. Failures display unava
 cards and retry, never sample fallback values. `/api/analytics/overview?days=7` returns
 401 without a verified signed-in user, 400 for unsupported periods, and 503 for provider
 or configuration failures.
+
+### Organic traffic details
+
+The live section includes a daily organic `$pageview` trend against the preceding
+period, and ten landing pages ranked by distinct visitors. Both reuse the overview's
+channel/hostname filters and reporting-period selector. The daily table exposes exact
+values for keyboard and screen-reader access. Landing-page visitor counts are not
+additive across pages. Trends bucket by event date; sessions crossing period boundaries
+can cause small differences from the session-based overview totals.
+
+`/api/analytics/details?days=7` has the same authentication, allowed periods, provider
+timeout, and private response policy as the overview. Current trend, prior trend, and
+native `WebStatsTableQuery` (InitialPage) results are cached for five minutes and fetched
+separately from overview cards. Incomplete daily buckets are reported as unavailable,
+not filled with fabricated zeros. Existing sample workspace charts remain labeled.

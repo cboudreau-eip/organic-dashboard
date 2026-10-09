@@ -60,6 +60,7 @@ try {
   for (const path of ['/dashboard','/update-password']) {const res=await request(path);assert.equal(res.status,307);assert.equal(res.headers.get('location'),'/');}
   console.log('PASS: unauthenticated dashboard and password page blocked');
   assert.equal((await request('/api/analytics/overview')).status,401);
+  assert.equal((await request('/api/analytics/details')).status,401);
   console.log('PASS: private analytics API rejects unauthenticated requests');
   let result=await submit('/',{email:user.email,password:'incorrect-password'});
   assert.equal(result.status,200);assert.match(await result.text(),/Unable to sign in/);assert.equal(jar.size,0);
@@ -69,6 +70,7 @@ try {
   const dashboard=await request('/dashboard');assert.equal(dashboard.status,200);assert.match(await dashboard.text(),/test@example.com/);
   console.log('PASS: valid login sets cookies and grants protected page access');
   assert.equal((await request('/api/analytics/overview?days=365')).status,400);
+  assert.equal((await request('/api/analytics/details?days=365')).status,400);
   console.log('PASS: analytics API restricts query periods');
   const sessionCookie=[...jar.keys()].find(k=>/auth-token$/.test(k));assert.ok(sessionCookie);
   
