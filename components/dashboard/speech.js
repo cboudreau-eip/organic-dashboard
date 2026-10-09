@@ -17,6 +17,15 @@ export function startPortraitSpeech(button) {
   const text = button.querySelector('span');
   const presence = button.closest('.charlie-presence');
   const portrait = presence?.querySelector('.portrait-stage') || presence?.querySelector('img');
+  const dock = presence?.closest('.charlie-dock');
+  const restoreButton = dock?.querySelector('.charlie-restore');
+  const launcher = dock?.querySelector('.chat-launcher');
+  const storageKey = 'organic-charlie-hidden';
+  const rememberHidden = hidden => {
+    try { button.ownerDocument.defaultView.localStorage.setItem(storageKey, String(hidden)); } catch { /* Still works when browser storage is unavailable. */ }
+  };
+  try { if (presence) presence.hidden = button.ownerDocument.defaultView.localStorage.getItem(storageKey) === 'true'; } catch {}
+  if (restoreButton) restoreButton.hidden = !presence?.hidden;
   const poses = [...(presence?.querySelectorAll('.portrait-pose') || [])];
   let poseIndex = 0;
   const showNextPose = () => {
@@ -57,15 +66,28 @@ export function startPortraitSpeech(button) {
   const dismiss = () => {
     clearInterval(timer);
     presence.hidden = true;
-    presence.closest('.charlie-dock')?.querySelector('.chat-launcher')?.focus();
+    rememberHidden(true);
+    if (restoreButton) restoreButton.hidden = false;
+    launcher?.focus();
   };
+  const restore = () => {
+    presence.hidden = false;
+    rememberHidden(false);
+    if (restoreButton) restoreButton.hidden = true;
+    if (launcher?.getAttribute('aria-expanded') === 'true') launcher.click();
+    clearInterval(timer);
+    if (!paused) start();
+    portrait?.focus();
+  };
+  restoreButton?.addEventListener('click', restore);
   portrait?.addEventListener('click', dismiss);
   button.addEventListener('click', toggle);
-  start();
+  if (!presence?.hidden) start();
   return () => {
     clearInterval(timer);
     button.removeEventListener('click', toggle);
     portrait?.removeEventListener('click', dismiss);
+    restoreButton?.removeEventListener('click', restore);
     portrait?.removeEventListener('animationend', finishWiggle);
     portrait?.classList.remove('is-speaking');
     presence?.classList.remove('motion-paused');

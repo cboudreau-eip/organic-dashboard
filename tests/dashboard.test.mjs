@@ -38,7 +38,13 @@ test('dashboard retains navigation, filters, saved views and remount cleanup', (
     assert.equal(root.querySelector('#view-title').textContent, 'Overview');
     root.innerHTML = dashboardMarkup;
     dispose = initializeDashboard(root);
-    assert.equal(root.querySelector('.charlie-presence').hidden, false, 'fresh mount restores Charlie');
+    assert.equal(root.querySelector('.charlie-presence').hidden, true, 'hidden choice survives a fresh mount');
+    assert.equal(root.querySelector('.charlie-restore').hidden, false);
+    root.querySelector('.charlie-restore').click();
+    assert.equal(root.querySelector('.charlie-presence').hidden, false);
+    assert.equal(root.querySelector('.charlie-restore').hidden, true);
+    assert.equal(root.querySelector('#data-chat').hidden, true, 'restore does not open chat');
+    assert.equal(localStorage.getItem('organic-charlie-hidden'), 'false');
     root.querySelector('#chat-launcher').click();
     assert.equal(root.querySelector('#data-chat').hidden, false);
     root.querySelector('#chat-input').value = 'How many sessions?';
