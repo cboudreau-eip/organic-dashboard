@@ -54,11 +54,18 @@ export function startPortraitSpeech(button) {
     button.setAttribute('aria-label', `${paused ? 'Resume' : 'Pause'} Charlie's speech and poses`);
     if (!paused) start();
   };
+  const dismiss = () => {
+    clearInterval(timer);
+    presence.hidden = true;
+    presence.closest('.charlie-dock')?.querySelector('.chat-launcher')?.focus();
+  };
+  portrait?.addEventListener('click', dismiss);
   button.addEventListener('click', toggle);
   start();
   return () => {
     clearInterval(timer);
     button.removeEventListener('click', toggle);
+    portrait?.removeEventListener('click', dismiss);
     portrait?.removeEventListener('animationend', finishWiggle);
     portrait?.classList.remove('is-speaking');
     presence?.classList.remove('motion-paused');

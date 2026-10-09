@@ -164,3 +164,8 @@
 /* The jumping guitar asset has more empty canvas below its feet. */
 .dashboard-page .portrait-stage .portrait-guitar { transform-origin: 50% 0; transform: translate(-1%, -.5%) scale(1.1313); }
 .dashboard-page .portrait-stage .portrait-horse { transform-origin: 50% 0; transform: translate(0, .856%) scale(.9907); }
+
+.dashboard-page .charlie-presence[hidden] { display: none; }
+.dashboard-page button.portrait-stage { padding: 0; border: 0; background: transparent; pointer-events: auto; cursor: pointer; }
+.dashboard-page button.portrait-stage:focus-visible { outline: 3px solid #458eb5; outline-offset: 4px; border-radius: 12px; }
+.dashboard-page .portrait-pose { pointer-events: none; }

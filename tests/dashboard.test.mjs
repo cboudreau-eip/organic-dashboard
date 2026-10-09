@@ -29,12 +29,16 @@ test('dashboard retains navigation, filters, saved views and remount cleanup', (
     }
     root.querySelector('[data-page]').click();
     assert.ok(root.querySelector('#drawer').classList.contains('open'));
+    root.querySelector('.portrait-stage').click();
+    assert.equal(root.querySelector('.charlie-presence').hidden, true);
+    assert.equal(root.querySelector('#chat-launcher').hidden, false);
     dispose();
     assert.equal(document.body.style.overflow, '');
     root.querySelector('[data-nav="keywords"]').click();
     assert.equal(root.querySelector('#view-title').textContent, 'Overview');
     root.innerHTML = dashboardMarkup;
     dispose = initializeDashboard(root);
+    assert.equal(root.querySelector('.charlie-presence').hidden, false, 'fresh mount restores Charlie');
     root.querySelector('#chat-launcher').click();
     assert.equal(root.querySelector('#data-chat').hidden, false);
     root.querySelector('#chat-input').value = 'How many sessions?';
