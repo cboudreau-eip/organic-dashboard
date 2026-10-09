@@ -2,9 +2,9 @@
 import { useEffect, useState } from 'react';
 import { METRICS, metricValue, metricChange } from '../../lib/posthog/overview';
 import OrganicDetails from './OrganicDetails';
+import OrganicConversions from './OrganicConversions';
 
-export default function OrganicOverview() {
-  const [days, setDays] = useState(7);
+export default function OrganicOverview({ days, setDays }) {
   const [attempt, setAttempt] = useState(0);
   const [result, setResult] = useState(null);
   const [error, setError] = useState('');
@@ -31,6 +31,7 @@ export default function OrganicOverview() {
       const metric = result?.metrics.find(item => item.key === key);
       return <article className="card" key={key}><span>{label}</span><strong>{metric ? metricValue(metric.value, metric.format) : '—'}</strong><span className="organic-change">{metric ? metricChange(metric) : error ? 'Unavailable' : 'Loading…'}</span><small>{metric ? `vs. ${metricValue(metric.previous, metric.format)} prior` : 'Previous period comparison'}</small></article>;
     })}</div>
+    <OrganicConversions key={`conversions-${days}`} days={days} />
     <OrganicDetails key={days} days={days} refresh={attempt} />
     <details className="organic-definitions"><summary>About these metrics</summary><p>Only sessions classified by PostHog as Organic Search are included, with page views on www.medicarefaq.com or medicarefaq.com. Visitors are distinct people; sessions, average session duration, and bounce rate use PostHog’s Web Analytics definitions. Project timezone and internal/test-user defaults apply. The comparison uses the immediately preceding period of equal length. Bounce-rate changes are percentage points (pp).</p><p>Results may be cached for five minutes plus PostHog’s source cache. Zero means no matching activity; a dash means unavailable. These cards use the reporting period above. Filters and charts below are still a separate sample workspace; Ask Charlie still answers from sample data.</p></details>
     {result && <p className="organic-freshness">Retrieved {new Date(result.fetchedAt).toLocaleString()} {result.sourceUpdatedAt && `· Source calculated ${new Date(result.sourceUpdatedAt).toLocaleString()}`} · <a href="https://us.posthog.com/project/452683/web" target="_blank" rel="noreferrer">Open PostHog</a></p>}

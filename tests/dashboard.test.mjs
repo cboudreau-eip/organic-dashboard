@@ -25,7 +25,7 @@ test('dashboard retains navigation, filters, saved views and remount cleanup', (
     assert.equal(JSON.parse(localStorage.getItem('organic-demo-saved-views')).length, 1);
     for (const key of ['acquisition','leads','content','opportunities','keywords','connections','measurement','overview']) {
       root.querySelector(`[data-nav="${key}"]`).click();
-      assert.ok(root.querySelector('#app').textContent.length > 100, key);
+      if (key === 'leads') { assert.equal(root.querySelector('#organic-leads-host').hidden,false); assert.equal(root.querySelector('#app').textContent,''); } else { assert.ok(root.querySelector('#app').textContent.length > 100, key); assert.equal(root.querySelector('#organic-leads-host').hidden,true); }
     }
     root.querySelector('[data-page]').click();
     assert.ok(root.querySelector('#drawer').classList.contains('open'));

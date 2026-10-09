@@ -93,3 +93,39 @@ timeout, and private response policy as the overview. Current trend, prior trend
 native `WebStatsTableQuery` (InitialPage) results are cached for five minutes and fetched
 separately from overview cards. Incomplete daily buckets are reported as unavailable,
 not filled with fabricated zeros. Existing sample workspace charts remain labeled.
+
+### Organic conversions and Leads & funnel
+
+Overview includes tracked contact-submission sessions, session conversion rate, ZIP quote
+starts, phone clicks, previous-period comparisons, and landing pages ranked by contact
+submissions. The Leads & funnel view replaces its synthetic metrics with an ordered
+same-session pageview → ZIP → contact journey. Both live views share the 7/28/30-day selector.
+
+Audit on 2026-10-09 found `form_submitted` includes ZIP, demographics, contact, and
+application steps. `lead_submitted` was coming from a separate Vercel app, so it is
+not used. Final contact steps fire on `demographics.medicarecompared.com`; session entry
+hostname/channel preserve attribution to MedicareFAQ organic entrants. There is no
+verified CRM acceptance or durable lead ID in this integration. Labels intentionally
+say contact submissions (sessions), never confirmed/qualified/unique-person leads.
+
+Conversion cohort: session starts within the reporting period, entry hostname exactly
+`www.medicarefaq.com` or `medicarefaq.com`, session channel `Organic Search`, and at least
+one main-site pageview. Only same-period events on the main site, `rates.medicarefaq.com`,
+and `demographics.medicarecompared.com` count. Contact uses `form_submitted` plus
+`funnel_step=step_3_contact` on the demographics host. Count each session once after a
+pageview; expose raw event count separately. Quote starts use `step_1_zip` after the first
+pageview. Funnel completion additionally requires contact at/after the ZIP step. Calls
+are click events only. No additional internal/bot filter is applied to this cohort.
+
+The narrower landing-session denominator can differ from WebOverviewQuery's session
+total (which includes visitors arriving on the main site after starting elsewhere).
+Contact rate = contact-submission sessions / eligible landing sessions. Landing-page
+rows use that same denominator per entry path. Sessions/events past the selected period,
+new sessions, and missing cross-domain identifiers are not recovered or inferred.
+
+For Oct 2–8, the validation query returned 10,822 eligible sessions, 407 quote starts,
+114 contact-submission sessions from 116 contact events, 111 ordered funnel completions,
+and two phone clicks. These are audit observations, not fixtures served to the UI.
+`/api/analytics/conversions` uses verified Supabase login, server-only fixed SQL, bounded
+7/28/30-day periods, timeouts, and the existing five-minute cache. Only aggregates are
+returned. Tests reject impossible funnel relationships and missing numeric values.
