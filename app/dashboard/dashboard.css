@@ -226,3 +226,17 @@
 .dashboard-page .conversion-stage small {font-size:11px;color:#53675b;}
 .dashboard-page[data-active-view="leads"] .content > :not(#organic-leads-host):not(#view-title) {display:none;}
 @media(max-width:900px){.dashboard-page .conversion-cards{grid-template-columns:repeat(2,minmax(0,1fr));}}
+
+/* A single flight on dashboard entry; analytics load underneath. */
+.charlie-launch { position:fixed; inset:0; z-index:10000; overflow:hidden; background:radial-gradient(ellipse at 60% 65%, #254d3b 0%, #102b20 65%); color:#fff; display:flex; flex-direction:column; align-items:center; justify-content:center; }
+.charlie-launch-copy { position:absolute; top:10%; text-align:center; padding:0 24px; }
+.charlie-launch-copy > span { color:#d3ed86; font-size:12px; letter-spacing:.2em; font-weight:700; }
+.charlie-launch-copy h1 { font-size:clamp(28px,4vw,48px); margin:14px 0 10px; }
+.charlie-launch-copy p { color:#c6d8cd; margin:0; }
+.charlie-flight-lane { position:absolute; inset:30% 0 5%; }
+.charlie-rocket { position:absolute; left:0; top:50%; width:clamp(180px,28vw,350px); height:auto; max-height:60vh; object-fit:contain; opacity:0; transform:translate(-110%,-50%); filter:drop-shadow(0 12px 24px #0005); }
+.charlie-rocket.is-flying { animation:charlie-liftoff 3.2s cubic-bezier(.35,.05,.65,.95) both; }
+@keyframes charlie-liftoff { 0% { opacity:1; transform:translate(-110%,-35%) rotate(-8deg); } 100% { opacity:1; transform:translate(calc(100vw + 10%),-65%) rotate(3deg); } }
+@media(prefers-reduced-motion:reduce) { .charlie-rocket.is-flying { left:50%; animation:charlie-launch-still .25s both; } @keyframes charlie-launch-still { from { opacity:1; transform:translate(-50%,-50%); } to { opacity:1; transform:translate(-50%,-50%); } } }
+.charlie-launch { font-family:Arial, Helvetica, sans-serif; }
+body:has(.charlie-launch) { overflow:hidden; }

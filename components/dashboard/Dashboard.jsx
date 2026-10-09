@@ -1,15 +1,18 @@
 'use client';
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { signOut } from '../../app/auth/actions';
 import { dashboardMarkup } from './markup';
 import { initializeDashboard } from './runtime';
 import OrganicOverview from './OrganicOverview';
 import OrganicConversions from './OrganicConversions';
+import CharlieLaunch from './CharlieLaunch';
 
 // React owns this boundary; the preserved demo renderer owns its descendants.
 export default function Dashboard({ userEmail }) {
   const host = useRef(null);
+  const [launching, setLaunching] = useState(true);
+  const finishLaunch = useCallback(() => setLaunching(false), []);
   const [accountHost, setAccountHost] = useState(null);
   const [analyticsHost, setAnalyticsHost] = useState(null);
   const [leadsHost, setLeadsHost] = useState(null);
@@ -23,7 +26,7 @@ export default function Dashboard({ userEmail }) {
     const dispose = initializeDashboard(root);
     return () => { dispose(); root.replaceChildren(); };
   }, []);
-  return <><div className="dashboard-page" ref={host}>
+  return <>{launching && <CharlieLaunch onComplete={finishLaunch} />}<div className="dashboard-page" ref={host} inert={launching} aria-hidden={launching || undefined}>
     <p role="status">Loading dashboard…</p>
     <noscript>Enable JavaScript to explore the interactive dashboard.</noscript>
   </div>{analyticsHost && createPortal(<OrganicOverview days={days} setDays={setDays} />, analyticsHost)}{leadsHost && createPortal(<section className="organic-live"><div className="organic-heading"><span className="organic-badge">POSTHOG · ORGANIC SEARCH</span><label>Conversion reporting period<select value={days} onChange={e => setDays(Number(e.target.value))}><option value={7}>Last 7 complete days</option><option value={28}>Last 28 complete days</option><option value={30}>Last 30 complete days</option></select></label></div><OrganicConversions key={days} days={days} detailed /></section>, leadsHost)}{accountHost && createPortal(<form action={signOut} className="account-form"><span className="account-email" title={userEmail}>{userEmail}</span><button type="submit" className="button">Sign out</button></form>, accountHost)}</>;
