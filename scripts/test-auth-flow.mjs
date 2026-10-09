@@ -59,6 +59,8 @@ try {
   assert.ok(ready,'Next server did not start: '+logs);
   for (const path of ['/dashboard','/update-password']) {const res=await request(path);assert.equal(res.status,307);assert.equal(res.headers.get('location'),'/');}
   console.log('PASS: unauthenticated dashboard and password page blocked');
+  assert.equal((await request('/api/analytics/overview')).status,401);
+  console.log('PASS: private analytics API rejects unauthenticated requests');
   let result=await submit('/',{email:user.email,password:'incorrect-password'});
   assert.equal(result.status,200);assert.match(await result.text(),/Unable to sign in/);assert.equal(jar.size,0);
   console.log('PASS: incorrect credentials rejected');
@@ -66,6 +68,8 @@ try {
   assert.equal(result.status,303);assert.equal(result.headers.get('location'),'/dashboard');assert.ok(jar.size>0);
   const dashboard=await request('/dashboard');assert.equal(dashboard.status,200);assert.match(await dashboard.text(),/test@example.com/);
   console.log('PASS: valid login sets cookies and grants protected page access');
+  assert.equal((await request('/api/analytics/overview?days=365')).status,400);
+  console.log('PASS: analytics API restricts query periods');
   const sessionCookie=[...jar.keys()].find(k=>/auth-token$/.test(k));assert.ok(sessionCookie);
   
   jar.set(sessionCookie,'base64-'+Buffer.from(JSON.stringify({...session,access_token:jwt(Math.floor(Date.now()/1000)+3600,'forged-id')})).toString('base64url'));

@@ -44,3 +44,37 @@ Charts and Ask Charlie still use synthetic sample data. Saved views are browser-
 The existing imperative demo renderer lives inside a React boundary. Charlie's animations and chat remain intact. The original files in legacy/ are migration references and are not served by Next.js.
 
 Vercel deploys codex/nextjs-migration. GitHub Pages on main remains a separate public static prototype; this login protects the Vercel Next.js application only. /index.html and /dashboard.html redirect to the current Next.js routes.
+
+## Live organic overview (PostHog)
+
+The Overview page now has five source-backed cards for MedicareFAQ: visitors, page views,
+sessions, average session duration, and bounce rate. Its own selector supports the last
+7, 28, or 30 complete calendar days (America/New_York), compared with the preceding
+period of equal length. Existing filters, charts, and Ask Charlie remain explicitly
+labeled sample data; they do not control the live cards.
+
+Set these **server-only** variables in `.env.local` and in Vercel → project → Settings →
+Environment Variables for Production (and Preview only if that environment should have access):
+
+- `POSTHOG_HOST`: `https://us.posthog.com`
+- `POSTHOG_PROJECT_ID`: `452683`
+- `POSTHOG_PERSONAL_API_KEY`: project-restricted personal key with `query:read`
+
+Redeploy after changing Vercel variables. Never commit the key or prefix it with
+`NEXT_PUBLIC_`. The server rejects hosts/projects other than the configured MedicareFAQ
+integration and checks the Supabase user before fetching or returning cached analytics.
+No PostHog credential, raw SQL, or individual visitor data reaches the browser.
+
+Source: PostHog `WebOverviewQuery`, with session `$channel_type` exactly `Organic Search`
+and event `$host` exactly `www.medicarefaq.com` or `medicarefaq.com`. Other subdomains,
+paid traffic, direct traffic, referral, social, and AI channels are excluded. Native
+project timezone, test-user defaults, session and bounce definitions apply. These are
+PostHog's standard definitions, not independently approved company KPI definitions.
+Bounce-rate deltas are percentage points; other changes are relative percentages.
+A zero prior value displays “No prior baseline”; null is unavailable, never zero.
+
+A bounded five-minute server cache deduplicates queries; PostHog may also return cached
+results. The UI shows retrieval/source calculation times. Failures display unavailable
+cards and retry, never sample fallback values. `/api/analytics/overview?days=7` returns
+401 without a verified signed-in user, 400 for unsupported periods, and 503 for provider
+or configuration failures.
