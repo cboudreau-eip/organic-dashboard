@@ -44,7 +44,7 @@ export async function POST(request) {
       if (response.status === 401) return reply({ error: 'OpenAI rejected the API key. Replace OPENAI_API_KEY in Vercel and redeploy.' }, 503);
       if (response.status === 429) {
         const failure = await response.json().catch(() => ({}));
-        return reply({ error: failure.error?.code === 'insufficient_quota'
+        return reply({ error: failure.error?.type === 'insufficient_quota' || ['insufficient_quota', 'credit_balance_exhausted'].includes(failure.error?.code)
           ? 'OpenAI API credits or quota are exhausted. Check billing and project limits in your OpenAI API account, then try again.'
           : 'OpenAI rate limit reached. Please wait a minute and try again.' }, 503);
       }
