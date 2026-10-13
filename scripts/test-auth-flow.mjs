@@ -37,7 +37,7 @@ const child = spawn(process.execPath,['node_modules/next/dist/bin/next','start',
 let logs=''; child.stdout.on('data',chunk=>{logs+=chunk;process.stdout.write(chunk);});child.stderr.on('data',chunk=>{logs+=chunk;process.stderr.write(chunk);});
 const jar = new Map();
 async function request(path, init={}) {
-  const res = await fetch(appOrigin+path,{...init,redirect:'manual',signal:AbortSignal.timeout(path.startsWith('/api/analytics/search') ? 90000 : 5000),headers:{Origin:appOrigin,Cookie:[...jar].map(([k,v])=>k+'='+v).join('; '),...init.headers}});
+  const res = await fetch(appOrigin+path,{...init,redirect:'manual',signal:AbortSignal.timeout((path.startsWith('/api/analytics/search') || path === '/api/chat') ? 110000 : 5000),headers:{Origin:appOrigin,Cookie:[...jar].map(([k,v])=>k+'='+v).join('; '),...init.headers}});
   for (const cookie of res.headers.getSetCookie()) {const [pair] = cookie.split(';');const i=pair.indexOf('=');const k=pair.slice(0,i),v=pair.slice(i+1);if (v) jar.set(k,v);else jar.delete(k);}
   return res;
 }
@@ -63,7 +63,8 @@ try {
   assert.equal((await request('/api/analytics/details')).status,401);
   assert.equal((await request('/api/analytics/conversions')).status,401);
   assert.equal((await request('/api/analytics/search')).status,401);
-  console.log('PASS: private analytics API rejects unauthenticated requests');
+  assert.equal((await request('/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({days:28,messages:[{role:'user',content:'Hi'}]})})).status,401);
+  console.log('PASS: private analytics and chat APIs reject unauthenticated requests');
   let result=await submit('/',{email:user.email,password:'incorrect-password'});
   assert.equal(result.status,200);assert.match(await result.text(),/Unable to sign in/);assert.equal(jar.size,0);
   console.log('PASS: incorrect credentials rejected');
@@ -82,7 +83,10 @@ try {
     assert.equal(report.site,'https://www.medicarefaq.com/');
     console.log('PASS: live GSC report',JSON.stringify({period:report.period,current:report.current,queryRows:report.queries.length,pageRows:report.pages.length}));
   }
-  console.log('PASS: analytics API restricts query periods');
+  assert.equal((await request('/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({days:365,messages:[]})})).status,400);
+  assert.equal((await request('/api/chat',{method:'POST',headers:{Origin:'https://example.com'}})).status,403);
+  if(process.argv.includes('--chat')) { const r=await request('/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({days:7,messages:[{role:'user',content:'How many Google clicks did we get? Include the date range in one sentence.'}]})});const output=await r.json();console.log('CHAT CHECK',r.status,JSON.stringify(output));assert.equal(r.status,200);assert.ok(output.answer.length>10); }
+  console.log('PASS: analytics and chat input restrictions');
   const sessionCookie=[...jar.keys()].find(k=>/auth-token$/.test(k));assert.ok(sessionCookie);
   
   jar.set(sessionCookie,'base64-'+Buffer.from(JSON.stringify({...session,access_token:jwt(Math.floor(Date.now()/1000)+3600,'forged-id')})).toString('base64url'));

@@ -4,12 +4,12 @@ import { JSDOM } from 'jsdom';
 import { dashboardMarkup } from '../components/dashboard/markup.js';
 import { initializeDashboard } from '../components/dashboard/runtime.js';
 
-test('dashboard retains navigation, filters, saved views and remount cleanup', () => {
+test('dashboard retains navigation, filters, saved views and remount cleanup', async () => {
   const dom = new JSDOM('<div id="host"></div>', { url: 'http://localhost/dashboard' });
   const { window } = dom;
-  const names = ['window', 'document', 'localStorage', 'AbortController', 'scrollTo'];
+  const names = ['window', 'document', 'localStorage', 'AbortController', 'scrollTo', 'fetch'];
   const previous = names.map(name => Object.getOwnPropertyDescriptor(globalThis, name));
-  Object.assign(globalThis, { window, document: window.document, localStorage: window.localStorage, AbortController: window.AbortController, scrollTo: () => {} });
+  Object.assign(globalThis, { window, document: window.document, localStorage: window.localStorage, AbortController: window.AbortController, scrollTo: () => {}, fetch: async () => ({ ok: true, json: async () => ({ answer: 'Test reply <img src=x onerror=alert(1)>', sources: ['Fixture only'] }) }) });
   const root = document.getElementById('host');
   let dispose;
   try {
@@ -50,6 +50,12 @@ test('dashboard retains navigation, filters, saved views and remount cleanup', (
     root.querySelector('#chat-input').value = 'How many sessions?';
     root.querySelector('#chat-form').dispatchEvent(new window.Event('submit', { bubbles: true, cancelable: true }));
     assert.equal(root.querySelectorAll('.chat-message.user').length, 1);
+    await new Promise(resolve=>setTimeout(resolve,0));
+    assert.match(root.querySelector('.chat-plain').textContent,/Test reply/);
+    assert.equal(root.querySelector('.chat-plain img'),null,'model HTML is never executed');
+    assert.equal(root.querySelector('#chat-form button').disabled,false);
+    root.querySelector('#chat-clear').click();
+    assert.equal(root.querySelectorAll('.chat-message.user').length,0);
     assert.equal(root.querySelector('#saved-view-select').options.length, 2);
   } finally {
     dispose?.(); dom.window.close();
