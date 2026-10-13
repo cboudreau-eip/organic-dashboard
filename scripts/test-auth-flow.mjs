@@ -37,7 +37,7 @@ const child = spawn(process.execPath,['node_modules/next/dist/bin/next','start',
 let logs=''; child.stdout.on('data',chunk=>{logs+=chunk;process.stdout.write(chunk);});child.stderr.on('data',chunk=>{logs+=chunk;process.stderr.write(chunk);});
 const jar = new Map();
 async function request(path, init={}) {
-  const res = await fetch(appOrigin+path,{...init,redirect:'manual',signal:AbortSignal.timeout(5000),headers:{Origin:appOrigin,Cookie:[...jar].map(([k,v])=>k+'='+v).join('; '),...init.headers}});
+  const res = await fetch(appOrigin+path,{...init,redirect:'manual',signal:AbortSignal.timeout(path.startsWith('/api/analytics/search') ? 90000 : 5000),headers:{Origin:appOrigin,Cookie:[...jar].map(([k,v])=>k+'='+v).join('; '),...init.headers}});
   for (const cookie of res.headers.getSetCookie()) {const [pair] = cookie.split(';');const i=pair.indexOf('=');const k=pair.slice(0,i),v=pair.slice(i+1);if (v) jar.set(k,v);else jar.delete(k);}
   return res;
 }
@@ -62,6 +62,7 @@ try {
   assert.equal((await request('/api/analytics/overview')).status,401);
   assert.equal((await request('/api/analytics/details')).status,401);
   assert.equal((await request('/api/analytics/conversions')).status,401);
+  assert.equal((await request('/api/analytics/search')).status,401);
   console.log('PASS: private analytics API rejects unauthenticated requests');
   let result=await submit('/',{email:user.email,password:'incorrect-password'});
   assert.equal(result.status,200);assert.match(await result.text(),/Unable to sign in/);assert.equal(jar.size,0);
@@ -73,6 +74,14 @@ try {
   assert.equal((await request('/api/analytics/overview?days=365')).status,400);
   assert.equal((await request('/api/analytics/details?days=365')).status,400);
   assert.equal((await request('/api/analytics/conversions?days=365')).status,400);
+  assert.equal((await request('/api/analytics/search?days=365')).status,400);
+  if(process.argv.includes('--gsc')) {
+    const response=await request('/api/analytics/search?days=28'); const report=await response.json();
+    assert.equal(response.status,200,JSON.stringify(report));
+    assert.ok(report.current.impressions>0);assert.ok(report.queries.length>0);assert.ok(report.pages.length>0);
+    assert.equal(report.site,'https://www.medicarefaq.com/');
+    console.log('PASS: live GSC report',JSON.stringify({period:report.period,current:report.current,queryRows:report.queries.length,pageRows:report.pages.length}));
+  }
   console.log('PASS: analytics API restricts query periods');
   const sessionCookie=[...jar.keys()].find(k=>/auth-token$/.test(k));assert.ok(sessionCookie);
   

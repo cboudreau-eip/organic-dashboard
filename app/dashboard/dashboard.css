@@ -240,3 +240,16 @@
 @media(prefers-reduced-motion:reduce) { .charlie-rocket.is-flying { left:50%; animation:charlie-launch-still .25s both; } @keyframes charlie-launch-still { from { opacity:1; transform:translate(-50%,-50%); } to { opacity:1; transform:translate(-50%,-50%); } } }
 .charlie-launch { font-family:Arial, Helvetica, sans-serif; }
 body:has(.charlie-launch) { overflow:hidden; }
+
+.dashboard-page[data-active-view="acquisition"] .content > :not(#gsc-live-host):not(#view-title) {display:none;}
+.dashboard-page .gsc-cards{grid-template-columns:repeat(4,minmax(0,1fr));}
+.dashboard-page .gsc-table,.dashboard-page .gsc-trend{padding:20px;margin-top:18px;}
+.dashboard-page .gsc-table th:first-child{max-width:420px;overflow-wrap:anywhere;white-space:normal;text-align:left;}
+.dashboard-page .gsc-table td{white-space:nowrap;}
+.dashboard-page .gsc-performance table{width:100%;border-collapse:collapse;font-size:12px;}
+.dashboard-page .gsc-performance th,.dashboard-page .gsc-performance td{padding:12px 10px;border-bottom:1px solid #e1e8df;text-align:right;font-variant-numeric:tabular-nums;}
+.dashboard-page .gsc-performance thead th{background:#f5f8f1;color:#47604e;font-weight:600;}
+.dashboard-page .gsc-performance tbody th{font-weight:500;}
+.dashboard-page .gsc-performance tr:nth-child(even){background:#fafbf8;}
+.dashboard-page .gsc-trend svg{display:block;width:100%;max-height:300px;font-size:12px;}
+@media(max-width:800px){.dashboard-page .gsc-cards{grid-template-columns:repeat(2,minmax(0,1fr));}.dashboard-page .gsc-table th:first-child{min-width:170px;}}
