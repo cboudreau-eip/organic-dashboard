@@ -258,3 +258,7 @@ body:has(.charlie-launch) { overflow:hidden; }
 .dashboard-page .chat-period-label select{padding:5px;border:1px solid #cddcc5;border-radius:5px;}
 .dashboard-page .chat-plain{white-space:pre-wrap;overflow-wrap:anywhere;}
 .dashboard-page .chat-form button:disabled{opacity:.5;cursor:wait;}
+
+/* Keep the right edge anchored while expanding 125px to the left. */
+@media(min-width:761px){.chat-panel.is-expanded{width:535px;}.dashboard-page .chat-header .chat-expand{font-size:20px;line-height:1;}}
+@media(max-width:760px){.chat-expand{display:none;}}
