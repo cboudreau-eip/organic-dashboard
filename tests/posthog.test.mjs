@@ -35,7 +35,7 @@ test('traffic detail queries reuse organic scope and align previous period', () 
   for(const query of queries) assert.deepEqual(query.properties,overviewQuery(period).properties);
   assert.deepEqual(queries[1].dateRange,{date_from:period.priorStart,date_to:period.priorEnd});
   assert.equal(queries[2].breakdownBy,'InitialPage');
-  assert.equal(queries[2].limit,10);
+  assert.equal(queries[2].limit,100);
 });
 test('daily parser rejects missing, invalid and shifted buckets without inventing zeros', () => {
   const valid={results:[{days:['2026-10-02','2026-10-03'],data:[10,0]}]};

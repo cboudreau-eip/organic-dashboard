@@ -38,7 +38,7 @@ export default function OrganicDetails({ days, refresh }) {
       </svg>
       <details><summary>View daily values</summary><div className="organic-table-scroll"><table><thead><tr><th scope="col">Date</th><th scope="col">Page views</th><th scope="col">Prior date</th><th scope="col">Prior page views</th></tr></thead><tbody>{result.current.map((row, i) => <tr key={row.date}><td>{row.date}</td><td>{number(row.views)}</td><td>{result.previous[i].date}</td><td>{number(result.previous[i].views)}</td></tr>)}</tbody></table></div></details>
     </section>
-    <section className="card organic-landing" aria-labelledby="organic-pages-title"><h3 id="organic-pages-title">Top organic landing pages</h3><p>Top 10 by visitors · First page of the session</p>
+    <section className="card organic-landing" aria-labelledby="organic-pages-title"><h3 id="organic-pages-title">Top organic landing pages</h3><p>Up to 100 by visitors · First page of the session</p>
       {result.pages.length ? <div className="organic-table-scroll"><table><thead><tr><th scope="col">Landing page</th><th scope="col">Visitors</th></tr></thead><tbody>{result.pages.map((row, i) => <tr key={`${row.page}:${i}`}><td>{row.page.replace(/^www\.medicarefaq\.com/, '')}</td><td>{number(row.visitors)}</td></tr>)}</tbody></table></div> : <p>No organic landing pages in this period.</p>}
       <p className="organic-detail-note">Visitors can enter through different pages in separate sessions, so row counts should not be added to obtain total visitors.</p>
     </section>

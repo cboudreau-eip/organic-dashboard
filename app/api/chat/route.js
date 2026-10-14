@@ -1,6 +1,7 @@
 import { datoramaSnapshot } from '../../../lib/datorama/snapshot';
 import { serverAuth } from '../../../lib/auth/server';
 import { isTeamUser, siteUrl } from '../../../lib/auth/config';
+import { conversationPages } from '../../../lib/posthog/pages';
 import { organicOverview } from '../../../lib/posthog/server';
 import { searchPerformance } from '../../../lib/gsc/server';
 import { validateChat, responseText, anthropicError } from '../../../lib/chat';
@@ -29,9 +30,12 @@ export async function POST(request) {
   const limit = limits.get(data.user.id) || { count: 0, until: now + 60000 };
   if (limit.count >= 10) return reply({ error: 'Please wait a minute before sending more messages.' }, 429);
   limit.count++; limits.set(data.user.id, limit);
-  const results = await Promise.allSettled([organicOverview(input.days), organicOverview(input.days, true), searchPerformance(input.days), organicOverview(input.days, 'conversions')]);
-  const names = ['PostHog organic overview', 'PostHog organic landing pages and trend', 'Google Search Console web search', 'PostHog tracked organic submissions and phone clicks'];
+  const requestedPages = conversationPages(input.messages);
+  const results = await Promise.allSettled([organicOverview(input.days), organicOverview(input.days, true), searchPerformance(input.days), organicOverview(input.days, 'conversions'), ...requestedPages.map(page => organicOverview(input.days, { page }))]);
+  const names = ['PostHog organic overview', 'PostHog organic landing pages and trend', 'Google Search Console web search', 'PostHog tracked organic submissions and phone clicks', ...requestedPages.map(page => `PostHog direct organic page traffic: ${page}`)];
   const evidence = results.map((result, i) => ({ source: names[i], ...(result.status === 'fulfilled' ? { data: result.value } : { unavailable: true }) }));
+  if (evidence[1].data) evidence[1].definitions = 'Up to 100 landing pages by visitors, not exhaustive. Landing pages are session entry pages. Absence from this table does not mean zero traffic.';
+  for (const item of evidence.slice(4)) item.definitions = 'Direct lookup independent of landing-page rankings. Visitors and page views for this pathname (slash variants combined, query strings ignored), within Organic Search sessions, whether this was the landing page or a later page. Includes current and previous period. Not landing-page totals, not all-channel traffic. Zero is a measured zero only when the lookup succeeded. No page-specific conversions or GSC metrics supplied by this lookup.';
   // Keep each GSC dimension explicit; daily rows are site totals, never query-by-day records.
   if (evidence[2].data) {
     const gsc = evidence[2].data;
