@@ -1,3 +1,4 @@
+import { datoramaSnapshot } from '../../../../lib/datorama/snapshot';
 import { serverAuth } from '../../../../lib/auth/server';
 import { isTeamUser } from '../../../../lib/auth/config';
 import { organicOverview } from '../../../../lib/posthog/server';
@@ -27,5 +28,11 @@ export async function GET(request) {
       return { id, status: 'Unavailable', checkedAt: new Date().toISOString(), error: 'Could not retrieve a report. Retry or ask an administrator to check access.' };
     }
   }));
+  if (source === 'all') {
+    try {
+      const snapshot = datoramaSnapshot();
+      sources.push({ id: 'datorama', checkedAt: new Date().toISOString(), status: snapshot ? 'Imported snapshot' : 'Not imported', ...(snapshot ? { fetchedAt: snapshot.exportedAt, period: snapshot.period, timezone: 'Timezone not supplied' } : {}) });
+    } catch { sources.push({ id: 'datorama', status: 'Unavailable', error: 'Imported report could not be loaded.' }); }
+  }
   return reply({ sources });
 }

@@ -64,6 +64,7 @@ try {
   assert.equal((await request('/api/analytics/conversions')).status,401);
   assert.equal((await request('/api/analytics/search')).status,401);
   assert.equal((await request('/api/analytics/sources')).status,401);
+  assert.equal((await request('/api/analytics/datorama')).status,401);
   assert.equal((await request('/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({days:28,messages:[{role:'user',content:'Hi'}]})})).status,401);
   console.log('PASS: private analytics and chat APIs reject unauthenticated requests');
   let result=await submit('/',{email:user.email,password:'incorrect-password'});
@@ -78,7 +79,20 @@ try {
   assert.equal((await request('/api/analytics/conversions?days=365')).status,400);
   assert.equal((await request('/api/analytics/search?days=365')).status,400);
   assert.equal((await request('/api/analytics/sources?source=invalid')).status,400);
-  if(process.argv.includes('--sources')) { const r=await request('/api/analytics/sources?refresh=1'); const result=await r.json(); assert.equal(r.status,200); assert.equal(result.sources.length,2); for(const source of result.sources){assert.equal(source.status,'Connected',JSON.stringify(source));assert.ok(source.fetchedAt);assert.ok(source.period.end);} console.log('PASS: live source checks',JSON.stringify(result)); }
+  if(process.argv.includes('--sources')) { const r=await request('/api/analytics/sources?refresh=1'); const result=await r.json(); assert.equal(r.status,200); assert.equal(result.sources.filter(s=>s.id!=='datorama').length,2); for(const source of result.sources.filter(s=>s.id!=='datorama')){assert.equal(source.status,'Connected',JSON.stringify(source));assert.ok(source.fetchedAt);assert.ok(source.period.end);} console.log('PASS: live source checks',JSON.stringify(result)); }
+  if(process.argv.includes('--datorama')) {
+    const r=await request('/api/analytics/datorama');const data=await r.json();assert.equal(r.status,200);assert.equal(data.sheets.length,5);
+    for(const sheet of data.sheets) {
+      assert.ok(sheet.rows.length>0);assert.equal(sheet.totals.length,sheet.columns.length);
+      for(let i=1;i<sheet.columns.length;i++) {
+        if(/Ratio|Rate|%/.test(sheet.columns[i]))continue;
+        const values=sheet.rows.map(row=>row[i]).filter(v=>typeof v==='number');
+        if(values.length)assert.equal(values.reduce((a,b)=>a+b,0),sheet.totals[i],sheet.name+' '+sheet.columns[i]);
+      }
+    }
+    assert.equal(data.period.start,'2026-07-01');assert.equal(data.period.end,'2026-09-30');
+    console.log('PASS: authenticated snapshot and all exported count totals reconcile');
+  }
   if(process.argv.includes('--gsc')) {
     const response=await request('/api/analytics/search?days=28'); const report=await response.json();
     assert.equal(response.status,200,JSON.stringify(report));

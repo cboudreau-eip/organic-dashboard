@@ -267,3 +267,5 @@ body:has(.charlie-launch) { overflow:hidden; }
 .chat-header,.chat-scope,.chat-period-label,.chat-form{flex-shrink:0;}
 .chat-panel .chat-log{min-height:0;}
 @media(max-width:760px){.chat-header{flex-wrap:wrap;}.chat-period-label{flex-wrap:wrap;gap:6px;}}
+
+.datorama-import{padding:22px;margin-bottom:28px;}.datorama-import h2{margin:8px 0;}.datorama-controls{display:flex;gap:16px;flex-wrap:wrap;margin-top:20px;}.datorama-controls label{display:flex;flex-direction:column;gap:6px;}.datorama-controls select,.datorama-controls input{padding:8px;max-width:100%;}.datorama-table{max-height:520px;overflow:auto;}.datorama-table table{border-collapse:collapse;width:100%;font-size:13px;}.datorama-table td,.datorama-table th{padding:10px;border-bottom:1px solid #e1e8df;text-align:right;min-width:100px;}.datorama-table td:first-child{text-align:left;min-width:300px;max-width:420px;overflow-wrap:anywhere;}.datorama-table th{position:sticky;top:0;background:#f5f8f2;}.datorama-table th button{font:inherit;color:inherit;background:none;border:0;cursor:pointer;}.datorama-table tfoot{font-weight:bold;background:#f5f8f2;}
