@@ -85,7 +85,7 @@ try {
   }
   assert.equal((await request('/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({days:365,messages:[]})})).status,400);
   assert.equal((await request('/api/chat',{method:'POST',headers:{Origin:'https://example.com'}})).status,403);
-  if(process.argv.includes('--chat')) { const r=await request('/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({days:7,messages:[{role:'user',content:'How many Google clicks did we get? Include the date range in one sentence.'}]})});const output=await r.json();console.log('CHAT CHECK',r.status,JSON.stringify(output));assert.equal(r.status,200);assert.ok(output.answer.length>10); }
+  if(process.argv.includes('--chat')) { const r=await request('/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({days:7,messages:[{role:'user',content:process.argv.includes('--conversions') ? 'Which landing pages led to the most contact form submissions? Include phone clicks for those pages and the dates. Are these verified leads or completed calls?' : 'How many Google clicks did we get? Include the date range in one sentence.'}]})});const output=await r.json();console.log('CHAT CHECK',r.status,JSON.stringify(output));assert.equal(r.status,200);assert.ok(output.answer.length>10);if(process.argv.includes('--conversions'))assert.ok(output.sources.some(s=>s.startsWith('PostHog tracked organic submissions and phone clicks:') && !s.includes('unavailable'))); }
   console.log('PASS: analytics and chat input restrictions');
   const sessionCookie=[...jar.keys()].find(k=>/auth-token$/.test(k));assert.ok(sessionCookie);
   
