@@ -14,7 +14,7 @@ test('dashboard retains navigation, filters, saved views and remount cleanup', a
   let dispose;
   try {
     root.innerHTML = dashboardMarkup;
-    dispose = initializeDashboard(root);
+    dispose = initializeDashboard(root, "test-user");
     assert.equal(root.querySelector('#view-title').textContent, 'Overview');
     assert.match(root.querySelector('#app').textContent, /19,601/);
     const site = root.querySelector('#site');
@@ -37,7 +37,7 @@ test('dashboard retains navigation, filters, saved views and remount cleanup', a
     root.querySelector('[data-nav="keywords"]').click();
     assert.equal(root.querySelector('#view-title').textContent, 'Overview');
     root.innerHTML = dashboardMarkup;
-    dispose = initializeDashboard(root);
+    dispose = initializeDashboard(root, "test-user");
     assert.equal(root.querySelector('.charlie-presence').hidden, true, 'hidden choice survives a fresh mount');
     assert.equal(root.querySelector('.charlie-restore').hidden, false);
     root.querySelector('.charlie-restore').click();
@@ -57,6 +57,23 @@ test('dashboard retains navigation, filters, saved views and remount cleanup', a
     root.querySelector('#chat-clear').click();
     assert.equal(root.querySelectorAll('.chat-message.user').length,0);
     assert.equal(root.querySelector('#saved-view-select').options.length, 2);
+    root.querySelector('#chat-history-toggle').click();
+    assert.equal(root.querySelectorAll('.chat-history-open').length,1);
+    root.querySelector('.chat-history-open').click();
+    assert.match(root.querySelector('.chat-plain').textContent,/How many sessions/);
+    assert.match(root.querySelector('.chat-citation').textContent,/Fixture only/);
+    assert.equal(root.querySelector('.chat-plain img'),null);
+    assert.equal(root.querySelector('#chat-download').disabled,false);
+    dispose();
+    root.innerHTML=dashboardMarkup;
+    dispose=initializeDashboard(root, "test-user");
+    root.querySelector('#chat-history-toggle').click();
+    assert.equal(root.querySelectorAll('.chat-history-open').length,1,'conversation survives remount');
+    dispose();
+    root.innerHTML=dashboardMarkup;
+    dispose=initializeDashboard(root, "other-user");
+    root.querySelector('#chat-history-toggle').click();
+    assert.equal(root.querySelectorAll('.chat-history-open').length,0,'another account does not see the saved conversation');
   } finally {
     dispose?.(); dom.window.close();
     names.forEach((name,i) => previous[i] ? Object.defineProperty(globalThis,name,previous[i]) : delete globalThis[name]);

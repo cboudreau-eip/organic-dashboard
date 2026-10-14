@@ -11,7 +11,7 @@ import DatoramaSnapshot from './DatoramaSnapshot';
 import CharlieLaunch from './CharlieLaunch';
 
 // React owns this boundary; the preserved demo renderer owns its descendants.
-export default function Dashboard({ userEmail }) {
+export default function Dashboard({ userEmail, userId }) {
   const host = useRef(null);
   const [launching, setLaunching] = useState(true);
   const finishLaunch = useCallback(() => setLaunching(false), []);
@@ -27,9 +27,9 @@ export default function Dashboard({ userEmail }) {
     setAnalyticsHost(root.querySelector('#organic-live-host'));
     setLeadsHost(root.querySelector('#organic-leads-host'));
     setSearchHost(root.querySelector('#gsc-live-host'));
-    const dispose = initializeDashboard(root);
+    const dispose = initializeDashboard(root, userId);
     return () => { dispose(); root.replaceChildren(); };
-  }, []);
+  }, [userId]);
   return <>{launching && <CharlieLaunch onComplete={finishLaunch} />}<div className="dashboard-page" ref={host} inert={launching} aria-hidden={launching || undefined}>
     <p role="status">Loading dashboard…</p>
     <noscript>Enable JavaScript to explore the interactive dashboard.</noscript>

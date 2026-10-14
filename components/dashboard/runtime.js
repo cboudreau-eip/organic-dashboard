@@ -1,6 +1,7 @@
+import { installChatHistory, MAX_MESSAGES } from './chat-history.js';
 import { startPortraitSpeech } from './speech.js';
 // Existing demo behavior, isolated to the dashboard lifecycle.
-export function initializeDashboard(root) {
+export function initializeDashboard(root, userId) {
 const controller = new AbortController();
 const listen = (type, handler) => root.addEventListener(type, handler, { signal: controller.signal });
 
@@ -172,22 +173,28 @@ function chatScope(){return `${state.site==='all'?'Both sites':state.site==='faq
 function updateChatScope(){if($('chat-scope'))$('chat-scope').textContent='MedicareFAQ · Live PostHog + GSC · Chat period below; sample filters do not apply.'}
 function welcomeChat(){$('chat-log').innerHTML=`<div class="chat-message assistant"><p><b>What would you like to know?</b></p><p>Ask me about your real organic traffic and Google search performance. Your question and relevant analytics summaries are sent to Anthropic (Claude).</p><div class="chat-prompts">${['Summarize performance','Which pages need attention?','What are our top Google queries?','Show keyword opportunities'].map(q=>`<button type="button" data-chat-prompt="${q}">${q}</button>`).join('')}</div></div>`}
 function toggleChat(open){$('data-chat').hidden=!open;$('chat-launcher').setAttribute('aria-expanded',String(open));if(open){updateChatScope();$('chat-input').focus()}else if(!$('drawer').classList.contains('open'))$('chat-launcher').focus()}
-let chatMessages=[], chatPending=null;
-function resetChat(){chatPending?.abort();chatPending=null;chatMessages=[];$('chat-form').querySelector('button[type="submit"]').disabled=false;welcomeChat()}
+let chatMessages=[], chatPending=null, savedChat=null;
+const chatHistory=installChatHistory(root,userId,{current:()=>savedChat,open:restoreChat});
+function restoreChat(chat){resetChat();if(!chat)return;savedChat=structuredClone(chat);chatMessages=savedChat.messages;
+ $('chat-period').value=String(chat.days);$('chat-log').replaceChildren();
+ for(const message of chatMessages){const item=document.createElement('div');item.className='chat-message '+message.role+' chat-plain';item.textContent=message.content;if(message.sources?.length){const cite=document.createElement('div');cite.className='chat-citation';cite.textContent=message.sources.join(' · ')+(message.incomplete?' · Response shortened':'');item.appendChild(cite)}$('chat-log').appendChild(item)}$('chat-input').value='';
+}
+function resetChat(){chatPending?.abort();chatPending=null;chatMessages=[];savedChat=null;chatHistory.reset();$('chat-form').querySelector('button[type="submit"]').disabled=false;welcomeChat()}
 async function submitChat(text){
- text=String(text||'').trim().slice(0,1000);if(!text||chatPending)return;
+ text=String(text||'').trim().slice(0,1000);if(!text||chatPending)return;if(chatMessages.length>=MAX_MESSAGES){chatHistory.limit();return;}
  const log=$('chat-log'),user=document.createElement('div');user.className='chat-message user';user.textContent=text;log.appendChild(user);
  const pending=document.createElement('div');pending.className='chat-message assistant';pending.textContent='Charlie is checking your data…';log.appendChild(pending);
  const request=new AbortController();chatPending=request;const timer=setTimeout(()=>request.abort(),100000);
  const button=$('chat-form').querySelector('button[type="submit"]');button.disabled=true;$('chat-input').value='';log.scrollTop=log.scrollHeight;
- const messages=[...chatMessages.slice(-10),{role:'user',content:text}];
+ const messages=[...chatMessages.slice(-10).map(({role,content})=>({role,content:content.slice(0,role==='user'?1000:8000)})),{role:'user',content:text}];
  try{
   const response=await fetch('/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({days:Number($('chat-period').value),messages}),signal:request.signal});
   const result=await response.json();if(!response.ok)throw Error(result.error||'Charlie could not answer. Try again.');
   if(chatPending!==request)return;
   pending.textContent=result.answer;pending.classList.add('chat-plain');
   const citation=document.createElement('div');citation.className='chat-citation';citation.textContent=(result.sources||[]).join(' · ')+(result.incomplete?' · Response shortened; ask a follow-up.':'');pending.appendChild(citation);
-  chatMessages=[...messages,{role:'assistant',content:result.answer.slice(0,8000)}];
+  chatMessages=[...chatMessages,{role:'user',content:text},{role:'assistant',content:result.answer,sources:(result.sources||[]),incomplete:Boolean(result.incomplete)}];
+  const timestamp=new Date().toISOString();savedChat={id:savedChat?.id||crypto.randomUUID(),title:savedChat?.title||text.slice(0,90),days:Number($('chat-period').value),createdAt:savedChat?.createdAt||timestamp,updatedAt:timestamp,messages:chatMessages};chatHistory.saved(savedChat);
  }catch(error){if(chatPending!==request)return;pending.textContent=request.signal.aborted?'Request timed out. Please try again.':error.message;pending.setAttribute('role','alert');$('chat-input').value=text;}
  finally{clearTimeout(timer);if(chatPending===request){chatPending=null;button.disabled=false;log.scrollTop=log.scrollHeight;}}
 }

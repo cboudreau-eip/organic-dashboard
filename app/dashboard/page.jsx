@@ -5,5 +5,5 @@ export const dynamic = 'force-dynamic';
 export const metadata = { title: 'Performance Command Center' };
 export default async function DashboardPage() {
   const { user } = await requireUser();
-  return <Dashboard userEmail={user.email} />;
+  return <Dashboard userEmail={user.email} userId={user.id} />;
 }

@@ -269,3 +269,16 @@ body:has(.charlie-launch) { overflow:hidden; }
 @media(max-width:760px){.chat-header{flex-wrap:wrap;}.chat-period-label{flex-wrap:wrap;gap:6px;}}
 
 .datorama-import{padding:22px;margin-bottom:28px;}.datorama-import h2{margin:8px 0;}.datorama-controls{display:flex;gap:16px;flex-wrap:wrap;margin-top:20px;}.datorama-controls label{display:flex;flex-direction:column;gap:6px;}.datorama-controls select,.datorama-controls input{padding:8px;max-width:100%;}.datorama-table{max-height:520px;overflow:auto;}.datorama-table table{border-collapse:collapse;width:100%;font-size:13px;}.datorama-table td,.datorama-table th{padding:10px;border-bottom:1px solid #e1e8df;text-align:right;min-width:100px;}.datorama-table td:first-child{text-align:left;min-width:300px;max-width:420px;overflow-wrap:anywhere;}.datorama-table th{position:sticky;top:0;background:#f5f8f2;}.datorama-table th button{font:inherit;color:inherit;background:none;border:0;cursor:pointer;}.datorama-table tfoot{font-weight:bold;background:#f5f8f2;}
+
+.chat-history-toolbar{padding:8px 14px;border-bottom:1px solid #dce6d8;flex-shrink:0;}
+.chat-history-toolbar>div{display:flex;gap:8px;flex-wrap:wrap;}
+.chat-history-toolbar button,.chat-history-item button{font:inherit;font-size:calc(10px + 4pt);border:1px solid #cfddc8;border-radius:6px;padding:6px 9px;background:#f5f8f2;color:#285234;cursor:pointer;}
+.chat-history-toolbar small{display:block;font-size:calc(9px + 4pt);line-height:1.4;margin-top:5px;color:#5a705e;}
+.chat-history-toolbar button:disabled{opacity:.5;cursor:default;}
+.chat-history-panel{overflow-y:auto;flex:1;min-height:0;padding:12px 15px;font-size:calc(10px + 4pt);}
+.chat-history-panel p{line-height:1.5;margin:0 0 12px;}
+.chat-history-item{display:flex;gap:8px;align-items:center;margin-bottom:9px;}
+.chat-history-item .chat-history-open{flex:1;min-width:0;text-align:left;background:white;}
+.chat-history-open strong{display:block;overflow-wrap:anywhere;}
+.chat-history-open small{display:block;margin-top:4px;font-size:calc(9px + 4pt);line-height:1.4;}
+.chat-panel [hidden]{display:none!important;}
