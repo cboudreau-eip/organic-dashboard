@@ -107,9 +107,10 @@ try {
     const details = await request('/api/analytics/details?days=28');
     const report = await details.json();
     assert.equal(details.status,200);assert.ok(report.pages.length>10);
-    const r = await request('/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({days:28,messages:[{role:'user',content:'Tell me about https://www.medicarefaq.com/medicare-supplement-plans/compare/'},{role:'assistant',content:'Which metric do you need?'},{role:'user',content:'How many organic visitors and page views did that page get? Compare with the previous period.'}]})});
+    const r = await request('/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({days:28,messages:[{role:'user',content:'Tell me about https://www.medicarefaq.com/medicare-supplement-plans/compare/'},{role:'assistant',content:'Which metric do you need?'},{role:'user',content:'For that page, report organic visitors, Google clicks, tracked contact submissions and phone clicks with previous-period comparisons. Also give historical Datorama leads if present, clearly separated by dates.'}]})});
     const output=await r.json();assert.equal(r.status,200);
     assert.ok(output.sources.some(s=>s.startsWith('PostHog direct organic page traffic:')&&!s.includes('unavailable')));
+    for (const prefix of ['GSC direct page search:', 'PostHog direct landing-page conversions:']) assert.ok(output.sources.some(s=>s.startsWith(prefix)&&!s.includes('unavailable')));
     console.log('PASS: expanded pages and direct lookup follow-up',report.pages.length,JSON.stringify(output));
   }
   console.log('PASS: analytics and chat input restrictions');
