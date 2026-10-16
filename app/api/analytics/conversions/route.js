@@ -1,3 +1,4 @@
+export const maxDuration = 120;
 import { serverAuth } from '../../../../lib/auth/server';
 import { isTeamUser } from '../../../../lib/auth/config';
 import { organicOverview } from '../../../../lib/posthog/server';
