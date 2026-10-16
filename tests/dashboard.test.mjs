@@ -1,11 +1,12 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { JSDOM } from 'jsdom';
+import { JSDOM, VirtualConsole } from 'jsdom';
 import { dashboardMarkup } from '../components/dashboard/markup.js';
 import { initializeDashboard } from '../components/dashboard/runtime.js';
 
-test('dashboard retains navigation, filters, saved views and remount cleanup', async () => {
-  const dom = new JSDOM('<div id="host"></div>', { url: 'http://localhost/dashboard' });
+test('dashboard exposes only source-backed reports and retains chat history and remount cleanup', async () => {
+  const errors=[]; const virtualConsole=new VirtualConsole();virtualConsole.on('jsdomError',error=>errors.push(error));
+  const dom = new JSDOM('<div id="host"></div>', { url: 'http://localhost/dashboard', virtualConsole });
   const { window } = dom;
   const names = ['window', 'document', 'localStorage', 'AbortController', 'scrollTo', 'fetch'];
   const previous = names.map(name => Object.getOwnPropertyDescriptor(globalThis, name));
@@ -16,25 +17,23 @@ test('dashboard retains navigation, filters, saved views and remount cleanup', a
     root.innerHTML = dashboardMarkup;
     dispose = initializeDashboard(root, "test-user");
     assert.equal(root.querySelector('#view-title').textContent, 'Overview');
-    assert.match(root.querySelector('#app').textContent, /19,601/);
-    const site = root.querySelector('#site');
-    site.value = 'faq'; site.dispatchEvent(new window.Event('change', { bubbles: true }));
-    assert.doesNotMatch(root.querySelector('#app').textContent, /19,601/);
-    root.querySelector('#saved-view-name').value = 'Team test';
-    root.querySelector('#saved-view-form').dispatchEvent(new window.Event('submit', { bubbles: true, cancelable: true }));
-    assert.equal(JSON.parse(localStorage.getItem('organic-demo-saved-views')).length, 1);
-    for (const key of ['acquisition','leads','content','opportunities','keywords','connections','measurement','overview']) {
-      root.querySelector(`[data-nav="${key}"]`).click();
-      if (key === 'acquisition') { assert.equal(root.querySelector('#gsc-live-host').hidden,false); assert.equal(root.querySelector('#app').textContent,''); } else if (key === 'leads') { assert.equal(root.querySelector('#organic-leads-host').hidden,false); assert.equal(root.querySelector('#app').textContent,''); } else { assert.ok(root.querySelector('#app').textContent.length > 100, key); assert.equal(root.querySelector('#organic-leads-host').hidden,true); }
+    assert.equal(root.querySelector('#app').textContent,'');
+    for(const selector of ['#site','#range','#saved-view-form','#date-form','[data-export]','[data-page]','#drawer']) assert.equal(root.querySelector(selector),null,selector+' must be absent');
+    for(const view of ['content','opportunities','keywords','measurement']) assert.equal(root.querySelector('[data-nav="'+view+'"]'),null);
+    for (const key of ['acquisition','leads','connections','overview']) {
+      root.querySelector('[data-nav="'+key+'"]').click();
+      assert.equal(root.querySelector('#organic-live-host').hidden,key!=='overview');
+      assert.equal(root.querySelector('#gsc-live-host').hidden,key!=='acquisition');
+      assert.equal(root.querySelector('#organic-leads-host').hidden,key!=='leads');
+      if(key==='connections') assert.match(root.querySelector('#app').textContent,/Source overview/);
+      else assert.equal(root.querySelector('#app').textContent,'');
     }
-    root.querySelector('[data-page]').click();
-    assert.ok(root.querySelector('#drawer').classList.contains('open'));
     root.querySelector('.portrait-stage').click();
     assert.equal(root.querySelector('.charlie-presence').hidden, true);
     assert.equal(root.querySelector('#chat-launcher').hidden, false);
     dispose();
     assert.equal(document.body.style.overflow, '');
-    root.querySelector('[data-nav="keywords"]').click();
+    root.querySelector('[data-nav="acquisition"]').click();
     assert.equal(root.querySelector('#view-title').textContent, 'Overview');
     root.innerHTML = dashboardMarkup;
     dispose = initializeDashboard(root, "test-user");
@@ -56,7 +55,6 @@ test('dashboard retains navigation, filters, saved views and remount cleanup', a
     assert.equal(root.querySelector('#chat-form button').disabled,false);
     root.querySelector('#chat-clear').click();
     assert.equal(root.querySelectorAll('.chat-message.user').length,0);
-    assert.equal(root.querySelector('#saved-view-select').options.length, 2);
     root.querySelector('#chat-history-toggle').click();
     assert.equal(root.querySelectorAll('.chat-history-open').length,1);
     root.querySelector('.chat-history-open').click();
@@ -74,6 +72,7 @@ test('dashboard retains navigation, filters, saved views and remount cleanup', a
     dispose=initializeDashboard(root, "other-user");
     root.querySelector('#chat-history-toggle').click();
     assert.equal(root.querySelectorAll('.chat-history-open').length,0,'another account does not see the saved conversation');
+    assert.deepEqual(errors,[], 'dashboard events must not throw');
   } finally {
     dispose?.(); dom.window.close();
     names.forEach((name,i) => previous[i] ? Object.defineProperty(globalThis,name,previous[i]) : delete globalThis[name]);
