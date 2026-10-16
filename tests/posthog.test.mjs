@@ -11,7 +11,7 @@ test('complete New York calendar periods across UTC midnight, DST, and leap day'
 test('all metrics share strict organic, hostname and comparison filters', () => {
   const query = overviewQuery(overviewPeriod(7, new Date('2026-10-09T12:00:00Z')));
   assert.deepEqual(query.properties.map(p => [p.type,p.key,p.operator,p.value]), [
-    ['session','$channel_type','exact',['Organic Search']], ['event','$host','exact',['www.medicarefaq.com','medicarefaq.com']], ['event','$sdk_dist_channel','exact',['npm']],
+    ['session','$channel_type','exact',['Organic Search']], ['event','$host','exact',['www.medicarefaq.com','medicarefaq.com']], ['event','$sdk_dist_channel','exact',['cdn']],
   ]);
   assert.equal(query.compareFilter.compare,true);
   assert.deepEqual(query.dateRange,{date_from:'2026-10-02',date_to:'2026-10-08'});
