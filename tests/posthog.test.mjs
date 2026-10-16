@@ -11,7 +11,7 @@ test('complete New York calendar periods across UTC midnight, DST, and leap day'
 test('all metrics share strict organic, hostname and comparison filters', () => {
   const query = overviewQuery(overviewPeriod(7, new Date('2026-10-09T12:00:00Z')));
   assert.deepEqual(query.properties.map(p => [p.type,p.key,p.operator,p.value]), [
-    ['session','$channel_type','exact',['Organic Search']], ['event','$host','exact',['www.medicarefaq.com','medicarefaq.com']],
+    ['session','$channel_type','exact',['Organic Search']], ['event','$host','exact',['www.medicarefaq.com','medicarefaq.com']], ['event','$sdk_dist_channel','exact',['npm']],
   ]);
   assert.equal(query.compareFilter.compare,true);
   assert.deepEqual(query.dateRange,{date_from:'2026-10-02',date_to:'2026-10-08'});
@@ -46,4 +46,11 @@ test('daily parser rejects missing, invalid and shifted buckets without inventin
   assert.deepEqual(parseLandingPages({results:[]}),[]);
   assert.deepEqual(parseLandingPages({results:[['www.medicarefaq.com/test/',[12,null],[30,null]]]}),[{page:'www.medicarefaq.com/test/',visitors:12}]);
   assert.throws(()=>parseLandingPages({results:[['/test/',[null,null]]]}));
+});
+
+test('mixed-stream session metrics are withheld, never presented as corrected', () => {
+ const rows = METRICS.map(([key]) => ({key,value:100,previous:90}));
+ const metrics = parseOverview({results:rows});
+ assert.equal(metrics.find(m=>m.key==='views').value,100);
+ for (const key of ['bounce rate','session duration']) { const m=metrics.find(m=>m.key===key); assert.equal(m.value,null); assert.equal(m.previous,null); assert.ok(m.unavailableReason); }
 });

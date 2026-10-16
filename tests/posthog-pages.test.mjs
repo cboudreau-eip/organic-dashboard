@@ -14,10 +14,10 @@ test('direct page lookup resolves follow-ups and prefers the newest URL', () => 
 test('page filters retain organic and host scope with structured path values', () => {
   const period = overviewPeriod(28);
   const query = pageQuery(period, '/compare/');
-  assert.deepEqual(query.properties.slice(0,2), overviewQuery(period).properties);
-  assert.deepEqual(query.properties[2].value, ['/compare','/compare/']);
+  assert.deepEqual(query.properties.slice(0,3), overviewQuery(period).properties);
+  assert.deepEqual(query.properties[3].value, ['/compare','/compare/']);
   assert.equal(query.compareFilter.compare,true);
-  assert.deepEqual(pageQuery(period, '/').properties[2].value, ['/']);
+  assert.deepEqual(pageQuery(period, '/').properties[3].value, ['/']);
   assert.throws(() => pageQuery(period,'https://example.com'));
 });
 
