@@ -32,8 +32,8 @@ test('transient failure retries are bounded', async () => {
   await assert.rejects(run(request),/temporarily unavailable/);assert.equal(calls,3);
 });
 test('a failed prior period does not hide valid current engagement', () => {
-  const metrics=[{key:'session duration',value:null,previous:null},{key:'bounce rate',value:null,previous:null}];
-  const current={sessions:100,durationSessions:80,bounceSessions:90,duration:180,bounceRate:10};
+  const metrics=[{key:'session duration',value:null,previous:null},{key:'single-page session rate',value:null,previous:null}];
+  const current={sessions:100,durationSessions:80,singlePageSessions:10,duration:180,singlePageRate:10};
   const result=withEngagement(metrics,current,null);
   assert.equal(result[0].value,180);assert.equal(result[1].value,10);
   assert.equal(result[0].previous,null);assert.equal(result[0].unavailableReason,undefined);

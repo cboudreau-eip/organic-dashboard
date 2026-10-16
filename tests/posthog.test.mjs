@@ -52,5 +52,5 @@ test('mixed-stream session metrics are withheld, never presented as corrected', 
  const rows = METRICS.map(([key]) => ({key,value:100,previous:90}));
  const metrics = parseOverview({results:rows});
  assert.equal(metrics.find(m=>m.key==='views').value,100);
- for (const key of ['bounce rate','session duration']) { const m=metrics.find(m=>m.key===key); assert.equal(m.value,null); assert.equal(m.previous,null); assert.ok(m.unavailableReason); }
+ for (const key of ['single-page session rate','session duration']) { const m=metrics.find(m=>m.key===key); assert.equal(m.value,null); assert.equal(m.previous,null); assert.ok(m.unavailableReason); }
 });
