@@ -1,0 +1,24 @@
+name: Application checks
+on:
+  pull_request:
+  push:
+    branches: [codex/nextjs-migration, 'codex/growth-hunter-preview*']
+permissions:
+  contents: read
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      NEXT_TELEMETRY_DISABLED: '1'
+      GROWTH_HUNTER_ENABLED: 'false'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      - run: npm test
+      - run: npm run build
+      - run: node scripts/test-auth-flow.mjs

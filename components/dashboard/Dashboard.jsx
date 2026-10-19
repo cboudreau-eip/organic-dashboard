@@ -9,9 +9,11 @@ import OrganicConversions from './OrganicConversions';
 import SearchPerformance from './SearchPerformance';
 import DatoramaSnapshot from './DatoramaSnapshot';
 import CharlieLaunch from './CharlieLaunch';
+import GrowthHunter from '../growth-hunter/GrowthHunter';
+import '../growth-hunter/growth-hunter.css';
 
 // React owns this boundary; the preserved demo renderer owns its descendants.
-export default function Dashboard({ userEmail, userId }) {
+export default function Dashboard({ userEmail, userId, growthAllowed = false }) {
   const host = useRef(null);
   const [launching, setLaunching] = useState(true);
   const finishLaunch = useCallback(() => setLaunching(false), []);
@@ -20,6 +22,8 @@ export default function Dashboard({ userEmail, userId }) {
   const [leadsHost, setLeadsHost] = useState(null);
   const [searchHost, setSearchHost] = useState(null);
   const [days, setDays] = useState(7);
+  const [growthHost, setGrowthHost] = useState(null);
+  const [growthActive, setGrowthActive] = useState(false);
   useEffect(() => {
     const root = host.current;
     root.innerHTML = dashboardMarkup;
@@ -27,10 +31,16 @@ export default function Dashboard({ userEmail, userId }) {
     setAnalyticsHost(root.querySelector('#organic-live-host'));
     setLeadsHost(root.querySelector('#organic-leads-host'));
     setSearchHost(root.querySelector('#gsc-live-host'));
-    const dispose = initializeDashboard(root, userId);
-    return () => { dispose(); root.replaceChildren(); };
-  }, [userId]);
-  return <>{launching && <CharlieLaunch onComplete={finishLaunch} />}<div className="dashboard-page" ref={host} inert={launching} aria-hidden={launching || undefined}>
+    if (growthAllowed) {
+      const node = document.createElement('div'); node.id = 'growth-hunter-host'; node.hidden = true;
+      root.querySelector('#app').before(node); setGrowthHost(node);
+    } else setGrowthHost(null);
+    const visibility = event => setGrowthActive(event.detail);
+    root.addEventListener('growth-visibility', visibility);
+    const dispose = initializeDashboard(root, userId, { growthAllowed });
+    return () => { root.removeEventListener('growth-visibility', visibility); dispose(); root.replaceChildren(); };
+  }, [userId, growthAllowed]);
+  return <>{growthHost && createPortal(<GrowthHunter active={growthActive} />, growthHost)}{launching && <CharlieLaunch onComplete={finishLaunch} />}<div className="dashboard-page" ref={host} inert={launching} aria-hidden={launching || undefined}>
     <p role="status">Loading dashboard…</p>
     <noscript>Enable JavaScript to explore the interactive dashboard.</noscript>
   </div>{searchHost && createPortal(<SearchPerformance />, searchHost)}{analyticsHost && createPortal(<OrganicOverview days={days} setDays={setDays} />, analyticsHost)}{leadsHost && createPortal(<section className="organic-live"><DatoramaSnapshot /><div className="organic-heading"><span className="organic-badge">POSTHOG · ORGANIC SEARCH</span><label>Conversion reporting period<select value={days} onChange={e => setDays(Number(e.target.value))}><option value={7}>Last 7 complete days</option><option value={28}>Last 28 complete days</option><option value={30}>Last 30 complete days</option></select></label></div><OrganicConversions key={days} days={days} detailed /></section>, leadsHost)}{accountHost && createPortal(<form action={signOut} className="account-form"><span className="account-email" title={userEmail}>{userEmail}</span><button type="submit" className="button">Sign out</button></form>, accountHost)}</>;

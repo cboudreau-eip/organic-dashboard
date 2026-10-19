@@ -2,6 +2,15 @@
 
 Next.js App Router application for the Organic Growth team dashboard.
 
+## Growth Hunter foundation
+
+The optional Growth Hunter module now supports validated aggregate GSC Pages CSV snapshots,
+preview before save, persistent evidence and explicit database-backed membership. It is
+disabled by default. See [setup and validation](docs/GROWTH_HUNTER_SETUP.md) and
+[current progress](docs/PROGRESS.md). Research recommendations and approvals are the next
+increment; they are not implemented yet. Existing reporting definitions below include
+historical notes; current source contracts and code take precedence where they differ.
+
 ## Local development
 
 Use Node.js 22 or newer. Run npm ci, copy .env.example to .env.local and supply your Supabase project URL and **publishable** key, then run npm run dev. Without credentials the login form is disabled and protected routes fail closed.

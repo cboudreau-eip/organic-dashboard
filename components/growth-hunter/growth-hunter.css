@@ -1,0 +1,34 @@
+.dashboard-page .growth-hunter { max-width: 1180px; }
+.dashboard-page .growth-hunter h2 { font-size: 28px; letter-spacing: -.7px; margin: 6px 0; }
+.dashboard-page .growth-hunter p { line-height: 1.65; }
+.dashboard-page .growth-panel { background: var(--paper); border: 1px solid var(--line); border-radius: 12px; padding: 24px; margin: 20px 0; }
+.dashboard-page .growth-panel h3 { margin-top: 0; font-size: 18px; }
+.dashboard-page .growth-note { padding: 16px; background: var(--soft); border-left: 3px solid var(--green); border-radius: 6px; }
+.dashboard-page .growth-error { padding: 16px; background: #fff1ec; color: #8a321e; border: 1px solid #e6b4a6; border-radius: 8px; }
+.dashboard-page .growth-muted { color: var(--muted); font-size: 12px; }
+.dashboard-page .growth-fields { display: flex; flex-wrap: wrap; gap: 16px; }
+.dashboard-page .growth-fields label { display: grid; gap: 8px; font-weight: 600; }
+.dashboard-page .growth-fields input { padding: 10px; border: 1px solid var(--line); border-radius: 6px; max-width: 100%; }
+.dashboard-page .growth-hunter fieldset { border: 0; padding: 0; min-width: 0; }
+.dashboard-page .growth-hunter legend { font-weight: 700; margin-bottom: 12px; }
+.dashboard-page .growth-hunter button:disabled { opacity: .55; cursor: default; }
+.dashboard-page .growth-preview { margin-top: 22px; border-top: 1px solid var(--line); padding-top: 16px; }
+.dashboard-page .growth-table { overflow-x: auto; margin: 16px 0; }
+.dashboard-page .growth-table table { width: 100%; border-collapse: collapse; }
+.dashboard-page .growth-table caption { text-align: left; font-weight: 700; margin-bottom: 12px; }
+.dashboard-page .growth-table th, .dashboard-page .growth-table td { padding: 12px; border-bottom: 1px solid var(--line); text-align: right; font-size: 12px; }
+.dashboard-page .growth-table th:first-child { text-align: left; overflow-wrap: anywhere; min-width: 200px; }
+.dashboard-page .growth-snapshots { list-style: none; padding: 0; }
+.dashboard-page .growth-snapshots li { padding: 16px 0; display: flex; align-items: center; justify-content: space-between; gap: 16px; border-bottom: 1px solid var(--line); }
+.dashboard-page .growth-snapshots span, .dashboard-page .growth-snapshots small { display: block; margin-top: 6px; color: var(--muted); }
+@media (max-width: 650px) { .dashboard-page .growth-panel { padding: 16px; } .dashboard-page .growth-snapshots li { align-items: flex-start; flex-direction: column; } }
+
+.dashboard-page .growth-fields select { max-width: 100%; padding: 10px; border: 1px solid var(--line); border-radius: 6px; background: white; }
+.dashboard-page .growth-confirm { display: block; margin: 18px 0; line-height: 1.6; }
+.dashboard-page .growth-run-select { display: grid; gap: 8px; margin: 20px 0; }
+.dashboard-page .growth-run-select select { padding: 10px; max-width: 100%; }
+.dashboard-page .growth-finding { border-top: 1px solid var(--line); margin-top: 18px; padding: 16px 0; }
+.dashboard-page .growth-finding a { color: var(--green); overflow-wrap: anywhere; }
+.dashboard-page .growth-evidence { display: flex; flex-wrap: wrap; gap: 24px; }
+.dashboard-page .growth-evidence dd { margin: 6px 0 0; }
+.dashboard-page .growth-evidence dt { color: var(--muted); }

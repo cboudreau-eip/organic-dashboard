@@ -1,0 +1,10 @@
+import 'server-only';
+import { serverAuth } from '../../../../lib/auth/server';
+import { siteUrl } from '../../../../lib/auth/config';
+import { growthEnabled } from '../../../../lib/growth-hunter/access';
+import { createAnalyzeHandler } from '../../../../lib/growth-hunter/analyze';
+import { searchGrowthEvidence } from '../../../../lib/gsc/server';
+export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
+export const maxDuration = 120;
+export const POST = createAnalyzeHandler({getClient:serverAuth,enabled:growthEnabled,origin:siteUrl,loadEvidence:searchGrowthEvidence});
