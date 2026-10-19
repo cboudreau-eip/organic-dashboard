@@ -32,3 +32,9 @@
 .dashboard-page .growth-evidence { display: flex; flex-wrap: wrap; gap: 24px; }
 .dashboard-page .growth-evidence dd { margin: 6px 0 0; }
 .dashboard-page .growth-evidence dt { color: var(--muted); }
+
+.dashboard-page .growth-keywords { margin-top: 16px; padding: 16px; border: 1px solid var(--line); border-radius: 8px; background: var(--paper); }
+.dashboard-page .growth-keywords td { white-space: nowrap; }
+.dashboard-page .growth-keywords .growth-query-clues { white-space: normal; min-width: 210px; text-align: left; line-height: 1.5; }
+.dashboard-page .growth-keyword-loss { display: block; margin-top: 5px; color: #8a321e; }
+.dashboard-page .growth-query-pagination { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; margin: 12px 0; }
