@@ -1,7 +1,7 @@
 import { installChatHistory, MAX_MESSAGES } from './chat-history.js';
 import { startPortraitSpeech } from './speech.js';
 // Live navigation, source status, and Ask Charlie lifecycle.
-export function initializeDashboard(root, userId) {
+export function initializeDashboard(root, userId, { growthAllowed = false } = {}) {
 const controller = new AbortController();
 const listen = (type, handler) => root.addEventListener(type, handler, { signal: controller.signal });
 
@@ -12,11 +12,14 @@ const $=id=>root.querySelector('#'+id);
 const safe=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 function section(title,right=''){return '<div class="section-heading"><h2>'+title+'</h2><small>'+right+'</small></div>'}
 const views=[['overview','Overview'],['acquisition','Acquisition'],['leads','Leads & funnel'],['connections','Data sources']];
+if (growthAllowed) { views.splice(3,0,['growth','Growth Hunter']); icons.growth=icons.opportunities; }
 function render(){
  root.dataset.activeView=state.view;
  $('organic-live-host').hidden=state.view!=='overview';
  $('gsc-live-host').hidden=state.view!=='acquisition';
  $('organic-leads-host').hidden=state.view!=='leads';
+ if ($('growth-hunter-host')) $('growth-hunter-host').hidden=state.view!=='growth';
+ root.dispatchEvent(new root.ownerDocument.defaultView.CustomEvent('growth-visibility', { detail: state.view==='growth' }));
  const label=views.find(v=>v[0]===state.view)[1];
  $('view-title').textContent=label;$('crumb').textContent=label;
  root.querySelectorAll('[data-nav]').forEach(b=>{b.classList.toggle('active',b.dataset.nav===state.view);if(b.dataset.nav===state.view)b.setAttribute('aria-current','page');else b.removeAttribute('aria-current')});
