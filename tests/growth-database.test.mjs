@@ -23,6 +23,8 @@ test('PostgreSQL migration enforces access, atomic validation, immutable evidenc
       grant usage on schema public,auth to authenticated,anon;
       insert into auth.users values ('${analyst}'),('${viewer}'),('${outsider}');`);
     await db.exec(await readFile(new URL('../supabase/migrations/20261019145752_growth_foundation.sql', import.meta.url), 'utf8'));
+    await db.exec(await readFile(new URL('../supabase/migrations/20261019145804_growth_declines.sql', import.meta.url), 'utf8'));
+    await db.exec(await readFile(new URL('../supabase/migrations/20261019191424_growth_live_gsc.sql', import.meta.url), 'utf8'));
     await db.query("insert into public.growth_members (user_id,role) values ($1,'analyst'),($2,'viewer')", [analyst, viewer]);
     await asUser(analyst);
     await assert.rejects(save(payload), e => e.code === '42501');
@@ -32,6 +34,24 @@ test('PostgreSQL migration enforces access, atomic validation, immutable evidenc
     assert.equal(first.inserted, true);
     const repeat = await save({ ...payload, rows: [...payload.rows].reverse() });
     assert.equal(repeat.id, first.id); assert.equal(repeat.inserted, false);
+    // Live pair capture is atomic, idempotent and separated from manual source scope.
+    await db.exec('begin');
+    const apiPrior={...payload,start:'2026-08-04',end:'2026-08-31',coverage:'gsc_api_final_pages_no_parameters_not_exhaustive'};
+    const apiCurrent={...payload,coverage:apiPrior.coverage};
+    const analyze=async(a,b)=>(await db.query('select public.growth_analyze_gsc($1::jsonb,$2::jsonb) as saved',[JSON.stringify(a),JSON.stringify(b)])).rows[0].saved;
+    await db.exec('savepoint before_bad');
+    await assert.rejects(analyze(apiPrior,{...apiCurrent,rows:[{...apiCurrent.rows[0],ctr:.99}]}));
+    await db.exec('rollback to before_bad');
+    assert.equal((await db.query('select count(*)::int as n from public.growth_snapshots')).rows[0].n,1,'failed second import leaves no first snapshot');
+    const live=await analyze(apiPrior,apiCurrent);assert.equal(live.reused,false);
+    assert.equal((await analyze(apiPrior,apiCurrent)).run.id,live.run.id);
+    assert.equal((await analyze(apiPrior,apiCurrent)).reused,true);
+    assert.match(live.run.result.scopeConfirmation,/GSC API/);
+    await db.exec('savepoint before_mixed');
+    await assert.rejects(analyze(apiPrior,payload));await db.exec('rollback to before_mixed');
+    await asUser(viewer);await db.exec('savepoint before_viewer');
+    await assert.rejects(analyze(apiPrior,apiCurrent),e=>e.code==='42501');await db.exec('rollback to before_viewer');
+    await db.exec('rollback');await asUser(analyst);
     for (const bad of [
       { ...payload, private_note: 'unexpected' },
       { ...payload, source: null },
