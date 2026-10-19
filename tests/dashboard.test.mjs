@@ -72,6 +72,20 @@ test('dashboard exposes only source-backed reports and retains chat history and 
     dispose=initializeDashboard(root, "other-user");
     root.querySelector('#chat-history-toggle').click();
     assert.equal(root.querySelectorAll('.chat-history-open').length,0,'another account does not see the saved conversation');
+    dispose();
+    root.innerHTML=dashboardMarkup;
+    const growthHost=document.createElement('div');growthHost.id='growth-hunter-host';root.querySelector('#app').before(growthHost);
+    const visibility=[];root.addEventListener('growth-visibility',event=>visibility.push(event.detail));
+    dispose=initializeDashboard(root,'test-user',{growthAllowed:true});
+    assert.equal(growthHost.hidden,true);
+    root.querySelector('[data-nav="growth"]').click();
+    assert.equal(root.querySelector('#view-title').textContent,'Growth Hunter');
+    assert.equal(growthHost.hidden,false);
+    assert.equal(root.querySelector('#organic-live-host').hidden,true);
+    assert.equal(visibility.at(-1),true);
+    root.querySelector('[data-nav="overview"]').click();
+    assert.equal(growthHost.hidden,true);
+    assert.equal(visibility.at(-1),false);
     assert.deepEqual(errors,[], 'dashboard events must not throw');
   } finally {
     dispose?.(); dom.window.close();
