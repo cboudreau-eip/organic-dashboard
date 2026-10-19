@@ -1,6 +1,7 @@
 'use client';
 import { useEffect, useState } from 'react';
 import DeclineResearch from './DeclineResearch';
+import { readGscFile } from '../../lib/growth-hunter/files';
 
 async function api(init, id, signal) {
   const response = await fetch('/api/growth-hunter/snapshots' + (id ? '?id=' + encodeURIComponent(id) : ''), { cache: 'no-store', ...init, signal });
@@ -34,9 +35,8 @@ export default function GrowthHunter({ active }) {
     const file = event.target.files?.[0];
     setPreview(null); setCsv(''); setStatus(''); setError('');
     if (!file) return;
-    if (file.size > 1_000_000 || !file.name.toLowerCase().endsWith('.csv')) { setError('Choose a GSC Pages CSV smaller than 1 MB.'); return; }
     setBusy(true);
-    try { setCsv(await file.text()); } catch { setError('The file could not be read.'); } finally { setBusy(false); }
+    try { const loaded = await readGscFile(file); setCsv(loaded.csv); setStatus(loaded.message); } catch (e) { setError(e.message || 'The file could not be read.'); } finally { setBusy(false); }
   }
   async function submit(mode) {
     setBusy(true); setError(''); setStatus('');
@@ -59,8 +59,8 @@ export default function GrowthHunter({ active }) {
     {!result && !error && <p role="status">Loading saved evidence…</p>}
     {active && result && <DeclineResearch snapshots={result.snapshots} canRun={canImport} />}
     {canImport && <section className="growth-panel"><h3>Import a GSC Pages export</h3><p>Export the Pages table for the MedicareFAQ URL-prefix property, Web search, with no country, device or page filters. Enter its exact reporting dates. Only aggregate page metrics are accepted.</p>
-      <form onSubmit={e => { e.preventDefault(); submit('preview'); }}><fieldset disabled={busy}><legend>Snapshot details</legend><div className="growth-fields"><label>Start date (Pacific)<input type="date" value={start} onChange={e => changed(setStart, e.target.value)} required /></label><label>End date (Pacific)<input type="date" value={end} onChange={e => changed(setEnd, e.target.value)} required /></label><label>Pages CSV<input type="file" accept=".csv,text/csv" onChange={fileChanged} required /></label></div>
-      <p className="growth-muted">Columns: Top pages, Clicks, Impressions, CTR, Position. Up to 2,000 rows; under 1 MB. URLs with query parameters are rejected. No personal or visitor-level exports.</p><button className="button primary" disabled={!csv || !start || !end || busy}>Validate and preview</button></fieldset></form>
+      <form onSubmit={e => { e.preventDefault(); submit('preview'); }}><fieldset disabled={busy}><legend>Snapshot details</legend><div className="growth-fields"><label>Start date (Pacific)<input type="date" value={start} onChange={e => changed(setStart, e.target.value)} required /></label><label>End date (Pacific)<input type="date" value={end} onChange={e => changed(setEnd, e.target.value)} required /></label><label>Excel or CSV export<input type="file" accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,.csv,text/csv" onChange={fileChanged} required /></label></div>
+      <p className="growth-muted">Excel: upload the full GSC .xlsx workbook (under 5 MB); we read only the Pages sheet. CSV: under 1 MB. Up to 2,000 pages. Columns: Top pages, Clicks, Impressions, CTR, Position. URLs with query parameters are rejected. No personal or visitor-level exports.</p><button className="button primary" disabled={!csv || !start || !end || busy}>Validate and preview</button></fieldset></form>
       {preview && <div className="growth-preview"><h4>{preview.rowCount.toLocaleString()} valid pages · {preview.start} to {preview.end}</h4><p>First {preview.rows.length} rows shown. All rows passed validation. Export coverage is unverified and may be incomplete; absence does not mean zero traffic.</p><PageRows rows={preview.rows} /><button className="button primary" disabled={busy} onClick={() => submit('commit')}>{busy ? 'Saving…' : 'Save this snapshot'}</button></div>}
     </section>}
     {result && <section className="growth-panel"><h3>Saved evidence</h3><p>Newest 50 snapshots. Historical evidence remains unchanged when another export is imported. Different files for the same dates remain separate snapshots.</p>
