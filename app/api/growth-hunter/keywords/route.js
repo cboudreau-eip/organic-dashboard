@@ -1,0 +1,12 @@
+import 'server-only';
+import { serverAuth } from '../../../../lib/auth/server';
+import { siteUrl } from '../../../../lib/auth/config';
+import { growthEnabled } from '../../../../lib/growth-hunter/access';
+import { createQueryHandlers } from '../../../../lib/growth-hunter/query-handlers';
+import { searchGrowthQueries } from '../../../../lib/gsc/server';
+export const dynamic='force-dynamic';
+export const runtime='nodejs';
+export const maxDuration=120;
+const handlers=createQueryHandlers({getClient:serverAuth,enabled:growthEnabled,origin:siteUrl,loadEvidence:searchGrowthQueries});
+export const GET=handlers.GET;
+export const POST=handlers.POST;
