@@ -1,1 +1,58 @@
-.datorama-periods{margin-bottom:24px}.datorama-period-form{display:flex;flex-wrap:wrap;gap:14px;align-items:end;margin:20px 0}.datorama-period-form label,.datorama-month-history label{display:flex;flex-direction:column;gap:6px;font-size:13px;color:#354f42}.datorama-period-form input,.datorama-period-form select,.datorama-month-history select{padding:10px;border:1px solid #bbcdbf;border-radius:7px;background:white;color:#173c2e;max-width:100%;font:inherit}.datorama-periods table{width:100%;border-collapse:collapse;text-align:left}.datorama-periods th,.datorama-periods td{padding:12px;border-bottom:1px solid #dce6dc;vertical-align:top}.datorama-periods td small{display:block;max-width:200px}.datorama-periods caption{text-align:left;font-weight:700;padding:16px 0}.datorama-gap{color:#775010;background:#fff8e8;padding:7px;border-radius:5px}.datorama-month-history{margin-top:24px}.datorama-month-history select{width:280px}.datorama-periods .organic-table-scroll{overflow-x:auto}.datorama-periods .organic-table-scroll table{min-width:680px}
+.dashboard-page .datorama-periods {
+  padding: 26px; margin: 0 0 24px; min-width: 0;
+  background: #fff; border: 1px solid #dce5dd; border-radius: 16px;
+  color: #20392c; line-height: 1.5;
+}
+.dashboard-page .datorama-periods .organic-heading { align-items: flex-start; gap: 16px; }
+.dashboard-page .datorama-periods .organic-heading h2 { margin: 6px 0 0; font-size: 24px; letter-spacing: -.6px; }
+.dashboard-page .datorama-periods .organic-heading a { font-size: 12px; font-weight: 650; color: #176349; padding: 8px 0; text-underline-offset: 3px; }
+.dashboard-page .datorama-period-form { display: flex; flex-wrap: wrap; align-items: end; gap: 14px; padding: 18px; margin: 22px 0 16px; background: #f5f8f4; border: 1px solid #e0e8de; border-radius: 12px; }
+.dashboard-page .datorama-period-form label { flex: 1 1 180px; min-width: 0; }
+.dashboard-page .datorama-period-form label,.dashboard-page .datorama-month-history label { display: flex; flex-direction: column; gap: 7px; font-size: 12px; font-weight: 650; color: #435a4b; }
+.dashboard-page .datorama-period-form input,.dashboard-page .datorama-period-form select,.dashboard-page .datorama-month-history select { box-sizing: border-box; width: 100%; min-width: 0; height: 42px; padding: 9px 11px; border: 1px solid #becfc1; border-radius: 8px; background: #fff; color: #20392c; font: inherit; font-weight: 500; }
+.dashboard-page .datorama-period-form .button { height: 42px; padding: 0 18px; flex: 0 0 auto; }
+.dashboard-page .datorama-period-form .button:disabled { opacity: .55; cursor: wait; }
+.dashboard-page .datorama-periods .organic-period { margin: 0; font-size: 13px; line-height: 1.8; }
+.dashboard-page .datorama-meta { display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: baseline; color: #617368; font-size: 11px; margin: 9px 0 18px; }
+.dashboard-page .datorama-meta>span:first-child { background: #edf3ec; border-radius: 5px; padding: 3px 7px; font-weight: 650; }
+.dashboard-page .datorama-meta details { flex-basis: 100%; }
+.dashboard-page .datorama-meta summary { cursor: pointer; color: #176349; font-weight: 650; }
+.dashboard-page .datorama-meta p { max-width: 95ch; margin: 8px 0; line-height: 1.65; }
+.dashboard-page .datorama-periods p.datorama-gap { padding: 12px 14px; margin: 0 0 18px; border: 1px solid #ecdcb8; border-radius: 9px; background: #fffbf1; color: #785715; font-size: 12px; line-height: 1.6; }
+.dashboard-page .datorama-periods p.datorama-gap strong { display: block; margin-bottom: 2px; }
+.dashboard-page .datorama-metrics { display: grid; grid-template-columns: repeat(4,minmax(0,1fr)); gap: 14px; margin: 20px 0 28px; }
+.dashboard-page .datorama-metric { display: flex; flex-direction: column; min-width: 0; gap: 10px; padding: 18px; border: 1px solid #dce5dd; border-top: 3px solid #8cae96; border-radius: 10px; background: #fff; }
+.dashboard-page .datorama-metric-label { min-height: 36px; color: #566c5e; font-size: 12px; font-weight: 650; line-height: 1.5; }
+.dashboard-page .datorama-count { display: flex; flex-direction: column; gap: 7px; }
+.dashboard-page .datorama-metric .datorama-count>strong { display: block; font-size: 32px; line-height: 1.15; letter-spacing: -.9px; color: #173c2b; font-variant-numeric: tabular-nums; }
+.dashboard-page .datorama-metric>small { font-size: 11px; color: #68796e; margin-top: auto; }
+.dashboard-page .datorama-metric .organic-change { display: block; border-top: 1px solid #e7ede6; padding-top: 10px; color: #415b49; font-size: 12px; font-weight: 650; }
+.dashboard-page .datorama-count small.datorama-gap { display: block; color: #856020; font-size: 10px; font-weight: 400; line-height: 1.5; max-width: 190px; }
+.dashboard-page .datorama-table-title,.dashboard-page .datorama-month-history h3 { margin: 0 0 13px; font-size: 16px; letter-spacing: -.2px; }
+.dashboard-page .datorama-periods .organic-table-scroll { overflow-x: auto; width: 100%; border: 1px solid #e0e7de; border-radius: 10px; }
+.dashboard-page .datorama-periods table { width: 100%; min-width: 820px; border-collapse: separate; border-spacing: 0; font-size: 12px; font-variant-numeric: tabular-nums; }
+.dashboard-page .datorama-periods th,.dashboard-page .datorama-periods td { padding: 14px 16px; border-bottom: 1px solid #e7ece5; vertical-align: top; text-align: right; }
+.dashboard-page .datorama-periods thead th { background: #f3f6f0; color: #607365; font-size: 10px; text-transform: uppercase; letter-spacing: .5px; white-space: nowrap; }
+.dashboard-page .datorama-periods th:first-child { text-align: left; min-width: 170px; }
+.dashboard-page .datorama-periods tbody th { font-weight: 600; color: #334e3c; }
+.dashboard-page .datorama-periods td { min-width: 95px; }
+.dashboard-page .datorama-periods td .datorama-count { align-items: flex-end; }
+.dashboard-page .datorama-periods tbody tr:last-child>* { border-bottom: 0; }
+.dashboard-page .datorama-periods tbody tr:hover { background: #f9fbf7; }
+.dashboard-page .datorama-periods .organic-definitions { margin: 16px 0 0; padding: 14px 16px; background: #f7f9f5; border: 1px solid #e4ebe0; border-radius: 9px; }
+.dashboard-page .datorama-periods .organic-definitions summary { font-weight: 650; color: #435e4b; }
+.dashboard-page .datorama-periods .organic-definitions p { max-width: 100ch; }
+.dashboard-page .datorama-month-history { border-top: 1px solid #e1e8dd; padding-top: 25px; margin-top: 28px; }
+.dashboard-page .datorama-month-history label { width: 280px; max-width: 100%; margin-bottom: 16px; }
+.dashboard-page .datorama-month-history table { min-width: 560px; }
+@media(max-width:1150px) { .dashboard-page .datorama-metrics { grid-template-columns: repeat(2,minmax(0,1fr)); } }
+@media(max-width:600px) {
+ .dashboard-page .datorama-periods { padding: 16px; }
+ .dashboard-page .datorama-periods .organic-heading h2 { font-size: 21px; }
+ .dashboard-page .datorama-period-form { padding: 13px; gap: 12px; }
+ .dashboard-page .datorama-period-form label,.dashboard-page .datorama-period-form .button { flex-basis: 100%; }
+ .dashboard-page .datorama-metrics { gap: 10px; }
+ .dashboard-page .datorama-metric { padding: 13px; }
+ .dashboard-page .datorama-metric .datorama-count>strong { font-size: 28px; }
+}
+@media(max-width:380px) { .dashboard-page .datorama-metrics { grid-template-columns: 1fr; } }
