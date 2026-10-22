@@ -36,9 +36,32 @@ export default function TrackedKeywords(){
  const [history,setHistory]=useState([]),[offset,setOffset]=useState(0),[more,setMore]=useState(false),[role,setRole]=useState('');
  const [matrix,setMatrix]=useState(null),[report,setReport]=useState(null),[selected,setSelected]=useState(null),[prior,setPrior]=useState(null);
  const [scope,setScope]=useState({location:'',device:'',engine:'Google',confirmed:false});
- const [busy,setBusy]=useState(false),[error,setError]=useState(''),[notice,setNotice]=useState(''),[filter,setFilter]=useState(''),[sort,setSort]=useState('position'),[page,setPage]=useState(0);
+ const [busy,setBusy]=useState(true),[error,setError]=useState(''),[notice,setNotice]=useState(''),[filter,setFilter]=useState(''),[sort,setSort]=useState('position'),[page,setPage]=useState(0);
  async function historyPage(next=0){const d=await api('?offset='+next);setHistory(d.snapshots);setRole(d.role);setMore(d.hasMore);setOffset(next);}
- useEffect(()=>{let active=true;api().then(d=>{if(active){setHistory(d.snapshots);setRole(d.role);setMore(d.hasMore);}}).catch(e=>{if(active)setError(e.message)});return()=>{active=false};},[]);
+ useEffect(()=>{
+  let active=true;
+  async function restore(){
+   try{
+    const d=await api();if(!active)return;
+    setHistory(d.snapshots);setRole(d.role);setMore(d.hasMore);
+    const latest=d.snapshots[0];
+    if(latest){
+     const saved=await api('?id='+encodeURIComponent(latest.id));if(!active)return;
+     setSelected(saved.snapshot);
+     setScope({...saved.snapshot.payload.scope,confirmed:false});
+     setNotice('Your latest saved report has been restored.');
+    }
+   }catch(e){if(active)setError(e.message);}
+   finally{if(active)setBusy(false);}
+  }
+  restore();return()=>{active=false};
+ },[]);
+ useEffect(()=>{
+  if(!matrix)return;
+  const warn=event=>{event.preventDefault();event.returnValue='';};
+  window.addEventListener('beforeunload',warn);
+  return()=>window.removeEventListener('beforeunload',warn);
+ },[matrix]);
  const [pageSize,setPageSize]=useState(50);
  const canSave=['analyst','admin'].includes(role);
  const current=selected?.payload||report;
@@ -49,7 +72,7 @@ export default function TrackedKeywords(){
    if(upload.size>5_000_000)throw Error('Choose a file under 5 MB.');
    const rows=upload.name.toLowerCase().endsWith('.xlsx')?await xlsxKeywordRows(await upload.arrayBuffer()):upload.name.toLowerCase().endsWith('.csv')?csvRows(await upload.text()):null;
    if(!rows)throw Error('Choose an .xlsx or .csv export.');
-   const parsed=parseSemrush(rows);setMatrix(rows);setReport(parsed);setNotice('Preview ready. Check the report dates and campaign settings, then save.');
+   const parsed=parseSemrush(rows);setMatrix(rows);setReport(parsed);setNotice('Not saved yet. Check the campaign settings, then click Save report to keep these keywords after refresh.');
   }catch(e){setError(e.message);}finally{setBusy(false);}
  }
  async function save(){
@@ -57,7 +80,7 @@ export default function TrackedKeywords(){
   try{
    const input={report:{matrix},scope};validateSnapshot(input);
    const d=await api('',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(input)});
-   if(d.snapshot){setSelected(d.snapshot);setMatrix(null);setReport(null);setNotice('Snapshot saved for the team.');}
+   if(d.snapshot){setSelected(d.snapshot);setMatrix(null);setReport(null);setNotice('Saved to the dashboard. This report will reopen automatically after refresh.');}
    else setNotice(d.message);
    await historyPage();
   }catch(e){setError(e.message);}finally{setBusy(false);}
@@ -66,7 +89,7 @@ export default function TrackedKeywords(){
   setBusy(true);setError('');
   try{const d=await api('?id='+encodeURIComponent(id));
    if(baseline){compareSnapshots(current,d.snapshot.payload);setPrior(d.snapshot);}
-   else{setSelected(d.snapshot);setMatrix(null);setReport(null);setPrior(null);setPage(0);setNotice('Opened saved report.');}
+   else{setSelected(d.snapshot);setMatrix(null);setReport(null);setPrior(null);setSort('position');setPage(0);setScope({...d.snapshot.payload.scope,confirmed:false});setNotice('Opened saved report.');}
   }catch(e){setError(e.message);}finally{setBusy(false);}
  }
  const compared=useMemo(()=>current&&prior?compareSnapshots(current,prior.payload):null,[current,prior]);
@@ -81,6 +104,7 @@ export default function TrackedKeywords(){
  return <section className="card tracked-keywords" aria-labelledby="tracked-title">
   <div className="organic-heading"><div><span className="organic-badge">SEMRUSH · IMPORTED SNAPSHOTS</span><h2 id="tracked-title">Tracked keywords</h2><p>Your monitored keywords, ranking pages and saved comparisons.</p></div></div>
   <p>This is a manual import, not a live Semrush connection. Snapshot access uses your Growth Hunter team permissions.</p>
+  {busy&&!current&&<p role="status">Loading your saved keyword data…</p>}
   {error&&<p role="alert" className="organic-error">{error}</p>}{notice&&<p role="status">{notice}</p>}
   <details open={!selected} className="sem-import"><summary>Import a Position Tracking export</summary>
    <p>Use the unfiltered MedicareFAQ Rankings Overview export. Excel is supported. Keep its report metadata and headers unchanged.</p>
@@ -90,7 +114,7 @@ export default function TrackedKeywords(){
     <label>Device<select value={scope.device} onChange={e=>setScope({...scope,device:e.target.value,confirmed:false})}><option value="">Select device</option><option value="desktop">Desktop</option><option value="mobile">Mobile</option><option value="tablet">Tablet</option></select></label>
     <label>Search engine<select value={scope.engine} onChange={e=>setScope({...scope,engine:e.target.value,confirmed:false})}>{['Google','Bing','Baidu'].map(v=><option key={v}>{v}</option>)}</select></label>
     <label className="sem-confirm"><input type="checkbox" checked={scope.confirmed} onChange={e=>setScope({...scope,confirmed:e.target.checked})}/>I confirmed these campaign settings and cleared all keyword filters before exporting.</label>
-    <button className="button primary" onClick={save} disabled={!matrix||!scope.confirmed||!scope.location||!scope.device}>Save validated snapshot</button>
+    <button className="button primary" onClick={save} disabled={!matrix||!scope.confirmed||!scope.location||!scope.device}>{busy?'Saving / loading…':'Save report'}</button>
    </fieldset>
    {!canSave&&<p>An authorized analyst can save imports. If access is unavailable, use Reload history below.</p>}
   </details>
@@ -100,7 +124,8 @@ export default function TrackedKeywords(){
    <button className="button" disabled={busy||!more} onClick={()=>{setBusy(true);historyPage(offset+50).catch(e=>setError(e.message)).finally(()=>setBusy(false))}}>Older snapshots</button>
   </div>
   {current&&<>
-   <h3>{selected?'Saved report':'Import preview'} · {current.end}</h3>
+   <h3>{selected?'Saved report':'Unsaved import preview'} · {current.end}</h3>
+   <p role="status">{selected?'Saved in the dashboard. Available after refresh and on your next visit.':'This preview has not been saved. Use Save report above to keep it.'}</p>
    <p>Campaign {current.campaignId} · Report period {current.start} to {current.end} · {current.rows.length} keywords{current.scope&&' · '+current.scope.location+' · '+current.scope.device+' · '+current.scope.engine}</p>
    <div className="sem-stats"><div><span>Tracked keywords</span><strong>{current.rows.length}</strong></div><div><span>Reported positions 1–10</span><strong>{current.rows.filter(r=>r.position!=null&&r.position<=10).length}</strong></div><div><span>Rank unavailable / outside supported range</span><strong>{current.rows.filter(r=>r.position==null).length}</strong></div></div>
    {selected&&<label>Compare with an earlier snapshot on this history page<select disabled={busy} value={prior?.id||''} onChange={e=>{setPage(0);if(e.target.value)open(e.target.value,true);else {setPrior(null);setSort('position');}}}><option value="">No comparison</option>{candidates.map(s=><option key={s.id} value={s.id}>{s.summary.end} · imported {new Date(s.created_at).toLocaleString()} · {s.id.slice(0,8)}</option>)}</select></label>}
