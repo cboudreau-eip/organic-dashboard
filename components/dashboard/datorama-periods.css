@@ -25,8 +25,13 @@
 .dashboard-page .datorama-metric-label { min-height: 36px; color: #566c5e; font-size: 12px; font-weight: 650; line-height: 1.5; }
 .dashboard-page .datorama-count { display: flex; flex-direction: column; gap: 7px; }
 .dashboard-page .datorama-metric .datorama-count>strong { display: block; font-size: 32px; line-height: 1.15; letter-spacing: -.9px; color: #173c2b; font-variant-numeric: tabular-nums; }
-.dashboard-page .datorama-metric>small { font-size: 11px; color: #68796e; margin-top: auto; }
-.dashboard-page .datorama-metric .organic-change { display: block; border-top: 1px solid #e7ede6; padding-top: 10px; color: #415b49; font-size: 12px; font-weight: 650; }
+.dashboard-page .datorama-metric>small { font-size: 13px; color: #425a4c; margin-top: auto; line-height: 1.6; }
+.dashboard-page .datorama-metric>small b { font-size: 16px; font-weight: 800; color: #20392c; font-variant-numeric: tabular-nums; }
+.dashboard-page .datorama-metric .organic-change { display: flex; align-items: center; min-height: 52px; box-sizing: border-box; padding: 12px 14px; border: 1px solid #d5dfd7; border-radius: 8px; background: #edf2ee; color: #344a3d; font-size: 24px; line-height: 1.2; font-weight: 800; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+.dashboard-page .datorama-metric .organic-change[data-trend="up"] { background: #dcf3e4; border-color: #a9d9bb; color: #105731; }
+.dashboard-page .datorama-metric .organic-change[data-trend="down"] { background: #fce7e4; border-color: #eab8b0; color: #922b24; }
+.dashboard-page .datorama-metric .organic-change[data-trend="incomplete"] { background: #fff4d9; border-color: #e5cb8b; color: #714b0a; font-size: 14px; line-height: 1.4; }
+.dashboard-page .datorama-metric .organic-change[data-trend="neutral"] { font-size: 18px; }
 .dashboard-page .datorama-count small.datorama-gap { display: block; color: #856020; font-size: 10px; font-weight: 400; line-height: 1.5; max-width: 190px; }
 .dashboard-page .datorama-table-title,.dashboard-page .datorama-month-history h3 { margin: 0 0 13px; font-size: 16px; letter-spacing: -.2px; }
 .dashboard-page .datorama-periods .organic-table-scroll { overflow-x: auto; width: 100%; border: 1px solid #e0e7de; border-radius: 10px; }
