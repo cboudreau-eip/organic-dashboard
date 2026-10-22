@@ -65,3 +65,14 @@ test('Semrush API blocks anonymous, forged origin, malformed input and excessive
  assert.equal((await h.POST(new Request('https://example.test/api',{method:'POST',headers:{origin:'https://example.test'},body:'{}'}))).status,422);
  assert.equal((await h.POST(new Request('https://example.test/api',{method:'POST',headers:{origin:'https://example.test'},body:'x'.repeat(3000001)}))).status,413);
 });
+
+test('Ranks beyond 100 preserve source values without blocking the whole report',()=>{
+ for(const value of ['110','200','1000']){
+  const matrix=structuredClone(fixture);matrix[4][1]=value;
+  const result=validateSnapshot({report:{matrix},scope});
+  assert.equal(result.rows[0].rawPosition,value);
+  assert.equal(result.rows[0].position,null);
+ }
+ const matrix=structuredClone(fixture);matrix[4][1]='999999999999999999999';
+ assert.throws(()=>parseSemrush(matrix),/position/);
+});
