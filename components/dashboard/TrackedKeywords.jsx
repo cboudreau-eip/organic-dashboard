@@ -19,7 +19,7 @@ export default function TrackedKeywords(){
  const canSave=['analyst','admin'].includes(role);
  const current=selected?.payload||report;
  async function file(event){
-  const upload=event.target.files?.[0];setError('');setNotice('');setMatrix(null);setReport(null);setSelected(null);setPrior(null);setPage(0);setScope(s=>({...s,confirmed:false}));
+  const upload=event.target.files?.[0];setError('');setNotice('');setMatrix(null);setReport(null);setSelected(null);setPrior(null);setSort('position');setPage(0);setScope(s=>({...s,confirmed:false}));
   if(!upload)return;setBusy(true);
   try{
    if(upload.size>5_000_000)throw Error('Choose a file under 5 MB.');
@@ -51,7 +51,7 @@ export default function TrackedKeywords(){
   return [...list].sort((a,b)=>sort==='volume'?(b.volume??-1)-(a.volume??-1):sort==='change'?(b.change??-Infinity)-(a.change??-Infinity):(a.position??Infinity)-(b.position??Infinity));
  },[compared,current,filter,sort]);
  const candidates=selected?history.filter(s=>s.summary.end<current.end&&sameScope(current,{...s.summary,domain:'medicarefaq.com'})):[];
- const priorOnly=current&&prior?prior.payload.rows.filter(r=>!current.rows.some(c=>c.keyword.toLowerCase()===r.keyword.toLowerCase())).length:0;
+ const priorOnly=useMemo(()=>{if(!current||!prior)return 0;const keys=new Set(current.rows.map(r=>r.keyword.toLowerCase()));return prior.payload.rows.filter(r=>!keys.has(r.keyword.toLowerCase())).length;},[current,prior]);
  return <section className="card tracked-keywords" aria-labelledby="tracked-title">
   <div className="organic-heading"><div><span className="organic-badge">SEMRUSH · IMPORTED SNAPSHOTS</span><h2 id="tracked-title">Tracked keywords</h2><p>Your monitored keywords, ranking pages and saved comparisons.</p></div></div>
   <p>This is a manual import, not a live Semrush connection. Snapshot access uses your Growth Hunter team permissions.</p>
@@ -77,7 +77,7 @@ export default function TrackedKeywords(){
    <h3>{selected?'Saved report':'Import preview'} · {current.end}</h3>
    <p>Campaign {current.campaignId} · Report period {current.start} to {current.end} · {current.rows.length} keywords{current.scope&&' · '+current.scope.location+' · '+current.scope.device+' · '+current.scope.engine}</p>
    <div className="sem-stats"><div><span>Tracked keywords</span><strong>{current.rows.length}</strong></div><div><span>Reported positions 1–10</span><strong>{current.rows.filter(r=>r.position!=null&&r.position<=10).length}</strong></div><div><span>Rank unavailable / outside supported range</span><strong>{current.rows.filter(r=>r.position==null).length}</strong></div></div>
-   {selected&&<label>Compare with an earlier snapshot on this history page<select disabled={busy} value={prior?.id||''} onChange={e=>{setPage(0);if(e.target.value)open(e.target.value,true);else setPrior(null)}}><option value="">No comparison</option>{candidates.map(s=><option key={s.id} value={s.id}>{s.summary.end} · imported {new Date(s.created_at).toLocaleString()} · {s.id.slice(0,8)}</option>)}</select></label>}
+   {selected&&<label>Compare with an earlier snapshot on this history page<select disabled={busy} value={prior?.id||''} onChange={e=>{setPage(0);if(e.target.value)open(e.target.value,true);else {setPrior(null);setSort('position');}}}><option value="">No comparison</option>{candidates.map(s=><option key={s.id} value={s.id}>{s.summary.end} · imported {new Date(s.created_at).toLocaleString()} · {s.id.slice(0,8)}</option>)}</select></label>}
    {prior&&<p>Compared with {prior.payload.end}. Positive position change means improvement. {priorOnly} keywords appear only in the earlier export; they are not treated as lost rankings.</p>}
    <div className="sem-controls"><label>Search keywords, tags, intent or URL<input value={filter} onChange={e=>{setFilter(e.target.value);setPage(0)}}/></label><label>Sort<select value={sort} onChange={e=>{setSort(e.target.value);setPage(0)}}><option value="position">Best position</option><option value="volume">Highest search volume</option>{prior&&<option value="change">Largest improvement</option>}</select></label></div>
    <div className="organic-table-scroll" role="region" aria-label="Tracked keyword results" tabIndex={0}><table><thead><tr>{['Keyword','Position','Prior position','Observed change','Ranking URL','Tags / intent','Search volume','Difficulty','CPC (source)','Source difference'].map(h=><th key={h}>{h}</th>)}</tr></thead><tbody>{rows.slice(page*25,page*25+25).map(r=><tr key={r.keyword}><th scope="row">{r.keyword}</th><td>{r.position??'Unavailable'}{r.position==null&&<small>Source: {r.rawPosition||'blank'}</small>}</td><td>{prior?fmt(r.priorPosition):'No comparison'}</td><td>{prior?(r.change==null?r.comparison:(r.change>0?'+':'')+r.change):'No comparison'}</td><td>{r.landing?<a href={r.landing} target="_blank" rel="noreferrer">{r.landing}</a>:'Unavailable'}<small>{r.resultType}</small></td><td>{r.tags||'No tags'}<small>{r.intents||'No intent'}</small></td><td>{fmt(r.volume)}</td><td>{fmt(r.difficulty)}</td><td>{fmt(r.cpc)}</td><td>{r.sourceDifference||'Unavailable'}</td></tr>)}</tbody></table></div>
