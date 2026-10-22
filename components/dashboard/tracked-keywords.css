@@ -1,0 +1,15 @@
+
+.dashboard-page .tracked-keywords{margin-top:24px;padding:24px;color:#20392c;min-width:0}
+.tracked-keywords h2{margin:6px 0}.tracked-keywords p{font-size:13px;line-height:1.6}
+.tracked-keywords label{display:flex;flex-direction:column;gap:6px;font-size:13px;font-weight:600}
+.tracked-keywords input,.tracked-keywords select{padding:10px;border:1px solid #bacfc0;border-radius:7px;max-width:100%;min-width:0;background:white;color:#20392c}
+.tracked-keywords fieldset{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;border:1px solid #dce5dd;border-radius:10px;padding:16px}
+.tracked-keywords .sem-confirm{grid-column:1/-1;display:flex;flex-direction:row;align-items:flex-start}
+.tracked-keywords .sem-confirm input{flex:0 0 auto}
+.sem-import,.sem-history{margin:18px 0;padding:16px;background:#f6f9f5;border-radius:10px}
+.sem-import summary{cursor:pointer;font-weight:700}.sem-history ul{list-style:none;padding:0}.sem-history li{display:flex;gap:16px;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid #dce5dd;font-size:13px}
+.tracked-keywords small{display:block;font-size:11px;color:#5c7163;margin-top:4px}
+.sem-stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:18px 0}.sem-stats>div{padding:16px;background:#edf5ee;border:1px solid #c9ddcf;border-radius:10px}.sem-stats span{font-size:12px}.sem-stats strong{display:block;font-size:28px;margin-top:7px}
+.sem-controls{display:flex;flex-wrap:wrap;gap:16px;margin:18px 0}.sem-controls label{flex:1;min-width:180px}
+.tracked-keywords table{width:100%;min-width:1100px;border-collapse:collapse;font-size:12px}.tracked-keywords th,.tracked-keywords td{padding:12px;text-align:left;vertical-align:top;border-bottom:1px solid #dce5dd}.tracked-keywords thead{background:#edf5ee}.tracked-keywords td a{display:block;max-width:230px;overflow-wrap:anywhere;color:#176349}.tracked-keywords .organic-table-scroll{overflow:auto}.sem-pagination{display:flex;justify-content:space-between;align-items:center;gap:12px;margin:16px 0}
+@media(max-width:650px){.tracked-keywords fieldset,.sem-stats{grid-template-columns:1fr}.dashboard-page .tracked-keywords{padding:14px}.sem-history li{align-items:flex-start;flex-direction:column}}
