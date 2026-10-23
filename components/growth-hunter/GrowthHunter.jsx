@@ -1,4 +1,5 @@
 'use client';
+import CollapsibleSection from '../dashboard/CollapsibleSection';
 import { useEffect, useState } from 'react';
 import DeclineResearch from './DeclineResearch';
 import { readGscFile } from '../../lib/growth-hunter/files';
@@ -51,8 +52,8 @@ export default function GrowthHunter({ active }) {
     try { setSelected((await api(undefined, id)).snapshot); } catch (e) { setError(e.message); } finally { setBusy(false); }
   }
   const canImport = result && ['analyst', 'admin'].includes(result.role);
-  return <section className="growth-hunter" aria-label="Growth Hunter">
-    <div className="heading"><div><div className="eyebrow">GROWTH HUNTER</div><h2>Find organic growth opportunities</h2><p>Analyze connected Google Search Console data and review pages losing clicks.</p></div></div>
+  return <CollapsibleSection className="growth-hunter" aria-label="Growth Hunter" title="Growth Hunter" level={2} header={<div className="heading"><div><div className="eyebrow">GROWTH HUNTER</div><h2>Find organic growth opportunities</h2><p>Analyze connected Google Search Console data and review pages losing clicks.</p></div></div>}>
+    
     <div className="growth-note">Save evidence and compare pages for click declines. Findings are investigation candidates; approval and implementation tracking are not available yet.</div>
     {error && <p role="alert" className="growth-error">{error} <button className="button" onClick={() => setReload(value => value + 1)} disabled={busy}>Reload evidence</button></p>}
     {status && <p role="status">{status}</p>}
@@ -63,9 +64,9 @@ export default function GrowthHunter({ active }) {
       <p className="growth-muted">Excel: upload the full GSC .xlsx workbook (under 5 MB); we read only the Pages sheet. CSV: under 1 MB. Up to 2,000 pages. Columns: Top pages, Clicks, Impressions, CTR, Position. URLs with query parameters are rejected. No personal or visitor-level exports.</p><button className="button primary" disabled={!csv || !start || !end || busy}>Validate and preview</button></fieldset></form>
       {preview && <div className="growth-preview"><h4>{preview.rowCount.toLocaleString()} valid pages · {preview.start} to {preview.end}</h4><p>First {preview.rows.length} rows shown. All rows passed validation. Export coverage is unverified and may be incomplete; absence does not mean zero traffic.</p><PageRows rows={preview.rows} /><button className="button primary" disabled={busy} onClick={() => submit('commit')}>{busy ? 'Saving…' : 'Save this snapshot'}</button></div>}
     </details>}
-    {result && <section className="growth-panel"><h3>Saved evidence</h3><p>Newest 50 snapshots. Each analysis saves both reporting periods. Historical evidence stays unchanged; identical evidence is reused.</p>
+    {result && <CollapsibleSection className="growth-panel" title="Saved evidence" level={3} header={<h3>Saved evidence</h3>}><p>Newest 50 snapshots. Each analysis saves both reporting periods. Historical evidence stays unchanged; identical evidence is reused.</p>
       {!result.snapshots.length ? <p className="growth-note">No evidence saved yet.{canImport ? ' Run an analysis above to begin.' : ' An analyst can run the first analysis.'}</p> : <ul className="growth-snapshots">{result.snapshots.map(snapshot => <li key={snapshot.id}><div><strong>{snapshot.period_start} to {snapshot.period_end}</strong><span>{snapshot.row_count.toLocaleString()} pages · {snapshot.coverage.startsWith('gsc_api_') ? 'Connected GSC' : 'GSC export'} · Pacific dates</span><small>Saved {new Date(snapshot.created_at).toLocaleString()} · Coverage not exhaustive</small></div><button className="button" disabled={busy} onClick={() => inspect(snapshot.id)}>Inspect evidence</button></li>)}</ul>}
-    </section>}
-    {selected && <section className="growth-panel"><h3>Snapshot evidence</h3><p>{selected.payload.start} to {selected.payload.end} · {selected.payload.timezone} · GSC page-level aggregates</p><p className="growth-muted">Showing {Math.min(20, selected.row_count)} of {selected.row_count} saved pages. CTR is calculated from each page’s clicks and impressions. Average position is not a guaranteed rank. These rows cannot be summed into site totals.</p><PageRows rows={selected.payload.rows.slice(0, 20)} /><button className="button" onClick={() => setSelected(null)}>Close evidence</button></section>}
-  </section>;
+    </CollapsibleSection>}
+    {selected && <CollapsibleSection className="growth-panel" title="Snapshot evidence" level={3} header={<h3>Snapshot evidence</h3>}><p>{selected.payload.start} to {selected.payload.end} · {selected.payload.timezone} · GSC page-level aggregates</p><p className="growth-muted">Showing {Math.min(20, selected.row_count)} of {selected.row_count} saved pages. CTR is calculated from each page’s clicks and impressions. Average position is not a guaranteed rank. These rows cannot be summed into site totals.</p><PageRows rows={selected.payload.rows.slice(0, 20)} /><button className="button" onClick={() => setSelected(null)}>Close evidence</button></CollapsibleSection>}
+  </CollapsibleSection>;
 }
