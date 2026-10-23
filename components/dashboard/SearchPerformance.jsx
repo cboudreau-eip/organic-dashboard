@@ -36,7 +36,24 @@ export default function SearchPerformance() {
   return <CollapsibleSection className="organic-live gsc-performance" aria-labelledby="gsc-title" title="MedicareFAQ search performance" level={2} header={<div className="organic-heading"><div><span className="organic-badge">GOOGLE SEARCH CONSOLE · FINALIZED DATA</span><h2 id="gsc-title">MedicareFAQ search performance</h2><p>Google organic web search · www.medicarefaq.com · All countries and devices</p></div><label>Search reporting period<select value={days} onChange={e => { setResult(null); setDays(Number(e.target.value)); }}>{[7, 28, 30].map(n => <option key={n} value={n}>Last {n} finalized days</option>)}</select></label></div>}>
     <p className="organic-period" role="status">{result ? `${result.period.start} – ${result.period.end} vs ${result.period.priorStart} – ${result.period.priorEnd} · Pacific time` : error ? 'Live search data unavailable' : 'Loading Google search performance…'}</p>
     {error && <div className="organic-error" role="alert">{error} <button className="button" onClick={() => setAttempt(attempt + 1)}>Try again</button></div>}
-    <div className="organic-cards gsc-cards" aria-busy={!result && !error}>{metrics.map(([key, label]) => <article className="card" key={key}><span>{label}</span><strong>{result ? displayMetric(result.current[key], key) : '—'}</strong><span className="organic-change">{result ? changeLabel(result.current[key], result.previous[key], key) : error ? 'Unavailable' : 'Loading…'}</span><small>{result ? `vs. ${displayMetric(result.previous[key], key)} prior` : 'Previous equal-length period'}</small></article>)}</div>
+    <div className="organic-cards gsc-cards overview-kpis" aria-busy={!result && !error}>{metrics.map(([key, label]) => {
+      const current = result?.current[key], previous = result?.previous[key];
+      const comparable = current != null && previous != null;
+      const delta = comparable ? current - previous : null;
+      const improvement = key === 'position' ? -delta : delta;
+      const tone = !comparable || delta === 0 ? 'neutral' : improvement > 0 ? 'positive' : 'negative';
+      const change = result ? changeLabel(current, previous, key).replace(' positions (lower is better)', ' positions') : error ? 'Unavailable' : 'Loading…';
+      const note = key === 'position' ? 'Lower average position is better' : key === 'ctr' ? 'Change in percentage points (pp)' : comparable ? (delta > 0 ? '+' : '') + displayMetric(delta, key) + ' ' + label.toLowerCase() + ' vs. prior' : 'Previous equal-length period';
+      return <article className="card overview-kpi" data-tone={tone} key={key}>
+        <span className="overview-kpi-label">{label}</span>
+        <strong className="overview-kpi-value">{result ? displayMetric(current, key) : '—'}</strong>
+        <div className="overview-kpi-change">
+          <span className="overview-kpi-badge"><span aria-hidden="true">{!comparable || delta === 0 ? '–' : delta > 0 ? '↗' : '↘'}</span><span>{change}</span></span>
+          <span className="overview-kpi-delta">{note}</span>
+        </div>
+        <div className="overview-kpi-prior"><span>Previous period</span><strong>{result ? displayMetric(previous, key) : '—'}</strong></div>
+      </article>;
+    })}</div>
     {result && <><p className="gsc-data-through"><strong>GSC data through {result.period.end}</strong> · Latest available finalized date</p><Trend result={result} days={days}/><GscComparisonTable key={'queries-'+days} title="Search query gains and losses" dimension="Query" rows={result.comparisons.queries} coverage={result.coverage.queries} limit={result.coverage.limit} period={result.period}/><GscComparisonTable key={'pages-'+days} title="Page gains and losses" dimension="Page" rows={result.comparisons.pages} coverage={result.coverage.pages} limit={result.coverage.limit} period={result.period}/></>}
     <details className="organic-definitions"><summary>About this Google data</summary><p>Clicks and impressions come from Google web search results, not website sessions. CTR is clicks divided by impressions. Average position is Google’s impression-weighted position; lower is better. Totals are requested directly from Google, not calculated from the comparison tables.</p><p>The period ends on the latest date with finalized data reported in the last 14 days. Google uses Pacific time and has a reporting delay. PostHog uses its own session attribution and dates, so its totals will differ. Query privacy rules and top-row limits mean table rows do not add up to the cards; page metrics also use page-level aggregation.</p><p>Results are cached for up to 15 minutes. This view uses only its own reporting-period control. Conversion tracking is separate; Ask Charlie has its own reporting-period selector.</p></details>
     {result && <p className="organic-freshness">Retrieved {new Date(result.fetchedAt).toLocaleString()} · <a href="https://search.google.com/search-console/performance/search-analytics?resource_id=https%3A%2F%2Fwww.medicarefaq.com%2F" target="_blank" rel="noreferrer">Open Search Console</a></p>}
