@@ -1,4 +1,5 @@
 'use client';
+import CollapsibleSection from './CollapsibleSection';
 import { useEffect, useState } from 'react';
 import { METRICS, metricValue, metricChange } from '../../lib/posthog/overview';
 import OrganicDetails from './OrganicDetails';
@@ -21,10 +22,10 @@ export default function OrganicOverview({ days, setDays }) {
     })();
     return () => controller.abort();
   }, [days, attempt]);
-  return <section className="organic-live" aria-labelledby="organic-title">
-    <div className="organic-heading"><div><span className="organic-badge">POSTHOG · ORGANIC SEARCH</span><h2 id="organic-title">MedicareFAQ performance</h2><p>medicarefaq.com · All pages · All devices</p></div>
+  return <CollapsibleSection className="organic-live" aria-labelledby="organic-title" title="MedicareFAQ performance" level={2} header={<div className="organic-heading"><div><span className="organic-badge">POSTHOG · ORGANIC SEARCH</span><h2 id="organic-title">MedicareFAQ performance</h2><p>medicarefaq.com · All pages · All devices</p></div>
       <label>Live reporting period<select value={days} onChange={e => { setResult(null); setDays(Number(e.target.value)); }}><option value={7}>Last 7 complete days</option><option value={28}>Last 28 complete days</option><option value={30}>Last 30 complete days</option></select></label>
-    </div>
+    </div>}>
+    
     <p className="organic-period" role="status">{result ? `${result.period.start} – ${result.period.end} vs ${result.period.priorStart} – ${result.period.priorEnd} · ${result.timezone}` : error ? 'Live data unavailable' : 'Loading organic search performance…'}</p>
     {error && <div className="organic-error" role="alert">{error} <button type="button" className="button" onClick={() => setAttempt(attempt + 1)}>Try again</button></div>}
     <div className="organic-cards" aria-busy={!result && !error}>{METRICS.map(([key, label]) => {
@@ -36,5 +37,5 @@ export default function OrganicOverview({ days, setDays }) {
     <OrganicDetails key={days} days={days} refresh={attempt} />
     <details className="organic-definitions"><summary>About these metrics</summary><p>Only sessions classified by PostHog as Organic Search are included, with page views on www.medicarefaq.com or medicarefaq.com. Traffic uses only the GTM/CDN PostHog stream; the duplicate website-installed stream is excluded. Visitors are distinct people and sessions are distinct PostHog sessions represented by the selected stream. Measured engagement is rebuilt from GTM/CDN events on MedicareFAQ, rather than mixed-stream session totals. Duration runs from the first pageview to last observed activity and requires a recorded exit at or after the final pageview. Single-page session rate is the share of all tracked organic sessions with exactly one recorded pageview, regardless of time spent, clicks or whether an exit was recorded. It is not bounce rate. Reloads count as additional pageviews. Duration coverage is shown separately and describes only visits with a recorded final exit. Adjacent-day events are included so midnight does not cut sessions short. Coverage may differ between comparison periods. Organic classification comes from PostHog; all dates use America/New_York. The comparison uses the immediately preceding period of equal length. Single-page session rate changes are percentage points (pp).</p><p>Results may be cached for five minutes plus PostHog’s source cache. Zero means no matching activity; a dash means unavailable. These cards use the reporting period above. Ask Charlie uses live data and its own reporting-period selector. Historical lead and policy imports appear separately in Leads & funnel.</p></details>
     {result && <p className="organic-freshness">Retrieved {new Date(result.fetchedAt).toLocaleString()} {result.sourceUpdatedAt && `· Source calculated ${new Date(result.sourceUpdatedAt).toLocaleString()}`} · <a href="https://us.posthog.com/project/452683/web" target="_blank" rel="noreferrer">Open PostHog</a></p>}
-  </section>;
+  </CollapsibleSection>;
 }
