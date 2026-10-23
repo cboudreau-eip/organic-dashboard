@@ -1,5 +1,6 @@
 
 'use client';
+import CollapsibleSection from './CollapsibleSection';
 import {useEffect,useMemo,useState} from 'react';
 import {xlsxKeywordRows} from '../../lib/growth-hunter/files';
 import {csvRows,parseSemrush,validateSnapshot,sameScope,compareSnapshots} from '../../lib/semrush/import';
@@ -114,8 +115,8 @@ export default function TrackedKeywords(){
  const paginationProps={page:activePage,pageSize,total,noun:view==='pages'?'URL groups':'keywords',onPage:setPage,onSize:size=>{setPageSize(size);setPage(0);}};
  const candidates=selected?history.filter(s=>s.summary.end<current.end&&sameScope(current,{...s.summary,domain:'medicarefaq.com'})):[];
  const priorOnly=useMemo(()=>{if(!current||!prior)return 0;const keys=new Set(current.rows.map(r=>r.keyword.toLowerCase()));return prior.payload.rows.filter(r=>!keys.has(r.keyword.toLowerCase())).length;},[current,prior]);
- return <section className="card tracked-keywords" aria-labelledby="tracked-title">
-  <div className="organic-heading"><div><span className="organic-badge">SEMRUSH · IMPORTED SNAPSHOTS</span><h2 id="tracked-title">Tracked keywords</h2><p>Your monitored keywords, ranking pages and saved comparisons.</p></div></div>
+ return <CollapsibleSection className="card tracked-keywords" aria-labelledby="tracked-title" title="Tracked keywords" level={2} header={<div className="organic-heading"><div><span className="organic-badge">SEMRUSH · IMPORTED SNAPSHOTS</span><h2 id="tracked-title">Tracked keywords</h2><p>Your monitored keywords, ranking pages and saved comparisons.</p></div></div>}>
+  
   <p>This is a manual import, not a live Semrush connection. Snapshot access uses your Growth Hunter team permissions.</p>
   {busy&&!current&&<p role="status">Loading your saved keyword data…</p>}
   {error&&<p role="alert" className="organic-error">{error}</p>}{notice&&<p role="status">{notice}</p>}
@@ -131,11 +132,11 @@ export default function TrackedKeywords(){
    </fieldset>
    {!canSave&&<p>An authorized analyst can save imports. If access is unavailable, use Reload history below.</p>}
   </details>
-  <div className="sem-history"><h3>Saved snapshots</h3><button className="button" disabled={busy} onClick={()=>{setBusy(true);historyPage(offset).catch(e=>setError(e.message)).finally(()=>setBusy(false))}}>Reload history</button>
+  <CollapsibleSection className="sem-history" title="Saved keyword snapshots" level={3} header={<h3>Saved snapshots</h3>}><button className="button" disabled={busy} onClick={()=>{setBusy(true);historyPage(offset).catch(e=>setError(e.message)).finally(()=>setBusy(false))}}>Reload history</button>
    {!history.length?<p>No snapshots on this history page.</p>:<ul>{history.map(s=><li key={s.id}><span><strong>{s.summary.end}</strong> · {s.summary.count} keywords · Campaign {s.summary.campaignId} · {s.summary.scope.location} · {s.summary.scope.device} · {s.summary.scope.engine}<small>Imported {new Date(s.created_at).toLocaleString()}</small></span><button className="button" disabled={busy} onClick={()=>open(s.id)}>Open</button></li>)}</ul>}
    <button className="button" disabled={busy||offset===0} onClick={()=>{setBusy(true);historyPage(Math.max(0,offset-50)).catch(e=>setError(e.message)).finally(()=>setBusy(false))}}>Newer snapshots</button>{' '}
    <button className="button" disabled={busy||!more} onClick={()=>{setBusy(true);historyPage(offset+50).catch(e=>setError(e.message)).finally(()=>setBusy(false))}}>Older snapshots</button>
-  </div>
+  </CollapsibleSection>
   {current&&<>
    <h3>{selected?'Saved report':'Unsaved import preview'} · {current.end}</h3>
    <p role="status">{selected?'Saved in the dashboard. Available after refresh and on your next visit.':'This preview has not been saved. Use Save report above to keep it.'}</p>
@@ -168,5 +169,5 @@ export default function TrackedKeywords(){
    <KeywordPagination {...paginationProps} placement="below table" />
    <details><summary>Definitions and import limits</summary><p>Positions are observations on the report date, not weekly averages. Only positions 1–100 are shown as numeric ranks; other supported source markers are preserved without inventing a position. Source difference is retained exactly as exported; its direction is not used to reconstruct earlier ranks. Share-of-voice values are preserved in the saved data but not interpreted until their units are verified. Search volume, CPC and difficulty are Semrush metrics, not measured website traffic, costs or leads. CPC currency is not supplied by this export. Comparisons require the same campaign, location, device and search engine. Missing keywords do not establish a ranking loss. Up to 5,000 rows; weekly automation and Growth Hunter task creation are not included in this first release.</p></details>
   </>}
- </section>;
+ </CollapsibleSection>;
 }
