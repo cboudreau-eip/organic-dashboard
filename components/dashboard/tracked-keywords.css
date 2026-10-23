@@ -26,3 +26,13 @@
 .tracked-keywords .sem-page-jump input{width:76px}
 .tracked-keywords .sem-pagination :is(button,input,select):focus-visible{outline:3px solid #348c69;outline-offset:2px}
 @media(max-width:650px){.tracked-keywords .sem-pagination{padding:12px}.sem-page-actions{align-items:flex-start;flex-direction:column}.sem-page-numbers{gap:4px}.tracked-keywords .sem-pagination .button{padding:8px}.sem-page-summary{align-items:flex-start;flex-direction:column}}
+
+.sem-view-switch{display:flex;gap:8px;margin:24px 0 16px}
+.tracked-keywords .sem-view-switch button[aria-pressed="true"]{background:#176349;color:white;border-color:#176349}
+.sem-opportunity-filters{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;padding:18px;background:#f6f9f5;border:1px solid #dce5dd;border-radius:10px}
+.sem-opportunity-filters>.button{align-self:end;min-height:40px}
+.sem-page-focus{padding:12px;background:#edf5ee;border-left:3px solid #176349;overflow-wrap:anywhere}
+.tracked-keywords th a{display:block;max-width:260px;overflow-wrap:anywhere;color:#176349}
+.tracked-keywords .sem-opportunity-filters :is(input,select,button):focus-visible,.tracked-keywords .sem-view-switch button:focus-visible{outline:3px solid #348c69;outline-offset:2px}
+@media(max-width:1000px){.sem-opportunity-filters{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:650px){.sem-opportunity-filters{grid-template-columns:1fr}.sem-view-switch{flex-wrap:wrap}}
