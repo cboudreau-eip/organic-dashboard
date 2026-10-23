@@ -347,3 +347,11 @@ body:has(.charlie-launch) { overflow:hidden; }
 .dashboard-page .gsc-page-gap{padding:0 6px}
 .dashboard-page .gsc-pagination button:disabled{opacity:.45;cursor:default}
 @media(max-width:600px){.dashboard-page .gsc-table-controls>label:first-child,.dashboard-page .gsc-table-controls input{width:100%}.dashboard-page .gsc-pagination .button{min-height:40px}}
+
+.dashboard-page .gsc-date-controls{padding:16px;border:1px solid #c9d9ce;border-radius:10px;background:#f5f9f6;margin:16px 0}
+.dashboard-page .gsc-date-fields{display:flex;flex-wrap:wrap;align-items:end;gap:12px}
+.dashboard-page .gsc-date-fields label{display:flex;flex-direction:column;gap:6px;font-size:12px;font-weight:650}
+.dashboard-page .gsc-date-fields input,.dashboard-page .gsc-date-fields select{min-height:40px;padding:8px;border:1px solid #b9ccbf;background:white;border-radius:7px;max-width:100%;color:#203e2d}
+.dashboard-page .gsc-date-controls>p{font-size:12px;line-height:1.5;margin:12px 0 0;color:#4c6253}
+.dashboard-page .gsc-date-warning{padding:12px 15px;background:#fff4df;border:1px solid #e0c58c;border-radius:8px;color:#725016}
+@media(max-width:600px){.dashboard-page .gsc-date-fields label{flex:1 1 160px;min-width:0}}
