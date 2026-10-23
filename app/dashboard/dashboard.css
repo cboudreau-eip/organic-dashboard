@@ -282,3 +282,21 @@ body:has(.charlie-launch) { overflow:hidden; }
 .chat-history-open strong{display:block;overflow-wrap:anywhere;}
 .chat-history-open small{display:block;margin-top:4px;font-size:calc(9px + 4pt);line-height:1.4;}
 .chat-panel [hidden]{display:none!important;}
+
+/* Shared section controls: deliberately prominent and independent of card styles. */
+.dashboard-section-header{display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:14px;margin-bottom:14px}
+.dashboard-section-header>.organic-heading,.dashboard-section-header>.heading{flex:1;min-width:0;margin:0}
+.dashboard-section-header>h2,.dashboard-section-header>h3,.dashboard-section-title{margin:0!important}
+.dashboard-section-toggle{display:inline-flex!important;align-items:center;justify-content:center;gap:10px;flex:0 0 auto;min-height:40px;padding:9px 15px!important;border:1px solid #176349!important;border-radius:8px;background:#176349!important;color:#fff!important;font:600 13px/1.4 system-ui,sans-serif!important;cursor:pointer;white-space:nowrap;box-shadow:0 1px 3px #173e2d20}
+.dashboard-section-toggle:hover{background:#104b37!important}
+.dashboard-section-toggle:focus-visible{outline:3px solid #56a6cc;outline-offset:3px}
+.dashboard-section-content{min-width:0}
+.dashboard-section-content[hidden]{display:none!important}
+.dashboard-collapsible:has(>.dashboard-section-content[hidden])>.dashboard-section-header{margin-bottom:0}
+@media(max-width:650px){.dashboard-section-header{gap:10px}.dashboard-section-toggle{min-height:44px}}
+
+.dashboard-source-section>summary{display:flex;align-items:center;gap:12px;cursor:pointer;list-style:none;flex-wrap:wrap}
+.dashboard-source-section>summary::-webkit-details-marker{display:none}
+.dashboard-source-toggle{margin-left:auto;background:#176349;color:white;border-radius:8px;padding:10px 14px;font-size:13px;font-weight:600}
+.dashboard-source-section[open]>summary .when-closed,.dashboard-source-section:not([open])>summary .when-open{display:none}
+.dashboard-source-section>summary:focus-visible{outline:3px solid #56a6cc;outline-offset:3px}

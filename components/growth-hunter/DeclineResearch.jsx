@@ -1,4 +1,5 @@
 'use client';
+import CollapsibleSection from '../dashboard/CollapsibleSection';
 import { useEffect, useState } from 'react';
 import KeywordResearch from './KeywordResearch';
 async function request(init,signal) {
@@ -45,7 +46,7 @@ export default function DeclineResearch({snapshots,canRun,onEvidenceSaved}) {
   }catch(e){setError(e.message)}finally{setBusy(false)}
  }
  const option=snapshot=><option key={snapshot.id} value={snapshot.id}>{snapshot.period_start} to {snapshot.period_end} · {snapshot.row_count} pages · saved {new Date(snapshot.created_at).toLocaleString()} · {snapshot.id.slice(0,8)}</option>;
- return <section className="growth-panel" aria-label="Decline research"><h3>Find pages losing clicks</h3><p>Analyze the latest finalized GSC data against the preceding equal period. Only pages present in both periods are compared. Medicare enrollment seasonality can affect the results.</p>
+ return <CollapsibleSection className="growth-panel" aria-label="Decline research" title="Find pages losing clicks" level={3} header={<h3>Find pages losing clicks</h3>}><p>Analyze the latest finalized GSC data against the preceding equal period. Only pages present in both periods are compared. Medicare enrollment seasonality can affect the results.</p>
   {error&&<p role="alert" className="growth-error">{error} <button className="button" onClick={()=>setRefresh(value=>value+1)} disabled={busy}>Retry saved research</button></p>}
   {notice&&<p role="status">{notice}</p>}
   {canRun&&<form onSubmit={analyze}><fieldset disabled={busy}><legend>Use connected Google Search Console</legend><label>Reporting period<select value={days} onChange={e=>setDays(Number(e.target.value))}><option value={7}>Last 7 finalized days</option><option value={28}>Last 28 finalized days</option></select></label><p>MedicareFAQ · Web search · Pacific dates. URLs with query parameters or fragments are excluded. Google may omit some pages; missing pages are never counted as zero.</p><button className="button primary" disabled={busy}>{busy?'Fetching GSC and comparing…':'Run analysis'}</button></fieldset></form>}
@@ -54,5 +55,5 @@ export default function DeclineResearch({snapshots,canRun,onEvidenceSaved}) {
   {runs?.length===0&&<p>No saved research yet. Opening this panel does not start a run.</p>}
   {!!runs?.length&&<label className="growth-run-select">Saved research (newest 20)<select value={selected?.id||''} onChange={e=>setSelected(runs.find(item=>item.id===e.target.value)||null)}><option value="">Choose a saved run</option>{runs.map(item=><option key={item.id} value={item.id}>{item.result.currentPeriod.start} to {item.result.currentPeriod.end} · {item.result.candidateCount} candidates · {item.id.slice(0,8)}</option>)}</select></label>}
   {selected&&<Findings run={selected} canRun={canRun}/>}
- </section>;
+ </CollapsibleSection>;
 }
