@@ -3,6 +3,7 @@
 import {useEffect,useMemo,useState} from 'react';
 import {xlsxKeywordRows} from '../../lib/growth-hunter/files';
 import {csvRows,parseSemrush,validateSnapshot,sameScope,compareSnapshots} from '../../lib/semrush/import';
+import {BANDS,tokens,filterKeywords,groupPages} from '../../lib/semrush/opportunities';
 import './tracked-keywords.css';
 const fmt=n=>n==null?'Unavailable':n.toLocaleString();
 async function api(query='',init){
@@ -10,12 +11,12 @@ async function api(query='',init){
  const data=await r.json();if(!r.ok)throw Error(data.error||'Keyword data is unavailable.');return data;
 }
 
-function KeywordPagination({page,pageSize,total,onPage,onSize,placement}){
+function KeywordPagination({page,pageSize,total,onPage,onSize,placement,noun='keywords'}){
  const [jump,setJump]=useState('');
  const pages=Math.max(1,Math.ceil(total/pageSize));
  const numbers=[...new Set([0,pages-1,...Array.from({length:5},(_,i)=>page+i-2).filter(n=>n>=0&&n<pages)])].sort((a,b)=>a-b);
- return <nav className="sem-pagination" aria-label={'Keyword pages '+placement}>
-  <div className="sem-page-summary"><span aria-live="polite">{total? page*pageSize+1:0}–{Math.min((page+1)*pageSize,total)} of {total} keywords · Page {page+1} of {pages}</span>
+ return <nav className="sem-pagination" aria-label={noun+' pagination '+placement}>
+  <div className="sem-page-summary"><span aria-live="polite">{total? page*pageSize+1:0}–{Math.min((page+1)*pageSize,total)} of {total} {noun} · Page {page+1} of {pages}</span>
    <label>Rows per page<select value={pageSize} onChange={e=>{onSize(Number(e.target.value));setJump('');}}>{[25,50,100,250].map(n=><option key={n} value={n}>{n}</option>)}</select></label>
   </div>
   <div className="sem-page-actions">
@@ -63,10 +64,14 @@ export default function TrackedKeywords(){
   return()=>window.removeEventListener('beforeunload',warn);
  },[matrix]);
  const [pageSize,setPageSize]=useState(50);
+ const [view,setView]=useState('keywords'),[band,setBand]=useState('all'),[intent,setIntent]=useState(''),[tag,setTag]=useState(''),[minVolume,setMinVolume]=useState(''),[maxVolume,setMaxVolume]=useState(''),[landing,setLanding]=useState(null),[pageSort,setPageSort]=useState('opportunities');
+ function resetFilters(){setFilter('');setBand('all');setIntent('');setTag('');setMinVolume('');setMaxVolume('');setLanding(null);setPage(0);}
+ function changeFilter(setter,value){setter(value);setPage(0);}
+
  const canSave=['analyst','admin'].includes(role);
  const current=selected?.payload||report;
  async function file(event){
-  const upload=event.target.files?.[0];setError('');setNotice('');setMatrix(null);setReport(null);setSelected(null);setPrior(null);setSort('position');setPage(0);setScope(s=>({...s,confirmed:false}));
+  const upload=event.target.files?.[0];setLanding(null);setError('');setNotice('');setMatrix(null);setReport(null);setSelected(null);setPrior(null);setSort('position');setPage(0);setScope(s=>({...s,confirmed:false}));
   if(!upload)return;setBusy(true);
   try{
    if(upload.size>5_000_000)throw Error('Choose a file under 5 MB.');
@@ -89,16 +94,24 @@ export default function TrackedKeywords(){
   setBusy(true);setError('');
   try{const d=await api('?id='+encodeURIComponent(id));
    if(baseline){compareSnapshots(current,d.snapshot.payload);setPrior(d.snapshot);}
-   else{setSelected(d.snapshot);setMatrix(null);setReport(null);setPrior(null);setSort('position');setPage(0);setScope({...d.snapshot.payload.scope,confirmed:false});setNotice('Opened saved report.');}
+   else{setLanding(null);setSelected(d.snapshot);setMatrix(null);setReport(null);setPrior(null);setSort('position');setPage(0);setScope({...d.snapshot.payload.scope,confirmed:false});setNotice('Opened saved report.');}
   }catch(e){setError(e.message);}finally{setBusy(false);}
  }
  const compared=useMemo(()=>current&&prior?compareSnapshots(current,prior.payload):null,[current,prior]);
  const rows=useMemo(()=>{
-  const list=(compared||current?.rows||[]).filter(r=>(r.keyword+' '+r.tags+' '+r.intents+' '+r.landing).toLowerCase().includes(filter.toLowerCase()));
+  const list=filterKeywords(compared||current?.rows||[],{search:filter,band,intent,tag,minVolume,maxVolume,landing});
   return [...list].sort((a,b)=>sort==='volume'?(b.volume??-1)-(a.volume??-1):sort==='change'?(b.change??-Infinity)-(a.change??-Infinity):(a.position??Infinity)-(b.position??Infinity));
- },[compared,current,filter,sort]);
- const activePage=Math.min(page,Math.max(0,Math.ceil(rows.length/pageSize)-1));
- const paginationProps={page:activePage,pageSize,total:rows.length,onPage:setPage,onSize:size=>{setPageSize(size);setPage(0);}};
+ },[compared,current,filter,sort,band,intent,tag,minVolume,maxVolume,landing]);
+ const tagOptions=useMemo(()=>[...new Set((current?.rows||[]).flatMap(r=>tokens(r.tags)))].sort((a,b)=>a.localeCompare(b)),[current]);
+ const pages=useMemo(()=>{
+  const groups=groupPages(rows);
+  if(pageSort==='volume')groups.sort((a,b)=>(b.volume??-1)-(a.volume??-1)||b.count-a.count);
+  if(pageSort==='count')groups.sort((a,b)=>b.count-a.count||a.url.localeCompare(b.url));
+  return groups;
+ },[rows,pageSort]);
+ const total=view==='pages'?pages.length:rows.length;
+ const activePage=Math.min(page,Math.max(0,Math.ceil(total/pageSize)-1));
+ const paginationProps={page:activePage,pageSize,total,noun:view==='pages'?'URL groups':'keywords',onPage:setPage,onSize:size=>{setPageSize(size);setPage(0);}};
  const candidates=selected?history.filter(s=>s.summary.end<current.end&&sameScope(current,{...s.summary,domain:'medicarefaq.com'})):[];
  const priorOnly=useMemo(()=>{if(!current||!prior)return 0;const keys=new Set(current.rows.map(r=>r.keyword.toLowerCase()));return prior.payload.rows.filter(r=>!keys.has(r.keyword.toLowerCase())).length;},[current,prior]);
  return <section className="card tracked-keywords" aria-labelledby="tracked-title">
@@ -130,9 +143,27 @@ export default function TrackedKeywords(){
    <div className="sem-stats"><div><span>Tracked keywords</span><strong>{current.rows.length}</strong></div><div><span>Reported positions 1–10</span><strong>{current.rows.filter(r=>r.position!=null&&r.position<=10).length}</strong></div><div><span>Rank unavailable / outside supported range</span><strong>{current.rows.filter(r=>r.position==null).length}</strong></div></div>
    {selected&&<label>Compare with an earlier snapshot on this history page<select disabled={busy} value={prior?.id||''} onChange={e=>{setPage(0);if(e.target.value)open(e.target.value,true);else {setPrior(null);setSort('position');}}}><option value="">No comparison</option>{candidates.map(s=><option key={s.id} value={s.id}>{s.summary.end} · imported {new Date(s.created_at).toLocaleString()} · {s.id.slice(0,8)}</option>)}</select></label>}
    {prior&&<p>Compared with {prior.payload.end}. Positive position change means improvement. {priorOnly} keywords appear only in the earlier export; they are not treated as lost rankings.</p>}
-   <div className="sem-controls"><label>Search keywords, tags, intent or URL<input value={filter} onChange={e=>{setFilter(e.target.value);setPage(0)}}/></label><label>Sort<select value={sort} onChange={e=>{setSort(e.target.value);setPage(0)}}><option value="position">Best position</option><option value="volume">Highest search volume</option>{prior&&<option value="change">Largest improvement</option>}</select></label></div>
+
+   <div className="sem-view-switch" role="group" aria-label="Results view">
+    <button type="button" className="button" aria-pressed={view==='keywords'} onClick={()=>{setView('keywords');setPage(0);}}>Keywords</button>
+    <button type="button" className="button" aria-pressed={view==='pages'} onClick={()=>{setView('pages');setPage(0);}}>Page opportunities</button>
+   </div>
+   <div className="sem-opportunity-filters">
+    <label>Search keywords or URLs<input value={filter} onChange={e=>changeFilter(setFilter,e.target.value)}/></label>
+    <label>Position range<select value={band} onChange={e=>changeFilter(setBand,e.target.value)}>{BANDS.map(([value,label])=><option key={value} value={value}>{label}</option>)}</select></label>
+    <label>Search intent<select value={intent} onChange={e=>changeFilter(setIntent,e.target.value)}><option value="">All intents</option>{['informational','navigational','commercial','transactional'].map(v=><option key={v} value={v}>{v[0].toUpperCase()+v.slice(1)}</option>)}</select></label>
+    <label>Tag<select value={tag} onChange={e=>changeFilter(setTag,e.target.value)}><option value="">All tags</option>{tagOptions.map(v=><option key={v} value={v}>{v}</option>)}</select></label>
+    <label>Minimum search volume<input type="number" min="0" step="1" placeholder="Any" value={minVolume} onChange={e=>changeFilter(setMinVolume,e.target.value)}/></label>
+    <label>Maximum search volume<input type="number" min="0" step="1" placeholder="Any" value={maxVolume} onChange={e=>changeFilter(setMaxVolume,e.target.value)}/></label>
+    {view==='keywords'?<label>Sort keywords<select value={sort} onChange={e=>changeFilter(setSort,e.target.value)}><option value="position">Best position</option><option value="volume">Highest search volume</option>{prior&&<option value="change">Largest improvement</option>}</select></label>:<label>Sort pages<select value={pageSort} onChange={e=>changeFilter(setPageSort,e.target.value)}><option value="opportunities">Most keywords in positions 4–20</option><option value="count">Most matching keywords</option><option value="volume">Highest summed keyword volume</option></select></label>}
+    <button type="button" className="button" onClick={resetFilters}>Clear filters</button>
+   </div>
+   {minVolume!==''&&maxVolume!==''&&Number(minVolume)>Number(maxVolume)&&<p role="alert">Minimum volume must not exceed maximum volume.</p>}
+   {landing!==null&&<p className="sem-page-focus">Showing keywords for <strong>{landing||'No reported URL'}</strong> <button type="button" className="button" onClick={()=>{setLanding(null);setPage(0);}}>Clear URL filter</button></p>}
+   <p role="status">{rows.length} of {current.rows.length} keywords match · {pages.length} URL groups. All filters apply together.</p>
+   {view==='pages'&&<p>Groups use the exact ranking URL reported by Semrush. Counts reflect matching keywords only. Start with positions 4–20, then inspect the page. Summed keyword volume can overlap across searches and is not measured traffic or lead potential.</p>}
    <KeywordPagination {...paginationProps} placement="above table" />
-   <div className="organic-table-scroll" role="region" aria-label="Tracked keyword results" tabIndex={0}><table><thead><tr>{['Keyword','Position','Prior position','Observed change','Ranking URL','Tags / intent','Search volume','Difficulty','CPC (source)','Source difference'].map(h=><th key={h}>{h}</th>)}</tr></thead><tbody>{rows.slice(activePage*pageSize,(activePage+1)*pageSize).map(r=><tr key={r.keyword}><th scope="row">{r.keyword}</th><td>{r.position??'Unavailable'}{r.position==null&&<small>Source: {r.rawPosition||'blank'}</small>}</td><td>{prior?fmt(r.priorPosition):'No comparison'}</td><td>{prior?(r.change==null?r.comparison:(r.change>0?'+':'')+r.change):'No comparison'}</td><td>{r.landing?<a href={r.landing} target="_blank" rel="noreferrer">{r.landing}</a>:'Unavailable'}<small>{r.resultType}</small></td><td>{r.tags||'No tags'}<small>{r.intents||'No intent'}</small></td><td>{fmt(r.volume)}</td><td>{fmt(r.difficulty)}</td><td>{fmt(r.cpc)}</td><td>{r.sourceDifference||'Unavailable'}</td></tr>)}</tbody></table></div>
+   {view==='keywords'?<div className="organic-table-scroll" role="region" aria-label="Tracked keyword results" tabIndex={0}><table><thead><tr>{['Keyword','Position','Prior position','Observed change','Ranking URL','Tags / intent','Search volume','Difficulty','CPC (source)','Source difference'].map(h=><th key={h}>{h}</th>)}</tr></thead><tbody>{rows.slice(activePage*pageSize,(activePage+1)*pageSize).map(r=><tr key={r.keyword}><th scope="row">{r.keyword}</th><td>{r.position??'Unavailable'}{r.position==null&&<small>Source: {r.rawPosition||'blank'}</small>}</td><td>{prior?fmt(r.priorPosition):'No comparison'}</td><td>{prior?(r.change==null?r.comparison:(r.change>0?'+':'')+r.change):'No comparison'}</td><td>{r.landing?<a href={r.landing} target="_blank" rel="noreferrer">{r.landing}</a>:'Unavailable'}<small>{r.resultType}</small></td><td>{r.tags||'No tags'}<small>{r.intents||'No intent'}</small></td><td>{fmt(r.volume)}</td><td>{fmt(r.difficulty)}</td><td>{fmt(r.cpc)}</td><td>{r.sourceDifference||'Unavailable'}</td></tr>)}</tbody></table></div>:<div className="organic-table-scroll" role="region" aria-label="Page opportunities" tabIndex={0}><table><thead><tr>{['Ranking page','Matching keywords','Positions 1–3','Positions 4–10','Positions 11–20','Positions 21–50','Commercial / transactional','Best position','Summed keyword volume','Inspect'].map(h=><th key={h}>{h}</th>)}</tr></thead><tbody>{pages.slice(activePage*pageSize,(activePage+1)*pageSize).map(g=><tr key={g.url}><th scope="row">{g.url?<a href={g.url} target="_blank" rel="noreferrer">{g.url}</a>:'No reported URL'}{g.unknown>0&&<small>{g.unknown} ranks unavailable / outside 1–100</small>}</th><td>{g.count}</td><td>{g.top3}</td><td><strong>{g.nearTop}</strong></td><td><strong>{g.pageTwo}</strong></td><td>{g.develop}</td><td>{g.commercial}</td><td>{fmt(g.best)}</td><td>{fmt(g.volume)}<small>Known for {g.knownVolume} of {g.count} keywords</small></td><td><button type="button" className="button" onClick={()=>{setLanding(g.url);setView('keywords');setPage(0);}}>View keywords</button></td></tr>)}</tbody></table></div>}
    {!rows.length&&<p>No matching keywords.</p>}
    <KeywordPagination {...paginationProps} placement="below table" />
    <details><summary>Definitions and import limits</summary><p>Positions are observations on the report date, not weekly averages. Only positions 1–100 are shown as numeric ranks; other supported source markers are preserved without inventing a position. Source difference is retained exactly as exported; its direction is not used to reconstruct earlier ranks. Share-of-voice values are preserved in the saved data but not interpreted until their units are verified. Search volume, CPC and difficulty are Semrush metrics, not measured website traffic, costs or leads. CPC currency is not supplied by this export. Comparisons require the same campaign, location, device and search engine. Missing keywords do not establish a ranking loss. Up to 5,000 rows; weekly automation and Growth Hunter task creation are not included in this first release.</p></details>
