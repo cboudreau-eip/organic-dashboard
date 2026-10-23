@@ -322,3 +322,28 @@ body:has(.charlie-launch) { overflow:hidden; }
 .dashboard-page .overview-kpis .overview-kpi small{font-size:12px;line-height:1.5;color:#53695c}
 @media(max-width:600px){.dashboard-page .overview-kpis{gap:8.5px}.dashboard-page .overview-kpis .overview-kpi{padding:14.5px 11.9px}.dashboard-page .overview-kpis .overview-kpi-value{font-size:25.5px}.dashboard-page .overview-kpi-badge{font-size:15.3px;padding:6.8px 8.5px}}
 @media(max-width:380px){.dashboard-page .overview-kpis{grid-template-columns:1fr}}
+
+/* Search comparison workspace */
+.dashboard-page .gsc-data-through{padding:12px 15px;background:#e6f3ea;border:1px solid #b7d6c0;border-radius:9px;color:#214d35}
+.dashboard-page .gsc-table-controls{display:flex;flex-wrap:wrap;align-items:end;gap:12px;margin:18px 0}
+.dashboard-page .gsc-table-controls label,.dashboard-page .gsc-pagination label{display:flex;flex-direction:column;gap:6px;font-size:12px;font-weight:650}
+.dashboard-page .gsc-table-controls input,.dashboard-page .gsc-table-controls select,.dashboard-page .gsc-pagination input{border:1px solid #b9ccbf;border-radius:7px;padding:9px;background:#fff;min-height:40px;color:#203e2d}
+.dashboard-page .gsc-table-controls input{width:260px;max-width:100%}
+.dashboard-page .gsc-quick-filters{display:flex;flex-wrap:wrap;gap:5px}
+.dashboard-page .gsc-quick-filters [aria-pressed="true"],.dashboard-page .gsc-pagination [aria-current="page"]{background:#176349;color:white;border-color:#176349}
+.dashboard-page .gsc-coverage,.dashboard-page .gsc-comparison-help{font-size:12px;line-height:1.6;color:#4c6253}
+.dashboard-page .gsc-coverage strong{color:#854916}
+.dashboard-page .gsc-comparison thead button{border:0;background:transparent;color:inherit;font:inherit;font-weight:700;padding:4px;cursor:pointer;white-space:nowrap}
+.dashboard-page .gsc-comparison tbody th{min-width:220px;max-width:380px}
+.dashboard-page .gsc-comparison tbody th small{display:block;color:#6b654c;margin-top:5px}
+.dashboard-page .gsc-change{display:inline-block;padding:4px 7px;border-radius:5px;font-weight:750}
+.dashboard-page .gsc-change.gain{background:#def4e7;color:#155d36}
+.dashboard-page .gsc-change.loss{background:#fce8e9;color:#9d2936}
+.dashboard-page .gsc-change.flat{background:#edf1ef;color:#43564b}
+.dashboard-page .gsc-pagination{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:14px;margin-top:18px;font-size:12px}
+.dashboard-page .gsc-pagination nav{display:flex;flex-wrap:wrap;align-items:center;gap:5px}
+.dashboard-page .gsc-pagination form{display:flex;align-items:end;gap:8px}
+.dashboard-page .gsc-pagination input{width:80px}
+.dashboard-page .gsc-page-gap{padding:0 6px}
+.dashboard-page .gsc-pagination button:disabled{opacity:.45;cursor:default}
+@media(max-width:600px){.dashboard-page .gsc-table-controls>label:first-child,.dashboard-page .gsc-table-controls input{width:100%}.dashboard-page .gsc-pagination .button{min-height:40px}}
