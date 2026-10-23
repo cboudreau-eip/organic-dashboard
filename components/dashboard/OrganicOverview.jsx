@@ -28,9 +28,25 @@ export default function OrganicOverview({ days, setDays }) {
     
     <p className="organic-period" role="status">{result ? `${result.period.start} – ${result.period.end} vs ${result.period.priorStart} – ${result.period.priorEnd} · ${result.timezone}` : error ? 'Live data unavailable' : 'Loading organic search performance…'}</p>
     {error && <div className="organic-error" role="alert">{error} <button type="button" className="button" onClick={() => setAttempt(attempt + 1)}>Try again</button></div>}
-    <div className="organic-cards" aria-busy={!result && !error}>{METRICS.map(([key, label]) => {
+    <div className="organic-cards overview-kpis" aria-busy={!result && !error}>{METRICS.map(([key, label]) => {
       const metric = result?.metrics.find(item => item.key === key);
-      return <article className="card" key={key}><span>{key === 'session duration' && metric?.coverage ? `Measured ${label.toLowerCase()}` : label}</span><strong>{metric ? metricValue(metric.value, metric.format) : '—'}</strong><span className="organic-change">{metric?.unavailableReason || (metric ? metricChange(metric) : error ? 'Unavailable' : 'Loading…')}</span><small>{metric?.unavailableReason ? 'Not included in comparisons' : metric ? `vs. ${metricValue(metric.previous, metric.format)} prior` : 'Previous period comparison'}</small>{metric?.coverage && <small title={metric.coverage.previousMeasured===null ? 'Prior period temporarily unavailable' : `Prior period: ${metric.coverage.previousMeasured.toLocaleString()} of ${metric.coverage.previousTotal.toLocaleString()} sessions measured`}>{metric.coverage.measured.toLocaleString()} of {metric.coverage.total.toLocaleString()} sessions measured</small>}</article>;
+      const comparable=metric&&!metric.unavailableReason&&metric.value!==null&&metric.previous!==null;
+      const delta=comparable?metric.value-metric.previous:null;
+      const direction=delta===null||delta===0?'flat':delta>0?'up':'down';
+      // Engagement direction alone does not establish a better visitor outcome.
+      const tone=!comparable||delta===0?'neutral':metric.format==='count'?(delta>0?'positive':'negative'):'context';
+      return <article className="card overview-kpi" data-tone={tone} key={key}>
+        <span className="overview-kpi-label">{key === 'session duration' && metric?.coverage ? `Measured ${label.toLowerCase()}` : label}</span>
+        <strong className="overview-kpi-value">{metric ? metricValue(metric.value, metric.format) : '—'}</strong>
+        <div className="overview-kpi-change">
+          <span className="overview-kpi-badge"><span aria-hidden="true">{direction==='up'?'↗':direction==='down'?'↘':'–'}</span><span>{metric?.unavailableReason || (metric ? metricChange(metric) : error ? 'Unavailable' : 'Loading…')}</span></span>
+          {comparable&&metric.format==='count'&&<span className="overview-kpi-delta">{delta>0?'+':''}{Math.round(delta).toLocaleString('en-US')} {label.toLowerCase()} vs. prior</span>}
+          {comparable&&metric.format!=='count'&&<span className="overview-kpi-delta">Change vs. previous period{metric.format==='percent'?' · pp = percentage points':''}</span>}
+        </div>
+        <div className="overview-kpi-prior"><span>Previous period</span><strong>{metric?metricValue(metric.previous,metric.format):'—'}</strong></div>
+        {metric?.unavailableReason&&<small>Not included in comparisons</small>}
+        {metric?.coverage && <small className="overview-kpi-coverage" title={metric.coverage.previousMeasured===null ? 'Prior period temporarily unavailable' : `Prior period: ${metric.coverage.previousMeasured.toLocaleString()} of ${metric.coverage.previousTotal.toLocaleString()} sessions measured`}>{metric.coverage.measured.toLocaleString()} of {metric.coverage.total.toLocaleString()} sessions measured</small>}
+      </article>;
     })}</div>
     {result?.engagementStatus === 'partial' && <p role="status">Some engagement data could not be loaded. <button type="button" className="button" onClick={() => setAttempt(value => value + 1)}>Retry engagement</button></p>}
     <OrganicConversions key={`conversions-${days}`} days={days} />
