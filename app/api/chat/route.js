@@ -39,7 +39,8 @@ export async function POST(request) {
   // Keep each GSC dimension explicit; daily rows are site totals, never query-by-day records.
   if (evidence[2].data) {
     const gsc = evidence[2].data;
-    evidence[2].data = { ...gsc, daily: undefined,
+    // Keep the expanded table payload out of the bounded chat context.
+    evidence[2].data = { ...gsc, comparisons: undefined, coverage: undefined, daily: undefined,
       dailySiteTotals: gsc.daily.map(({ keys, ...metrics }) => ({ date: keys[0], ...metrics })),
       queries: gsc.queries.map(({ keys, ...metrics }) => ({ query: keys[0], ...metrics })),
       pages: gsc.pages.map(({ keys, ...metrics }) => ({ page: keys[0], ...metrics })),
