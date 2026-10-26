@@ -1,5 +1,5 @@
 'use client';
-import {periodParams,normalizePeriod} from '../../lib/posthog/period';
+import {formatReportDate,periodParams,normalizePeriod} from '../../lib/posthog/period';
 import CollapsibleSection from './CollapsibleSection';
 import { useEffect, useState } from 'react';
 import { METRICS, metricValue, metricChange } from '../../lib/posthog/overview';
@@ -31,7 +31,7 @@ export default function OrganicOverview({ days, setDays }) {
     
     <OrganicDateControls key={`date-controls-${requestKey}`} selection={normalizePeriod(days)} onApply={next=>{setDays(next);setAttempt(n=>n+1);}} />
     {result?.period.warnings?.map(warning=><p className="gsc-date-warning" key={warning}>{warning}</p>)}
-    <p className="organic-period" role="status">{result ? `${result.period.start} – ${result.period.end} vs ${result.period.priorStart} – ${result.period.priorEnd} · ${result.timezone}` : error ? 'Live data unavailable' : 'Loading organic search performance…'}</p>
+    <p className="organic-period" role="status">{result ? `${formatReportDate(result.period.start)} – ${formatReportDate(result.period.end)} vs ${formatReportDate(result.period.priorStart)} – ${formatReportDate(result.period.priorEnd)} · ${result.timezone}` : error ? 'Live data unavailable' : 'Loading organic search performance…'}</p>
     {error && <div className="organic-error" role="alert">{error} <button type="button" className="button" onClick={() => setAttempt(attempt + 1)}>Try again</button></div>}
     <div className="organic-cards overview-kpis" aria-busy={!result && !error}>{METRICS.map(([key, label]) => {
       const metric = result?.metrics.find(item => item.key === key);
