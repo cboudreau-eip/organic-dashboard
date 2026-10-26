@@ -12,7 +12,7 @@ await loadBindings();
 const filename=resolve('components/dashboard/LeadImpact.jsx');
 const {code}=await transform(await readFile(filename,'utf8'),{filename,jsc:{parser:{syntax:'ecmascript',jsx:true},transform:{react:{runtime:'automatic'}}},module:{type:'commonjs'}});
 const mod={exports:{}};
-new Function('require','module','exports',code)(name=>require(name.startsWith('.')?resolve('components/dashboard',name+'.js'):name),mod,mod.exports);
+new Function('require','module','exports',code)(name=>name==='./SaveOpportunity'?{__esModule:true,default:()=>null}:require(name.startsWith('.')?resolve('components/dashboard',name+'.js'):name),mod,mod.exports);
 const LeadImpact=mod.exports.default;
 test('date changes hide stale contacts, cancel old requests, and recover from errors',async()=>{
  const dom=new JSDOM('<div id="root"></div>',{url:'https://dashboard.example'});

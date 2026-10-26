@@ -39,3 +39,5 @@
 
 .sem-gsc-context{margin:16px 0;padding:16px;border:1px solid #c9ddcf;border-radius:10px;background:#f3f8f4}
 .tracked-keywords .sem-finding{min-width:230px;max-width:300px}.tracked-keywords .sem-finding small{font-size:12px;line-height:1.5}.tracked-keywords .sem-loss{color:#a52b24}.tracked-keywords .sem-gain{color:#176349}
+
+.tracked-keywords textarea{width:100%;min-width:0;padding:10px;border:1px solid #bacfc0;border-radius:7px;background:white;color:#20392c;font:inherit;resize:vertical}.tracked-keywords #growth-action-list fieldset{margin:16px 0}.tracked-keywords #growth-action-list label:has(textarea){grid-column:1/-1}.tracked-keywords #growth-action-list summary{cursor:pointer}.tracked-keywords #growth-action-list section>a{overflow-wrap:anywhere}.tracked-keywords td .button{margin-top:6px}

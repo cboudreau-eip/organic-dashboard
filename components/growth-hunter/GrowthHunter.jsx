@@ -54,7 +54,7 @@ export default function GrowthHunter({ active }) {
   const canImport = result && ['analyst', 'admin'].includes(result.role);
   return <CollapsibleSection className="growth-hunter" aria-label="Growth Hunter" title="Growth Hunter" level={2} header={<div className="heading"><div><div className="eyebrow">GROWTH HUNTER</div><h2>Find organic growth opportunities</h2><p>Analyze connected Google Search Console data and review pages losing clicks.</p></div></div>}>
     
-    <div className="growth-note">Save evidence and compare pages for click declines. Findings are investigation candidates; approval and implementation tracking are not available yet.</div>
+    <div className="growth-note">Save evidence and compare pages for click declines. Findings are investigation candidates. Save and track page work in Acquisition → Tracked keywords → Saved actions; publication status records your work and does not change the website.</div>
     {error && <p role="alert" className="growth-error">{error} <button className="button" onClick={() => setReload(value => value + 1)} disabled={busy}>Reload evidence</button></p>}
     {status && <p role="status">{status}</p>}
     {!result && !error && <p role="status">Loading saved evidence…</p>}
