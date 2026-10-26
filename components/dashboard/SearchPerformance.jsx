@@ -24,7 +24,7 @@ function Trend({result}) {
     <details><summary>View daily click values</summary><div className="organic-table-scroll"><table><thead><tr><th>Day</th><th>Date</th><th>Clicks</th><th>Comparison date</th><th>Comparison clicks</th></tr></thead><tbody>{rows.map(row=><tr key={row.day}><td>{row.day}</td><td>{row.date||'No matching day'}</td><td>{row.current?.toLocaleString()??'N/A'}</td><td>{row.previousDate||'No matching day'}</td><td>{row.previous?.toLocaleString()??'N/A'}</td></tr>)}</tbody></table></div></details>
   </CollapsibleSection>;
 }
-export default function SearchPerformance() {
+export default function SearchPerformance({onData}) {
   const [selection, setSelection] = useState({mode:'rolling',days:28,compare:'previous'});
   const [latest,setLatest] = useState(null);
   const requestKey = new URLSearchParams(selection).toString();
@@ -33,19 +33,19 @@ export default function SearchPerformance() {
   const [error, setError] = useState('');
   useEffect(() => {
     const controller = new AbortController();
-    setResult(null); setError('');
+    setResult(null); setError(''); onData?.({status:'loading',result:null});
     (async () => {
       try {
         const response = await fetch(`/api/analytics/search?${requestKey}`, { signal: controller.signal, cache: 'no-store' });
         const data = await response.json();
         if (!response.ok) throw new Error(data.error || 'Search performance unavailable.');
-        if (!controller.signal.aborted) { setResult(data); setLatest(data.availableThrough); }
-      } catch (e) { if (!controller.signal.aborted) setError(e.message); }
+        if (!controller.signal.aborted) { setResult(data); setLatest(data.availableThrough); onData?.({status:'ready',result:data}); }
+      } catch (e) { if (!controller.signal.aborted) {setError(e.message); onData?.({status:'error',result:null});} }
     })();
     return () => controller.abort();
-  }, [requestKey, attempt]);
+  }, [requestKey, attempt, onData]);
   return <CollapsibleSection className="organic-live gsc-performance" aria-labelledby="gsc-title" title="MedicareFAQ search performance" level={2} header={<div className="organic-heading"><div><span className="organic-badge">GOOGLE SEARCH CONSOLE · FINALIZED DATA</span><h2 id="gsc-title">MedicareFAQ search performance</h2><p>Google organic web search · www.medicarefaq.com · All countries and devices</p></div></div>}>
-    <GscDateControls selection={selection} latest={latest} onApply={next=>{setResult(null);setSelection(next);setAttempt(n=>n+1);}} />
+    <GscDateControls selection={selection} latest={latest} onApply={next=>{onData?.({status:'loading',result:null});setResult(null);setSelection(next);setAttempt(n=>n+1);}} />
     <p className="organic-period" role="status">{result ? `${result.period.start} – ${result.period.end} vs ${result.period.priorStart} – ${result.period.priorEnd} · Pacific time` : error ? 'Live search data unavailable' : 'Loading Google search performance…'}</p>
     {result?.period.warnings?.map(warning=><p className="gsc-date-warning" key={warning}>{warning}</p>)}
     {error && <div className="organic-error" role="alert">{error} <button className="button" onClick={() => setAttempt(attempt + 1)}>Try again</button></div>}

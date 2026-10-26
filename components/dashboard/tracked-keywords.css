@@ -36,3 +36,6 @@
 .tracked-keywords .sem-opportunity-filters :is(input,select,button):focus-visible,.tracked-keywords .sem-view-switch button:focus-visible{outline:3px solid #348c69;outline-offset:2px}
 @media(max-width:1000px){.sem-opportunity-filters{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:650px){.sem-opportunity-filters{grid-template-columns:1fr}.sem-view-switch{flex-wrap:wrap}}
+
+.sem-gsc-context{margin:16px 0;padding:16px;border:1px solid #c9ddcf;border-radius:10px;background:#f3f8f4}
+.tracked-keywords .sem-finding{min-width:230px;max-width:300px}.tracked-keywords .sem-finding small{font-size:12px;line-height:1.5}.tracked-keywords .sem-loss{color:#a52b24}.tracked-keywords .sem-gain{color:#176349}

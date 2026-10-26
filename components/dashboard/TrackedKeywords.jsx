@@ -6,6 +6,8 @@ import {xlsxKeywordRows} from '../../lib/growth-hunter/files';
 import {csvRows,parseSemrush,validateSnapshot,sameScope,compareSnapshots} from '../../lib/semrush/import';
 import {BANDS,tokens,filterKeywords,groupPages} from '../../lib/semrush/opportunities';
 import './tracked-keywords.css';
+import {joinPages,pageFinding} from '../../lib/semrush/gsc-pages';
+import PageSearchCells from './PageSearchCells';
 const fmt=n=>n==null?'Unavailable':n.toLocaleString();
 async function api(query='',init){
  const r=await fetch('/api/semrush/snapshots'+query,{cache:'no-store',...init});
@@ -34,7 +36,9 @@ function KeywordPagination({page,pageSize,total,onPage,onSize,placement,noun='ke
  </nav>;
 }
 
-export default function TrackedKeywords(){
+export default function TrackedKeywords({searchData={status:'loading',result:null}}){
+ const [attention,setAttention]=useState('all');
+ const searchResult=searchData.result;
  const [history,setHistory]=useState([]),[offset,setOffset]=useState(0),[more,setMore]=useState(false),[role,setRole]=useState('');
  const [matrix,setMatrix]=useState(null),[report,setReport]=useState(null),[selected,setSelected]=useState(null),[prior,setPrior]=useState(null);
  const [scope,setScope]=useState({location:'',device:'',engine:'Google',confirmed:false});
@@ -66,7 +70,7 @@ export default function TrackedKeywords(){
  },[matrix]);
  const [pageSize,setPageSize]=useState(50);
  const [view,setView]=useState('keywords'),[band,setBand]=useState('all'),[intent,setIntent]=useState(''),[tag,setTag]=useState(''),[minVolume,setMinVolume]=useState(''),[maxVolume,setMaxVolume]=useState(''),[landing,setLanding]=useState(null),[pageSort,setPageSort]=useState('opportunities');
- function resetFilters(){setFilter('');setBand('all');setIntent('');setTag('');setMinVolume('');setMaxVolume('');setLanding(null);setPage(0);}
+ function resetFilters(){setAttention('all');setFilter('');setBand('all');setIntent('');setTag('');setMinVolume('');setMaxVolume('');setLanding(null);setPage(0);}
  function changeFilter(setter,value){setter(value);setPage(0);}
 
  const canSave=['analyst','admin'].includes(role);
@@ -105,11 +109,14 @@ export default function TrackedKeywords(){
  },[compared,current,filter,sort,band,intent,tag,minVolume,maxVolume,landing]);
  const tagOptions=useMemo(()=>[...new Set((current?.rows||[]).flatMap(r=>tokens(r.tags)))].sort((a,b)=>a.localeCompare(b)),[current]);
  const pages=useMemo(()=>{
-  const groups=groupPages(rows);
+  let groups=joinPages(groupPages(rows),searchResult?.comparisons?.pages);
+  if(searchData.status==='ready'&&attention!=='all')groups=groups.filter(g=>pageFinding(g).type===attention);
+  if(pageSort==='clicks')groups.sort((a,b)=>(b.gsc?.current?.clicks??-1)-(a.gsc?.current?.clicks??-1));
+  if(pageSort==='loss')groups.sort((a,b)=>(a.gsc?.clicksChange??Infinity)-(b.gsc?.clicksChange??Infinity));
   if(pageSort==='volume')groups.sort((a,b)=>(b.volume??-1)-(a.volume??-1)||b.count-a.count);
   if(pageSort==='count')groups.sort((a,b)=>b.count-a.count||a.url.localeCompare(b.url));
   return groups;
- },[rows,pageSort]);
+ },[rows,pageSort,searchResult,searchData.status,attention]);
  const total=view==='pages'?pages.length:rows.length;
  const activePage=Math.min(page,Math.max(0,Math.ceil(total/pageSize)-1));
  const paginationProps={page:activePage,pageSize,total,noun:view==='pages'?'URL groups':'keywords',onPage:setPage,onSize:size=>{setPageSize(size);setPage(0);}};
@@ -156,16 +163,25 @@ export default function TrackedKeywords(){
     <label>Tag<select value={tag} onChange={e=>changeFilter(setTag,e.target.value)}><option value="">All tags</option>{tagOptions.map(v=><option key={v} value={v}>{v}</option>)}</select></label>
     <label>Minimum search volume<input type="number" min="0" step="1" placeholder="Any" value={minVolume} onChange={e=>changeFilter(setMinVolume,e.target.value)}/></label>
     <label>Maximum search volume<input type="number" min="0" step="1" placeholder="Any" value={maxVolume} onChange={e=>changeFilter(setMaxVolume,e.target.value)}/></label>
-    {view==='keywords'?<label>Sort keywords<select value={sort} onChange={e=>changeFilter(setSort,e.target.value)}><option value="position">Best position</option><option value="volume">Highest search volume</option>{prior&&<option value="change">Largest improvement</option>}</select></label>:<label>Sort pages<select value={pageSort} onChange={e=>changeFilter(setPageSort,e.target.value)}><option value="opportunities">Most keywords in positions 4–20</option><option value="count">Most matching keywords</option><option value="volume">Highest summed keyword volume</option></select></label>}
+    {view==='keywords'?<label>Sort keywords<select value={sort} onChange={e=>changeFilter(setSort,e.target.value)}><option value="position">Best position</option><option value="volume">Highest search volume</option>{prior&&<option value="change">Largest improvement</option>}</select></label>:<label>Sort pages<select value={pageSort} onChange={e=>changeFilter(setPageSort,e.target.value)}><option value="opportunities">Most keywords in positions 4–20</option><option value="clicks">Most GSC clicks</option><option value="loss">Largest GSC click loss</option><option value="count">Most matching keywords</option><option value="volume">Highest summed keyword volume</option></select></label>}
+    {view==='pages'&&<label>Needs attention<select value={attention} disabled={searchData.status!=='ready'} onChange={e=>changeFilter(setAttention,e.target.value)}><option value="all">All pages</option><option value="decline">Losing clicks</option><option value="near">Close to top 10</option><option value="ctr">Investigate CTR</option><option value="unmatched">Missing / ambiguous GSC match</option><option value="monitor">Monitor</option></select></label>}
     <button type="button" className="button" onClick={resetFilters}>Clear filters</button>
    </div>
    {minVolume!==''&&maxVolume!==''&&Number(minVolume)>Number(maxVolume)&&<p role="alert">Minimum volume must not exceed maximum volume.</p>}
    {landing!==null&&<p className="sem-page-focus">Showing keywords for <strong>{landing||'No reported URL'}</strong> <button type="button" className="button" onClick={()=>{setLanding(null);setPage(0);}}>Clear URL filter</button></p>}
    <p role="status">{rows.length} of {current.rows.length} keywords match · {pages.length} URL groups. All filters apply together.</p>
-   {view==='pages'&&<p>Groups use the exact ranking URL reported by Semrush. Counts reflect matching keywords only. Start with positions 4–20, then inspect the page. Summed keyword volume can overlap across searches and is not measured traffic or lead potential.</p>}
+   {view==='pages'&&<p>Groups use the exact ranking URL reported by Semrush. Counts reflect matching keywords only. GSC metrics describe the entire page, not only these filtered tracked keywords. Summed keyword volume can overlap across searches and is not measured traffic or lead potential.</p>}
+   {view==='pages'&&<div className="sem-gsc-context" role="status">
+    <strong>Semrush snapshot: {current.end}</strong>
+    {searchResult?<><p><strong>GSC: {searchResult.period.start} to {searchResult.period.end}</strong> · Comparison: {searchResult.period.priorStart} to {searchResult.period.priorEnd} · Pacific time. Change these dates in Search performance above.</p>
+    {(current.end<searchResult.period.start||current.end>searchResult.period.end)&&<p className="gsc-date-warning">The Semrush snapshot falls outside the selected GSC period. Rankings and traffic cover different dates.</p>}
+    <p>{pages.filter(g=>g.gsc?.current).length} of {pages.length} displayed URL groups have a current GSC match. GSC returns up to {searchResult.coverage.limit.toLocaleString()} pages per period; missing rows are not zero traffic.</p></>:<p>{searchData.status==='error'?'GSC unavailable. Retry in Search performance above.':'Loading GSC for the selected dates…'}</p>}
+    <p>GSC covers all countries and devices. Semrush uses {current.scope?current.scope.location+' / '+current.scope.device+' / '+current.scope.engine:'the campaign settings in this import'}. Rankings are snapshot observations, not period averages.</p>
+    <details><summary>Matching and recommendation rules</summary><p>URLs match conservatively with fragments removed. Protocol, www, path case, trailing slashes and query parameters remain distinct; redirects are not inferred. Ambiguous matches are withheld. Findings use the first applicable rule: click loss, keywords at positions 11–20, then a CTR screen (at least 1,000 impressions, CTR below 1%, average GSC position 10 or better). These are investigation prompts, not proven causes or lead forecasts. Keyword filters affect ranking counts, not whole-page GSC metrics.</p></details>
+   </div>}
    <KeywordPagination {...paginationProps} placement="above table" />
-   {view==='keywords'?<div className="organic-table-scroll" role="region" aria-label="Tracked keyword results" tabIndex={0}><table><thead><tr>{['Keyword','Position','Prior position','Observed change','Ranking URL','Tags / intent','Search volume','Difficulty','CPC (source)','Source difference'].map(h=><th key={h}>{h}</th>)}</tr></thead><tbody>{rows.slice(activePage*pageSize,(activePage+1)*pageSize).map(r=><tr key={r.keyword}><th scope="row">{r.keyword}</th><td>{r.position??'Unavailable'}{r.position==null&&<small>Source: {r.rawPosition||'blank'}</small>}</td><td>{prior?fmt(r.priorPosition):'No comparison'}</td><td>{prior?(r.change==null?r.comparison:(r.change>0?'+':'')+r.change):'No comparison'}</td><td>{r.landing?<a href={r.landing} target="_blank" rel="noreferrer">{r.landing}</a>:'Unavailable'}<small>{r.resultType}</small></td><td>{r.tags||'No tags'}<small>{r.intents||'No intent'}</small></td><td>{fmt(r.volume)}</td><td>{fmt(r.difficulty)}</td><td>{fmt(r.cpc)}</td><td>{r.sourceDifference||'Unavailable'}</td></tr>)}</tbody></table></div>:<div className="organic-table-scroll" role="region" aria-label="Page opportunities" tabIndex={0}><table><thead><tr>{['Ranking page','Matching keywords','Positions 1–3','Positions 4–10','Positions 11–20','Positions 21–50','Commercial / transactional','Best position','Summed keyword volume','Inspect'].map(h=><th key={h}>{h}</th>)}</tr></thead><tbody>{pages.slice(activePage*pageSize,(activePage+1)*pageSize).map(g=><tr key={g.url}><th scope="row">{g.url?<a href={g.url} target="_blank" rel="noreferrer">{g.url}</a>:'No reported URL'}{g.unknown>0&&<small>{g.unknown} ranks unavailable / outside 1–100</small>}</th><td>{g.count}</td><td>{g.top3}</td><td><strong>{g.nearTop}</strong></td><td><strong>{g.pageTwo}</strong></td><td>{g.develop}</td><td>{g.commercial}</td><td>{fmt(g.best)}</td><td>{fmt(g.volume)}<small>Known for {g.knownVolume} of {g.count} keywords</small></td><td><button type="button" className="button" onClick={()=>{setLanding(g.url);setView('keywords');setPage(0);}}>View keywords</button></td></tr>)}</tbody></table></div>}
-   {!rows.length&&<p>No matching keywords.</p>}
+   {view==='keywords'?<div className="organic-table-scroll" role="region" aria-label="Tracked keyword results" tabIndex={0}><table><thead><tr>{['Keyword','Position','Prior position','Observed change','Ranking URL','Tags / intent','Search volume','Difficulty','CPC (source)','Source difference'].map(h=><th key={h}>{h}</th>)}</tr></thead><tbody>{rows.slice(activePage*pageSize,(activePage+1)*pageSize).map(r=><tr key={r.keyword}><th scope="row">{r.keyword}</th><td>{r.position??'Unavailable'}{r.position==null&&<small>Source: {r.rawPosition||'blank'}</small>}</td><td>{prior?fmt(r.priorPosition):'No comparison'}</td><td>{prior?(r.change==null?r.comparison:(r.change>0?'+':'')+r.change):'No comparison'}</td><td>{r.landing?<a href={r.landing} target="_blank" rel="noreferrer">{r.landing}</a>:'Unavailable'}<small>{r.resultType}</small></td><td>{r.tags||'No tags'}<small>{r.intents||'No intent'}</small></td><td>{fmt(r.volume)}</td><td>{fmt(r.difficulty)}</td><td>{fmt(r.cpc)}</td><td>{r.sourceDifference||'Unavailable'}</td></tr>)}</tbody></table></div>:<div className="organic-table-scroll" role="region" aria-label="Page opportunities" tabIndex={0}><table><thead><tr>{['Ranking page','GSC clicks / prior','Click change','Impressions / change','CTR / change','Finding / next step','Matching keywords','Positions 1–3','Positions 4–10','Positions 11–20','Positions 21–50','Commercial / transactional','Best position','Summed keyword volume','Inspect'].map(h=><th key={h}>{h}</th>)}</tr></thead><tbody>{pages.slice(activePage*pageSize,(activePage+1)*pageSize).map(g=><tr key={g.url}><th scope="row">{g.url?<a href={g.url} target="_blank" rel="noreferrer">{g.url}</a>:'No reported URL'}{g.unknown>0&&<small>{g.unknown} ranks unavailable / outside 1–100</small>}</th><PageSearchCells group={g} status={searchData.status}/><td>{g.count}</td><td>{g.top3}</td><td><strong>{g.nearTop}</strong></td><td><strong>{g.pageTwo}</strong></td><td>{g.develop}</td><td>{g.commercial}</td><td>{fmt(g.best)}</td><td>{fmt(g.volume)}<small>Known for {g.knownVolume} of {g.count} keywords</small></td><td><button type="button" className="button" onClick={()=>{setLanding(g.url);setView('keywords');setPage(0);}}>View keywords</button></td></tr>)}</tbody></table></div>}
+   {!total&&<p>No matching {view==='pages'?'pages':'keywords'}. Try clearing filters.</p>}
    <KeywordPagination {...paginationProps} placement="below table" />
    <details><summary>Definitions and import limits</summary><p>Positions are observations on the report date, not weekly averages. Only positions 1–100 are shown as numeric ranks; other supported source markers are preserved without inventing a position. Source difference is retained exactly as exported; its direction is not used to reconstruct earlier ranks. Share-of-voice values are preserved in the saved data but not interpreted until their units are verified. Search volume, CPC and difficulty are Semrush metrics, not measured website traffic, costs or leads. CPC currency is not supplied by this export. Comparisons require the same campaign, location, device and search engine. Missing keywords do not establish a ranking loss. Up to 5,000 rows; weekly automation and Growth Hunter task creation are not included in this first release.</p></details>
   </>}
