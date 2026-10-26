@@ -1,10 +1,11 @@
 'use client';
+import SaveOpportunity from './SaveOpportunity';
 import {useEffect,useMemo,useState} from 'react';
 import {leadImpact} from '../../lib/semrush/lead-impact';
 const number=n=>n==null?'Not reported':n.toLocaleString();
 const signed=n=>n==null?'Not comparable':(n>0?'+':'')+n.toLocaleString();
 const rate=n=>n==null?'Unavailable':n.toFixed(2)+'%';
-export default function LeadImpact({groups,result,Pagination}){
+export default function LeadImpact({groups,result,Pagination,snapshotId,canSave=false,onSaved}){
  const [open,setOpen]=useState(false),[state,setState]=useState(null),[attempt,setAttempt]=useState(0);
  const [sort,setSort]=useState('priority'),[page,setPage]=useState(0),[size,setSize]=useState(25);
  const period=result?.period;
@@ -50,7 +51,7 @@ export default function LeadImpact({groups,result,Pagination}){
        <td>{signed(g.lead.contactChange)}</td>
        <td>{rate(g.lead.current?.rate)}<small>{g.lead.rateChange==null?'Not comparable':signed(Number(g.lead.rateChange.toFixed(2)))+' pp'}</small>{g.lead.current?.sessions<30&&<small>Small sample: fewer than 30 sessions</small>}</td>
        <td>{number(g.lead.current?.phoneSessions)}<small>Not confirmed calls</small></td>
-       <td className="sem-finding"><strong>{g.lead.priority}</strong><small>{g.lead.action}</small></td>
+       <td className="sem-finding"><strong>{g.lead.priority}</strong><small>{g.lead.action}</small><SaveOpportunity key={g.url+'-'+(snapshotId||'preview')} page={g.url} title={g.lead.priority} snapshotId={snapshotId} disabled={!canSave||!g.url} onSaved={onSaved}/></td>
       </tr>)}</tbody></table></div>
      {!rows.length&&<p>No pages match your filters.</p>}
     </>}
