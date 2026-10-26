@@ -1,0 +1,53 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {leadPageQueries,parseLeadPages} from '../lib/posthog/lead-pages.js';
+import {conversionQueries} from '../lib/posthog/conversions.js';
+import {landingKey,leadImpact} from '../lib/semrush/lead-impact.js';
+const period={start:'2026-10-19',end:'2026-10-25',priorStart:'2026-10-12',priorEnd:'2026-10-18'};
+const sample=['www.medicarefaq.com','/plans/',100,10,5,4,3,4,6];
+test('lead pages align both periods to Pacific and qualify the same CDN pageview cohort',()=>{
+ const [a,b]=leadPageQueries(period);
+ assert.match(a.query,/2026-10-19 00:00:00.*America\/Los_Angeles/);
+ assert.match(a.query,/2026-10-26 00:00:00.*America\/Los_Angeles/);
+ assert.match(b.query,/2026-10-12 00:00:00/);
+ assert.match(b.query,/2026-10-19 00:00:00/);
+ assert.equal((a.query.match(/sdk_dist_channel = 'cdn'/g)||[]).length,2);
+ assert.match(a.query,/GROUP BY entry_host, landing/);
+ assert.match(a.query,/last_contact >= first_view/);
+ assert.match(a.query,/LIMIT 2501/);
+ assert.match(conversionQueries(period)[0].query,/America\/New_York/);
+ assert.doesNotMatch(conversionQueries(period)[0].query,/sdk_dist_channel/);
+});
+test('parser validates counts, duplicates, coverage and computed rates',()=>{
+ const parsed=parseLeadPages({results:[sample]});
+ assert.equal(parsed.rows[0].rate,5);assert.equal(parsed.truncated,false);
+ assert.throws(()=>parseLeadPages({results:[sample,sample]}),/Duplicate/);
+ assert.throws(()=>parseLeadPages({results:[['www.medicarefaq.com','/x/',1,0,2,0,0,0,2]]}),/validated/);
+ assert.throws(()=>parseLeadPages({error:'failed',results:[]}));
+ const many=Array.from({length:2501},(_,i)=>[sample[0],'/'+i+'/',...sample.slice(2)]);
+ const capped=parseLeadPages({results:many});
+ assert.equal(capped.rows.length,2500);assert.equal(capped.truncated,true);
+});
+test('host/path matches are conservative and query-bearing ranking URLs are withheld',()=>{
+ const base='https://www.medicarefaq.com/plans/';
+ assert.equal(landingKey(base),'www.medicarefaq.com/plans/');
+ assert.equal(landingKey(base+'#x'),landingKey(base));
+ assert.equal(landingKey(base+'?x=1'),null);
+ assert.notEqual(landingKey(base),landingKey(base.replace('www.','')));
+ assert.notEqual(landingKey(base),landingKey(base.slice(0,-1)));
+ assert.equal(landingKey('https://other.example/plans/'),null);
+});
+test('contact priority uses observed lead counts; missing periods do not become zero',()=>{
+ const current=parseLeadPages({results:[sample]}),previous=parseLeadPages({results:[[...sample.slice(0,2),100,12,8,4,0,0,8]]});
+ const group={url:'https://www.medicarefaq.com/plans/',gsc:{clicksChange:-10},pageTwo:2};
+ const row=leadImpact([group],{current,previous})[0];
+ assert.equal(row.lead.contactChange,-3);assert.equal(row.lead.rateChange,-3);
+ assert.equal(row.lead.priority,'Protect lead-producing page');
+ assert.equal(leadImpact([{...group,gsc:{clicksChange:0}}],{current,previous})[0].lead.priority,'Expand a proven landing page');
+ const missing=leadImpact([group],{current,previous:{rows:[]}})[0];
+ assert.equal(missing.lead.contactChange,null);
+ const noCurrent=leadImpact([group],{current:{rows:[]},previous})[0];
+ assert.equal(noCurrent.lead.current,null);assert.equal(noCurrent.lead.order,4);
+ const zero=parseLeadPages({results:[[...sample.slice(0,2),10,0,0,0,0,0,0]]});
+ assert.equal(leadImpact([group],{current:zero,previous})[0].lead.current.rate,0);
+});
