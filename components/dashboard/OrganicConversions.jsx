@@ -1,5 +1,5 @@
 'use client';
-import {periodParams} from '../../lib/posthog/period';
+import {formatReportDate,periodParams} from '../../lib/posthog/period';
 import CollapsibleSection from './CollapsibleSection';
 import { useEffect, useState } from 'react';
 import { metricChange } from '../../lib/posthog/overview';
@@ -32,7 +32,7 @@ export default function OrganicConversions({ days, detailed = false }) {
   const stages = [['Organic landing sessions',c.sessions],['ZIP submitted after page view',c.quoteStarts],['Contact submitted after ZIP',c.completedFunnel]];
   return <CollapsibleSection className="organic-conversions" title={heading} level={3} header={<h3>{heading}</h3>}>
     
-    <p className="organic-detail-note">{period.start} – {period.end} vs {period.priorStart} – {period.priorEnd} · {data.timezone}</p>
+    <p className="organic-detail-note">{formatReportDate(period.start)} – {formatReportDate(period.end)} vs {formatReportDate(period.priorStart)} – {formatReportDate(period.priorEnd)} · {data.timezone}</p>
     {period.warnings?.map(warning=><p className="gsc-date-warning" key={warning}>{warning}</p>)}
     <p>Sessions starting on MedicareFAQ through organic search, including tracked contact steps on the shared quote site.</p>
     <div className="organic-cards conversion-cards overview-kpis">{cards.map(([key,label,note]) => {

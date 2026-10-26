@@ -57,6 +57,8 @@ test('Overview retains exactly one date form across repeated period changes',asy
      assert.equal(document.querySelectorAll('[data-testid="conversions"]').length,1);
    }
    assert.equal(document.querySelectorAll('form.gsc-date-controls').length,1);
+   await select(0,'hours');await apply();
+   assert.equal(document.querySelectorAll('.gsc-date-fields select')[1].disabled,true);
    await select(0,'custom');await apply();
    await select(0,'rolling');await select(1,'90');await apply();
    await select(0,'month');await apply();
