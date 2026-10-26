@@ -7,13 +7,14 @@ import {fileURLToPath} from 'node:url';
 import {JSDOM} from 'jsdom';
 import React,{act,useState} from 'react';
 import {createRoot} from 'react-dom/client';
-import {transform} from 'next/dist/build/swc/index.js';
+import {transform,loadBindings} from 'next/dist/build/swc/index.js';
 
 const require=createRequire(import.meta.url);
 const root=resolve(dirname(fileURLToPath(import.meta.url)),'..');
 async function component(relative,overrides={}) {
  const filename=resolve(root,relative);
  const source=await readFile(filename,'utf8');
+ await loadBindings();
  const {code}=await transform(source,{filename,jsc:{parser:{syntax:'ecmascript',jsx:true},transform:{react:{runtime:'automatic'}}},module:{type:'commonjs'}});
  const module={exports:{}};
  const localRequire=name=>{
