@@ -1,4 +1,5 @@
 'use client';
+import {periodParams} from '../../lib/posthog/period';
 import CollapsibleSection from './CollapsibleSection';
 import { useEffect, useState } from 'react';
 import { metricChange } from '../../lib/posthog/overview';
@@ -6,6 +7,7 @@ const fmt = n => n.toLocaleString('en-US');
 const rate = n => n === null ? '—' : `${n.toFixed(2)}%`;
 
 export default function OrganicConversions({ days, detailed = false }) {
+  const requestKey=periodParams(days);
   const [data, setData] = useState(null);
   const [error, setError] = useState('');
   const [retry, setRetry] = useState(0);
@@ -14,14 +16,14 @@ export default function OrganicConversions({ days, detailed = false }) {
     setData(null); setError('');
     (async () => {
       try {
-        const response = await fetch(`/api/analytics/conversions?days=${days}`, { cache: 'no-store', signal: controller.signal });
+        const response = await fetch(`/api/analytics/conversions?${requestKey}`, { cache: 'no-store', signal: controller.signal });
         const json = await response.json();
         if (!response.ok) throw new Error(json.error || 'Conversions could not be loaded.');
         if (!controller.signal.aborted) setData(json);
       } catch (e) { if (!controller.signal.aborted) setError(e.message); }
     })();
     return () => controller.abort();
-  }, [days, retry]);
+  }, [requestKey, retry]);
   const heading = detailed ? 'Organic leads & funnel' : 'Organic conversions';
   if (error) return <section className="organic-conversions"><h3>{heading}</h3><div className="organic-error" role="alert">{error} <button className="button" onClick={() => setRetry(retry + 1)}>Retry conversions</button></div></section>;
   if (!data) return <section className="organic-conversions"><h3>{heading}</h3><p role="status">Loading organic conversion activity…</p></section>;
@@ -31,6 +33,7 @@ export default function OrganicConversions({ days, detailed = false }) {
   return <CollapsibleSection className="organic-conversions" title={heading} level={3} header={<h3>{heading}</h3>}>
     
     <p className="organic-detail-note">{period.start} – {period.end} vs {period.priorStart} – {period.priorEnd} · {data.timezone}</p>
+    {period.warnings?.map(warning=><p className="gsc-date-warning" key={warning}>{warning}</p>)}
     <p>Sessions starting on MedicareFAQ through organic search, including tracked contact steps on the shared quote site.</p>
     <div className="organic-cards conversion-cards overview-kpis">{cards.map(([key,label,note]) => {
       const comparable=c[key]!==null&&p[key]!==null;
@@ -42,9 +45,9 @@ export default function OrganicConversions({ days, detailed = false }) {
         <strong className="overview-kpi-value">{key==='rate'?rate(c[key]):fmt(c[key])}</strong>
         <div className="overview-kpi-change">
           <span className="overview-kpi-badge"><span aria-hidden="true">{direction==='up'?'↗':direction==='down'?'↘':'–'}</span><span>{metricChange({value:c[key],previous:p[key],format:key==='rate'?'percent':'count'})}</span></span>
-          {comparable&&<span className="overview-kpi-delta">{key==='rate'?'Change vs. previous period · pp = percentage points':(delta>0?'+':'')+fmt(delta)+' '+label.toLowerCase()+' vs. prior'}</span>}
+          {comparable&&<span className="overview-kpi-delta">{key==='rate'?'Change vs. comparison period · pp = percentage points':(delta>0?'+':'')+fmt(delta)+' '+label.toLowerCase()+' vs. prior'}</span>}
         </div>
-        <div className="overview-kpi-prior"><span>Previous period</span><strong>{key==='rate'?rate(p[key]):fmt(p[key])}</strong></div>
+        <div className="overview-kpi-prior"><span>Comparison period</span><strong>{key==='rate'?rate(p[key]):fmt(p[key])}</strong></div>
         <small>{note}</small>
       </article>;
     })}</div>
