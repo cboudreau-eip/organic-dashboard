@@ -43,7 +43,7 @@ test('contact priority uses observed lead counts; missing periods do not become 
  const row=leadImpact([group],{current,previous})[0];
  assert.equal(row.lead.contactChange,-3);assert.equal(row.lead.rateChange,-3);
  assert.equal(row.lead.priority,'Protect lead-producing page');
- assert.equal(leadImpact([{...group,gsc:{clicksChange:0}}],{current,previous})[0].lead.priority,'Expand a proven landing page');
+ assert.equal(leadImpact([{...group,gsc:{clicksChange:0}}],{current,previous})[0].lead.priority,'Explore ranking opportunity');
  const missing=leadImpact([group],{current,previous:{rows:[]}})[0];
  assert.equal(missing.lead.contactChange,null);
  const noCurrent=leadImpact([group],{current:{rows:[]},previous})[0];
