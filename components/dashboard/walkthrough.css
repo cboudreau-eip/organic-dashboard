@@ -1,0 +1,19 @@
+.walkthrough-launcher{display:inline-flex;margin-right:8px}
+.walkthrough-panel{position:fixed;z-index:1000;bottom:18px;right:18px;width:min(540px,calc(100vw - 36px));max-height:55vh;overflow:auto;box-sizing:border-box;padding:22px;border:1px solid #90b6a2;border-radius:18px;background:#fff;color:#183b2b;box-shadow:0 12px 48px #142e2633;font-family:inherit;line-height:1.5}
+.walkthrough-panel h2{font-size:21px;line-height:1.25;margin:12px 0 8px}
+.walkthrough-panel p{font-size:15px;margin:8px 0 16px}
+.walkthrough-panel small{display:block;font-size:12px;margin-top:12px;color:#4b6257}
+.walkthrough-top{display:flex;align-items:center;justify-content:space-between;gap:12px;font-size:11px;font-weight:800;letter-spacing:.08em}
+.walkthrough-actions{display:flex;flex-wrap:wrap;gap:8px}
+.walkthrough-panel .button{font:inherit;font-size:13px;cursor:pointer;border:1px solid #9ab3a6;background:#f4f8f5;color:#183b2b;border-radius:8px;padding:8px 12px}
+.walkthrough-panel .button.primary{background:#216348;color:white;border-color:#216348;font-weight:700}
+.walkthrough-panel .button:disabled{opacity:.5;cursor:default}
+.walkthrough-panel :focus-visible,.walkthrough-panel:focus-visible{outline:3px solid #287bb2;outline-offset:3px}
+.walkthrough-wait{padding:10px 12px;background:#fff5df;border-radius:8px;color:#714c13}
+.walkthrough-highlight{outline:3px solid #287bb2!important;outline-offset:5px;scroll-margin-block:100px}
+body.walkthrough-active{padding-bottom:380px}
+.sem-opportunity-entry{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:16px;padding:18px 20px;margin:18px 0;border:1px solid #a7c6b4;border-radius:12px;background:#eff7f1}
+.sem-opportunity-entry h3{margin:0 0 4px;font-size:18px}
+.sem-opportunity-entry p{margin:0;max-width:620px}
+.sem-opportunity-entry .button{font-weight:700}
+@media(max-width:600px){.walkthrough-panel{bottom:8px;right:8px;width:calc(100vw - 16px);padding:16px;max-height:48vh}.walkthrough-panel h2{font-size:18px}.walkthrough-panel p{font-size:14px}.walkthrough-launcher{margin:4px 0}}

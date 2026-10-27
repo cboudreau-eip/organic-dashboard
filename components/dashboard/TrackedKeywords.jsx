@@ -129,6 +129,10 @@ export default function TrackedKeywords({searchData={status:'loading',result:nul
  const priorOnly=useMemo(()=>{if(!current||!prior)return 0;const keys=new Set(current.rows.map(r=>r.keyword.toLowerCase()));return prior.payload.rows.filter(r=>!keys.has(r.keyword.toLowerCase())).length;},[current,prior]);
  return <CollapsibleSection className="card tracked-keywords" aria-labelledby="tracked-title" title="Tracked keywords" level={2} header={<div className="organic-heading"><div><span className="organic-badge">SEMRUSH · IMPORTED SNAPSHOTS</span><h2 id="tracked-title">Tracked keywords</h2><p>Your monitored keywords, ranking pages and saved comparisons.</p></div></div>}>
   
+  <div className="sem-opportunity-entry">
+   <div><h3>Find your next page to improve</h3><p>Connect tracked rankings with Google traffic and organic contact history, then save your planned work.</p>{!current&&<p>Load a saved snapshot below to open Page opportunities.</p>}</div>
+   <button type="button" className="button primary" data-tour="page-opportunities" disabled={!current||busy} aria-pressed={view==='pages'} onClick={()=>{setView('pages');setPage(0);}}>Page opportunities</button>
+  </div>
   <ActionList refresh={actionRefresh}/>
   <p>This is a manual import, not a live Semrush connection. Snapshot access uses your Growth Hunter team permissions.</p>
   {busy&&!current&&<p role="status">Loading your saved keyword data…</p>}

@@ -30,7 +30,7 @@ export default function LeadImpact({groups,result,Pagination,snapshotId,canSave=
   return joined.sort((a,b)=>sort==='contacts'?(b.lead.current?.contactSessions??-1)-(a.lead.current?.contactSessions??-1):sort==='loss'?(a.lead.contactChange??Infinity)-(b.lead.contactChange??Infinity):a.lead.order-b.lead.order||(b.lead.previous?.contactSessions??0)-(a.lead.previous?.contactSessions??0));
  },[groups,data,sort]);
  const activePage=Math.min(page,Math.max(0,Math.ceil(rows.length/size)-1));
- return <details className="sem-gsc-context" onToggle={event=>setOpen(event.currentTarget.open)}>
+ return <details data-tour="lead-impact" className="sem-gsc-context" onToggle={event=>setOpen(event.currentTarget.open)}>
   <summary><strong>Lead impact · Which ranking pages generate contacts?</strong></summary>
   {open&&<>
    <p>Uses the keyword and page filters above. Counts are for the whole landing page, not individual keywords.</p>

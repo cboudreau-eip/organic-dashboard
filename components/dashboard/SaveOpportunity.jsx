@@ -10,7 +10,7 @@ export default function SaveOpportunity({page,title,snapshotId,disabled,onSaved}
    setSaved(true);onSaved?.();
   }catch(e){setError(e.message);}finally{setBusy(false);}
  }
- return <><button type="button" className="button" disabled={disabled||busy||saved} onClick={save}>{busy?'Saving…':saved?'Saved':'Save opportunity'}</button>
+ return <><button type="button" className="button" data-tour="save-opportunity" disabled={disabled||busy||saved} onClick={save}>{busy?'Saving…':saved?'Saved':'Save opportunity'}</button>
  {saved&&<button type="button" className="button" onClick={()=>document.getElementById('growth-action-list')?.scrollIntoView({behavior:'smooth'})}>View saved actions</button>}
  {error&&<small role="alert">{error}</small>}</>;
 }

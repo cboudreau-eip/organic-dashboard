@@ -13,6 +13,7 @@ import TrackedKeywords from './TrackedKeywords';
 import DatoramaSnapshot from './DatoramaSnapshot';
 import DatoramaPeriods from './DatoramaPeriods';
 import CharlieLaunch from './CharlieLaunch';
+import Walkthrough from './Walkthrough';
 import GrowthHunter from '../growth-hunter/GrowthHunter';
 import '../growth-hunter/growth-hunter.css';
 
@@ -48,5 +49,5 @@ export default function Dashboard({ userEmail, userId, growthAllowed = false }) 
   return <>{growthHost && createPortal(<GrowthHunter active={growthActive} />, growthHost)}{launching && <CharlieLaunch onComplete={finishLaunch} />}<div className="dashboard-page" ref={host} inert={launching} aria-hidden={launching || undefined}>
     <p role="status">Loading dashboard…</p>
     <noscript>Enable JavaScript to explore the interactive dashboard.</noscript>
-  </div>{searchHost && createPortal(<><SearchPerformance onData={setSearchData} />{growthAllowed && <TrackedKeywords searchData={searchData} />}</>, searchHost)}{analyticsHost && createPortal(<OrganicOverview days={days} setDays={setDays} />, analyticsHost)}{leadsHost && createPortal(<section className="organic-live"><DatoramaPeriods /><details className="organic-definitions"><summary>Archived July–September 2026 landing-page report</summary><DatoramaSnapshot /></details><div className="organic-heading"><span className="organic-badge">POSTHOG · ORGANIC SEARCH</span><OrganicDateControls key={periodParams(days)} selection={normalizePeriod(days)} onApply={setDays} /></div><OrganicConversions key={periodParams(days)} days={days} detailed /></section>, leadsHost)}{accountHost && createPortal(<form action={signOut} className="account-form"><span className="account-email" title={userEmail}>{userEmail}</span><button type="submit" className="button">Sign out</button></form>, accountHost)}</>;
+  </div>{searchHost && createPortal(<><SearchPerformance onData={setSearchData} />{growthAllowed && <TrackedKeywords searchData={searchData} />}</>, searchHost)}{analyticsHost && createPortal(<OrganicOverview days={days} setDays={setDays} />, analyticsHost)}{leadsHost && createPortal(<section className="organic-live"><DatoramaPeriods /><details className="organic-definitions"><summary>Archived July–September 2026 landing-page report</summary><DatoramaSnapshot /></details><div className="organic-heading"><span className="organic-badge">POSTHOG · ORGANIC SEARCH</span><OrganicDateControls key={periodParams(days)} selection={normalizePeriod(days)} onApply={setDays} /></div><OrganicConversions key={periodParams(days)} days={days} detailed /></section>, leadsHost)}{accountHost && createPortal(<><Walkthrough allowed={growthAllowed}/><form action={signOut} className="account-form"><span className="account-email" title={userEmail}>{userEmail}</span><button type="submit" className="button">Sign out</button></form></>, accountHost)}</>;
 }
