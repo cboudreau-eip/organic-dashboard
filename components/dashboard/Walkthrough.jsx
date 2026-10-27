@@ -56,11 +56,13 @@ export default function Walkthrough({allowed=false}) {
    </div>
    {!active? <>{allowed?<button type="button" className="button primary" onClick={start}>Start walkthrough</button>:<p>This walkthrough requires Growth Hunter team access. Ask your dashboard administrator to enable access to tracked keywords and saved actions.</p>}</>:<>
     {!ready&&<p className="walkthrough-wait" role="status">{opportunitySteps[step].missing}</p>}
-    <div className="walkthrough-actions">
-     <button type="button" className="button" disabled={step===0} onClick={()=>setStep(s=>s-1)}>Back</button>
+    <div className="walkthrough-utilities" role="group" aria-label="Walkthrough tools">
      <button type="button" className="button" onClick={focusControl} disabled={!hasTarget}>Focus control</button>
      <button type="button" className="button" onClick={start}>Restart</button>
      {step<opportunitySteps.length-1&&<button type="button" className="button" onClick={()=>setStep(s=>s+1)}>Skip step</button>}
+    </div>
+    <div className="walkthrough-actions" role="group" aria-label="Walkthrough navigation">
+     <button type="button" className="button" disabled={step===0} onClick={()=>setStep(s=>s-1)}>Back</button>
      <button type="button" className="button primary" disabled={!ready&&step!==opportunitySteps.length-1} onClick={()=>step===opportunitySteps.length-1?exit():setStep(s=>s+1)}>{step===opportunitySteps.length-1?'Finish walkthrough':'Next'}</button>
     </div><small>Use the highlighted controls directly. Escape exits. Skipping or finishing does not save any work.</small>
    </>}

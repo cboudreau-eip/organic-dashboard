@@ -1,11 +1,19 @@
-.walkthrough-launcher{display:inline-flex;margin-right:8px}
-.walkthrough-panel{position:fixed;z-index:1000;bottom:18px;right:18px;width:min(540px,calc(100vw - 36px));max-height:55vh;overflow:auto;box-sizing:border-box;padding:22px;border:1px solid #90b6a2;border-radius:18px;background:#fff;color:#183b2b;box-shadow:0 12px 48px #142e2633;font-family:inherit;line-height:1.5}
+.dashboard-page #account-controls{display:flex;align-items:center;justify-content:flex-end;flex-wrap:wrap;gap:10px;min-width:0}
+.dashboard-page .topbar{height:auto;min-height:64px;gap:12px;padding-block:12px}
+.dashboard-page .top-actions{flex-wrap:wrap;justify-content:flex-end;min-width:0;gap:10px}
+.dashboard-page .account-form{margin:0}
+.walkthrough-launcher{display:inline-flex;flex-shrink:0}
+.walkthrough-launcher .button{white-space:nowrap}
+.walkthrough-panel{position:fixed;z-index:1000;bottom:18px;right:18px;width:min(480px,calc(100vw - 36px));max-height:55dvh;overflow:auto;box-sizing:border-box;padding:22px;border:1px solid #90b6a2;border-radius:18px;background:#fff;color:#183b2b;box-shadow:0 12px 48px #142e2633;font:14px/1.5 Inter,'Segoe UI',Arial,sans-serif}
 .walkthrough-panel h2{font-size:21px;line-height:1.25;margin:12px 0 8px}
 .walkthrough-panel p{font-size:15px;margin:8px 0 16px}
 .walkthrough-panel small{display:block;font-size:12px;margin-top:12px;color:#4b6257}
 .walkthrough-top{display:flex;align-items:center;justify-content:space-between;gap:12px;font-size:11px;font-weight:800;letter-spacing:.08em}
-.walkthrough-actions{display:flex;flex-wrap:wrap;gap:8px}
-.walkthrough-panel .button{font:inherit;font-size:13px;cursor:pointer;border:1px solid #9ab3a6;background:#f4f8f5;color:#183b2b;border-radius:8px;padding:8px 12px}
+.walkthrough-actions{display:flex;align-items:center;justify-content:space-between;gap:12px;border-top:1px solid #dce7df;padding-top:14px;margin-top:14px}
+.walkthrough-utilities{display:flex;align-items:center;flex-wrap:wrap;gap:8px}
+.walkthrough-actions .button{min-width:80px}
+.walkthrough-actions .primary{margin-left:auto}
+.walkthrough-panel .button{display:inline-flex;align-items:center;justify-content:center;min-height:38px;white-space:nowrap;font:inherit;font-size:13px;cursor:pointer;border:1px solid #9ab3a6;background:#f4f8f5;color:#183b2b;border-radius:8px;padding:8px 12px}
 .walkthrough-panel .button.primary{background:#216348;color:white;border-color:#216348;font-weight:700}
 .walkthrough-panel .button:disabled{opacity:.5;cursor:default}
 .walkthrough-panel :focus-visible,.walkthrough-panel:focus-visible{outline:3px solid #287bb2;outline-offset:3px}
@@ -16,4 +24,5 @@ body.walkthrough-active{padding-bottom:380px}
 .sem-opportunity-entry h3{margin:0 0 4px;font-size:18px}
 .sem-opportunity-entry p{margin:0;max-width:620px}
 .sem-opportunity-entry .button{font-weight:700}
-@media(max-width:600px){.walkthrough-panel{bottom:8px;right:8px;width:calc(100vw - 16px);padding:16px;max-height:48vh}.walkthrough-panel h2{font-size:18px}.walkthrough-panel p{font-size:14px}.walkthrough-launcher{margin:4px 0}}
+@media(max-width:1000px){.dashboard-page .top-actions .sample,.dashboard-page .top-actions .today{display:none}}
+@media(max-width:760px){.dashboard-page .topbar{flex-wrap:wrap}.dashboard-page .top-actions{width:100%}.dashboard-page #account-controls{width:100%;justify-content:space-between}.walkthrough-panel{bottom:70px;right:8px;width:calc(100vw - 16px);padding:16px;max-height:48dvh}.walkthrough-panel h2{font-size:18px}.walkthrough-panel p{font-size:14px}.sem-opportunity-entry{align-items:flex-start}.sem-opportunity-entry>.button{width:100%}}
