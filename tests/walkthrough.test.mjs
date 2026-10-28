@@ -32,7 +32,7 @@ test('waiting, skip, restart, escape, replay and unmount never write data',async
   await act(async()=>root.render(React.createElement(module.exports.default,{allowed:true})));
   const button=name=>[...document.querySelectorAll('button')].find(b=>b.textContent===name);
   const click=async name=>{assert.ok(button(name),name);await act(async()=>button(name).click());};
-  await click('Help & walkthroughs');await click('Start walkthrough');
+  await click('Help & walkthroughs');await click('Find and save your first opportunity');
   assert.equal(button('Next').disabled,true);
   assert.ok(document.querySelector('[data-nav]').classList.contains('walkthrough-highlight'));
   document.getElementById('gsc-live-host').hidden=false;
@@ -44,7 +44,28 @@ test('waiting, skip, restart, escape, replay and unmount never write data',async
   assert.equal(document.querySelector('#walkthrough-panel'),null);assert.equal(document.querySelector('.walkthrough-highlight'),null);
   assert.equal(document.body.classList.contains('walkthrough-active'),false);assert.equal(intervals.size,0);
   assert.equal(document.activeElement,button('Help & walkthroughs'));
-  await click('Help & walkthroughs');await click('Start walkthrough');
+  await click('Help & walkthroughs');await click('Find and save your first opportunity');
+  await click('Exit');
+  await act(async()=>root.render(React.createElement(module.exports.default,{allowed:false})));
+  await click('Help & walkthroughs');
+  assert.equal(button('Find and save your first opportunity'),undefined);
+  await click('How is organic performing?');
+  assert.match(document.querySelector('#walkthrough-panel h2').textContent,/Open Overview/);
+  assert.equal(button('Next').disabled,true);
+  document.body.insertAdjacentHTML('beforeend','<button data-nav="overview">Overview</button><div id="organic-live-host"><section class="organic-live"><div class="dashboard-section-content"><form class="gsc-date-controls"></form><p class="organic-freshness" hidden>Retrieved</p></div></section></div>');
+  await act(async()=>tick());
+  assert.equal(button('Next').disabled,false);
+  await click('Next');
+  assert.match(document.querySelector('#walkthrough-panel h2').textContent,/traffic dates/);
+  assert.equal(button('Next').disabled,true);
+  document.querySelector('#organic-live-host .organic-freshness').hidden=false;
+  await act(async()=>tick());
+  assert.equal(button('Next').disabled,false);
+  await click('Restart');
+  assert.match(document.querySelector('.walkthrough-top').textContent,/STEP 1 OF 9/);
+  for(let i=0;i<8;i++)await click('Skip step');
+  await click('Finish walkthrough');
+  assert.equal(document.querySelector('#walkthrough-panel'),null);
   await act(async()=>root.unmount());root=null;
   assert.equal(intervals.size,0);assert.equal(document.querySelector('.walkthrough-highlight'),null);assert.equal(writes,0);
  }finally{
