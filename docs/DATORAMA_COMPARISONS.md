@@ -27,3 +27,5 @@ Month-to-date uses leadDataThrough, the latest verified day with lead counts, no
 ## Validation
 
 Tests in tests/datorama-periods.test.mjs cover calendar boundaries, leap years, MTD and custom ranges, monthly coverage, missing versus zero values, reconciliation, authorization, duplicate parameters and error redaction. Full npm test and Next.js build run in CI. Use synthetic fixtures in public tests. No production data is stored in this document or test fixtures.
+
+Lead-to-policy conversion uses EIP leads as the denominator, matching the source closing ratios. Gross and approved rates are separate, with MS, MA and combined MS+MA rows. Rates use summed policy counts divided by summed EIP leads (not averaged daily rates or unique-person conversion). Missing numerator or denominator values suppress the rate; either incomplete period suppresses the percentage-point change. Zero EIP leads has no rate. Lead-created dates and cohort maturity still apply.

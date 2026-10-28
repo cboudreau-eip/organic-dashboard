@@ -1,3 +1,6 @@
+.dashboard-page .datorama-conversion { margin: 24px 0; }
+.dashboard-page .datorama-conversion p { font-size: 13px; max-width: 95ch; }
+.dashboard-page .datorama-conversion-note { display: block; color: #785715; }
 .dashboard-page .datorama-periods {
   padding: 26px; margin: 0 0 24px; min-width: 0;
   background: #fff; border: 1px solid #dce5dd; border-radius: 16px;
