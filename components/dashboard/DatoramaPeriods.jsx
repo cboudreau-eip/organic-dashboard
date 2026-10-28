@@ -26,6 +26,7 @@ export default function DatoramaPeriods(){
   {busy&&<p role="status">Loading Datorama comparison…</p>}
   {error&&<p role="alert" className="organic-error">{error} <button className="button" onClick={()=>setRetry(n=>n+1)}>Retry</button></p>}
   {data&&<>
+   <p className="organic-period"><strong>Website scope:</strong> {data.scope}</p>
    <p className="organic-period"><strong>{data.current.start} to {data.current.end}</strong> ({data.current.days} days) compared with <strong>{data.previous.start} to {data.previous.end}</strong> ({data.previous.days} days)</p>
    <div className="datorama-meta"><span>Imported snapshot</span><span>Lead data through {data.leadDataThrough}</span><details><summary>Source & freshness</summary><p>{data.dateBasis}. {data.scope}</p><p>Imported {new Date(data.exportedAt).toLocaleString()} · History: {data.available.start} to {data.available.end}. This is an imported snapshot, not a live feed.</p></details></div>
    {data.overlapping&&<p className="datorama-gap">The selected periods overlap.</p>}
