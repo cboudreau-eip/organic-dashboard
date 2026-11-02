@@ -76,7 +76,7 @@ export const pepperReviewSteps = [
  },
  {
   "title": "Finish, save, and copy your review",
-  "target": "#pepper-review-draft",
+  "target": "#pepper-review-draft > summary",
   "text": "Open Review draft below. Check dates, sources, three opportunities (or explicit gaps), and available results. Add decisions needed from Pepper and your next review date. Save draft to keep it in this browser, then Copy review for your meeting notes. Copying does not save or send it to Pepper. Unfilled fields remain marked Not recorded.",
   "ready": null,
   "reveal": [],
