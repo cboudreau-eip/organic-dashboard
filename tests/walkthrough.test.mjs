@@ -49,6 +49,7 @@ test('waiting, skip, restart, escape, replay and unmount never write data',async
   await act(async()=>root.render(React.createElement(module.exports.default,{allowed:false})));
   await click('Help & walkthroughs');
   assert.equal(button('Find and save your first opportunity'),undefined);
+  assert.equal(button('Did my changes work?'),undefined);
   await click('How is organic performing?');
   assert.match(document.querySelector('#walkthrough-panel h2').textContent,/Open Overview/);
   assert.equal(button('Next').disabled,true);
@@ -82,6 +83,18 @@ test('waiting, skip, restart, escape, replay and unmount never write data',async
   assert.match(document.querySelector('.walkthrough-top').textContent,/STEP 1 OF 8/);
   for(let i=0;i<7;i++)await click('Skip step');
   await click('Finish walkthrough');assert.equal(document.querySelector('#walkthrough-panel'),null);
+  await act(async()=>root.render(React.createElement(module.exports.default,{allowed:true})));
+  await click('Help & walkthroughs');await click('Did my changes work?');
+  assert.match(document.querySelector('.walkthrough-top').textContent,/STEP 1 OF 8/);
+  await click('Next');assert.equal(button('Next').disabled,true);
+  document.body.insertAdjacentHTML('beforeend','<section id="growth-action-list"><section aria-label="Selected saved action"><form data-tour="action-work"></form><div data-tour="action-measure"><button disabled>Measure 7 days</button></div><details data-tour="action-outcome"><summary>7-day results</summary><div data-tour="outcome-metrics"></div><h4 data-tour="outcome-rankings">Tracked rankings</h4></details></section></section>');
+  await act(async()=>tick());assert.equal(button('Next').disabled,false);
+  for(let i=0;i<4;i++)await click('Next');
+  assert.equal(button('Next').disabled,true);
+  document.querySelector('[data-tour="action-outcome"]').open=true;
+  await act(async()=>tick());assert.equal(button('Next').disabled,false);
+  await click('Next');await click('Next');await click('Finish walkthrough');
+  assert.equal(document.querySelector('#walkthrough-panel'),null);
   await act(async()=>root.unmount());root=null;
   assert.equal(intervals.size,0);assert.equal(document.querySelector('.walkthrough-highlight'),null);assert.equal(writes,0);
  }finally{

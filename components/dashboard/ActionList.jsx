@@ -17,13 +17,13 @@ function Outcome({record,action}){
  ['Contact rate',p.leads.before?.rate,p.leads.after?.rate,'%'],
  ['Phone-click sessions',p.leads.before?.phoneSessions,p.leads.after?.phoneSessions,'']
  ];
- return <details className="sem-gsc-context"><summary>{record.window_days}-day results · Saved {new Date(record.created_at).toLocaleString()}</summary>
+ return <details className="sem-gsc-context" data-tour="action-outcome"><summary>{record.window_days}-day results · Saved {new Date(record.created_at).toLocaleString()}</summary>
   {record.published_on!==action.published_on&&<p role="status">Historical result for a different publication date: {record.published_on}.</p>}
   <p><strong>Before:</strong> {p.period.priorStart} to {p.period.priorEnd} · <strong>After:</strong> {p.period.start} to {p.period.end} · Pacific time. Recorded against action revision {record.action_version}.</p>
-  <div className="organic-table-scroll"><table><thead><tr><th>Metric</th><th>Before</th><th>After</th><th>Observed change</th></tr></thead><tbody>{rows.map(([name,a,b,unit])=><tr key={name}><th scope="row">{name}</th><td>{num(a)}{a!=null?unit:''}</td><td>{num(b)}{b!=null?unit:''}</td><td>{a==null||b==null?'Not comparable':(b-a>0?'+':'')+num(b-a)+(unit?' pp':'')}</td></tr>)}</tbody></table></div>
+  <div className="organic-table-scroll" data-tour="outcome-metrics"><table><thead><tr><th>Metric</th><th>Before</th><th>After</th><th>Observed change</th></tr></thead><tbody>{rows.map(([name,a,b,unit])=><tr key={name}><th scope="row">{name}</th><td>{num(a)}{a!=null?unit:''}</td><td>{num(b)}{b!=null?unit:''}</td><td>{a==null||b==null?'Not comparable':(b-a>0?'+':'')+num(b-a)+(unit?' pp':'')}</td></tr>)}</tbody></table></div>
   {p.leads.after?.sessions<30&&<p>Small sample: fewer than 30 after-period sessions. Rate changes may be unstable.</p>}
   <p>Missing source rows are not zero. GSC returned {p.gsc.coverage.previous}/{p.gsc.coverage.current} before/after pages (limit {p.gsc.limit}); PostHog rows {p.leads.beforeTruncated||p.leads.afterTruncated?'reached the limit':'did not reach the limit'} ({p.leads.limit}).</p>
-  <h4>Tracked rankings</h4>
+  <h4 data-tour="outcome-rankings">Tracked rankings</h4>
   <p>{p.rankings.available?p.rankings.comparable+' comparable keywords: '+p.rankings.improved+' improved, '+p.rankings.declined+' declined.':'A complete compatible snapshot pair is unavailable.'}</p>
   <p>Before snapshot: {p.rankings.beforeDate||'Unavailable'} · After snapshot: {p.rankings.afterDate||'Unavailable'}.</p>
   {p.rankings.scope&&<p>{p.rankings.scope.location} · {p.rankings.scope.device} · {p.rankings.scope.engine}</p>}
@@ -33,7 +33,7 @@ function Outcome({record,action}){
 }
 function Editor({action,canEdit,busy,onSave}){
  const [title,setTitle]=useState(action.title),[notes,setNotes]=useState(action.notes),[status,setStatus]=useState(action.status),[published,setPublished]=useState(action.published_on||'');
- return <form onSubmit={e=>{e.preventDefault();onSave({id:action.id,version:action.version,title,notes,status,published_on:published||null});}}>
+ return <form data-tour="action-work" onSubmit={e=>{e.preventDefault();onSave({id:action.id,version:action.version,title,notes,status,published_on:published||null});}}>
  <fieldset disabled={!canEdit||busy}><legend>Work and publication details</legend>
  <label>Action title<input required maxLength={160} value={title} onChange={e=>setTitle(e.target.value)}/></label>
  <label>Status<select value={status} onChange={e=>setStatus(e.target.value)}>{ACTION_STATUSES.map(s=><option key={s} value={s}>{label(s)}</option>)}</select></label>
@@ -81,11 +81,11 @@ export default function ActionList({refresh=0}){
  {detail&&<section className="sem-gsc-context" aria-label="Selected saved action">
   <h4>{detail.action.title}</h4><a href={detail.action.page} target="_blank" rel="noreferrer">{detail.action.page}</a>
   <Editor key={detail.action.id+'-'+detail.action.version} action={detail.action} canEdit={canEdit} busy={busy} onSave={save}/>
-  <h4>Measure results</h4><p>Equal windows before and after publication; publication day is excluded. Save your edits before measuring. Results are saved on request, not scheduled automatically.</p>
+  <div data-tour="action-measure"><h4>Measure results</h4><p>Equal windows before and after publication; publication day is excluded. Save your edits before measuring. Results are saved on request, not scheduled automatically.</p>
   {[7,28].map(days=>{let waiting='';try{actionWindow(detail.action.published_on,days);}catch(e){waiting=e.message;}
    return <div key={days}><button className="button" disabled={busy||!canEdit||!!waiting||!['published','monitoring'].includes(detail.action.status)} onClick={()=>measure(days)}>{busy?'Working…':'Measure '+days+' days'}</button><small>{waiting||'Ready to check finalized source data.'}</small></div>;
   })}
-  <p>Newest 10 saved measurements. Earlier publication dates remain labeled on historical results.</p>
+  </div><p>Newest 10 saved measurements. Earlier publication dates remain labeled on historical results.</p>
   {detail.results.map(record=><Outcome key={record.id} record={record} action={detail.action}/>)}
   <details><summary>Work history ({detail.action.history.length} revisions)</summary>{[...detail.action.history].reverse().map(h=><div key={h.version}><strong>Revision {h.version} · {label(h.status)}</strong><p>{new Date(h.at).toLocaleString()} · Published {h.published_on||'not yet'}</p><p>{h.title}</p><p style={{whiteSpace:'pre-wrap'}}>{h.notes||'No work notes recorded.'}</p></div>)}</details>
   <button className="button" disabled={busy} onClick={()=>setDetail(null)}>Close action</button>

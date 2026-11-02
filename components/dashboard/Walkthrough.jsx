@@ -1,14 +1,14 @@
 'use client';
 import {useEffect,useRef,useState} from 'react';
 import {createPortal} from 'react-dom';
-import {opportunitySteps,organicPerformanceSteps,leadPolicySteps,visibleTarget,revealStep} from './walkthrough';
+import {opportunitySteps,organicPerformanceSteps,leadPolicySteps,resultsReviewSteps,visibleTarget,revealStep} from './walkthrough';
 import './walkthrough.css';
 
 export default function Walkthrough({allowed=false}) {
  const [step,setStep]=useState(null),[menu,setMenu]=useState(false),[ready,setReady]=useState(false),[hasTarget,setHasTarget]=useState(false);
  const launcher=useRef(null),panel=useRef(null),target=useRef(null);
  const [tour,setTour]=useState('organic');
- const steps=tour==='organic'?organicPerformanceSteps:tour==='leads'?leadPolicySteps:opportunitySteps;
+ const steps=tour==='organic'?organicPerformanceSteps:tour==='leads'?leadPolicySteps:tour==='results'?resultsReviewSteps:opportunitySteps;
  const active=step!==null;
  function exit(){setStep(null);setMenu(false);launcher.current?.focus();}
  function start(selected=tour){setTour(selected);setMenu(false);setStep(0);}
@@ -62,7 +62,8 @@ export default function Walkthrough({allowed=false}) {
     <p>Understand organic submissions, EIP leads, policy counts, and incomplete comparisons.</p>
     <button type="button" className="button" onClick={()=>start('leads')}>Are organic leads becoming policies?</button>
     <p>Find a page to improve and record your planned work.</p>
-    {allowed?<button type="button" className="button" onClick={()=>start('opportunity')}>Find and save your first opportunity</button>:<p>The opportunity walkthrough requires Growth Hunter team access.</p>}
+    {allowed?<button type="button" className="button" onClick={()=>start('opportunity')}>Find and save your first opportunity</button>:<p>The opportunity and results walkthroughs require Growth Hunter team access.</p>}
+    {allowed&&<><p>Review observed results after a website change and record your next action.</p><button type="button" className="button" onClick={()=>start('results')}>Did my changes work?</button></>}
    </>:<>
     {!ready&&<p className="walkthrough-wait" role="status">{steps[step].missing}</p>}
     <div className="walkthrough-utilities" role="group" aria-label="Walkthrough tools">

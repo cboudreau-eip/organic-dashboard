@@ -1,3 +1,91 @@
+export const resultsReviewSteps = [
+ {
+  "title": "Open Acquisition",
+  "target": "[data-nav=\"acquisition\"]",
+  "text": "Select Acquisition to find Saved actions inside Tracked keywords. This walkthrough teaches you to review work already published on the website. It does not publish website changes.",
+  "ready": "#gsc-live-host:not([hidden])",
+  "reveal": [],
+  "missing": "Select Acquisition to continue."
+ },
+ {
+  "title": "Choose a saved action",
+  "target": "#growth-action-list",
+  "text": "Use Filter status to find a published or monitoring action, then click its Open action button. Confirm the page URL and work you want to review. If nothing has been saved yet, use Find and save your first opportunity first, or skip to preview this tutorial.",
+  "ready": "[aria-label=\"Selected saved action\"]",
+  "reveal": [
+   ".tracked-keywords",
+   "#growth-action-list"
+  ],
+  "missing": "Open a saved action to continue. If the list is empty, clear the status filter or skip; the tutorial will not create an example action."
+ },
+ {
+  "title": "Review what changed",
+  "target": "[data-tour=\"action-work\"]",
+  "text": "Check the page URL, title, and What changed / work notes. Review Work history if you need earlier revisions. Explain the problem you intended to address and exactly what you changed. If you recorded original evidence in the notes, use it as context; the measured before-period figures are a separate comparison.",
+  "ready": null,
+  "reveal": [
+   ".tracked-keywords",
+   "#growth-action-list"
+  ],
+  "missing": "Open a saved action in Acquisition first. If it is unavailable, check access or skip this step to preview the guidance."
+ },
+ {
+  "title": "Confirm publication details",
+  "target": "[data-tour=\"action-work\"]",
+  "text": "For work that is actually live, enter the publication date in Pacific time and use Published or Monitoring status. Click Save changes before measuring. This saves a real action update; it does not edit the website. Keep unpublished work Planned. Viewers can read results but need an analyst or administrator to save or measure.",
+  "ready": null,
+  "reveal": [
+   ".tracked-keywords",
+   "#growth-action-list"
+  ],
+  "missing": "Open a saved action in Acquisition first. If it is unavailable, check access or skip this step to preview the guidance."
+ },
+ {
+  "title": "Run a 7-day or 28-day review",
+  "target": "[data-tour=\"action-measure\"]",
+  "text": "Choose Measure 7 days or Measure 28 days when enabled. Each compares equal windows before and after publication, excluding publication day. Disabled controls can mean the window is not complete, the action is unpublished, or you lack edit access. Read the waiting message; finalized source data may also lag. Measuring saves a real result on request, not on a schedule. You can skip instead.",
+  "ready": null,
+  "reveal": [
+   ".tracked-keywords",
+   "#growth-action-list"
+  ],
+  "missing": "Open a saved action in Acquisition first. If it is unavailable, check access or skip this step to preview the guidance."
+ },
+ {
+  "title": "Open and compare saved results",
+  "target": "[data-tour=\"action-outcome\"] > summary",
+  "text": "Open a saved 7-day or 28-day result. Check its before/after dates, saved timestamp, and any warning about a different publication date. Compare clicks, impressions, organic landing sessions, and contact sessions. Contact rate changes use percentage points. Missing values are not zero, and small samples can make rates unstable. These contact metrics do not verify policies sold.",
+  "ready": "[data-tour=\"action-outcome\"][open] [data-tour=\"outcome-metrics\"]",
+  "reveal": [
+   ".tracked-keywords",
+   "#growth-action-list"
+  ],
+  "missing": "Open a saved results summary. If no measurement exists or source data is unavailable, skip and record that results are not yet available."
+ },
+ {
+  "title": "Check rankings and evidence limits",
+  "target": "[data-tour=\"action-outcome\"][open] [data-tour=\"outcome-rankings\"]",
+  "text": "Review comparable tracked keywords and the before/after snapshot dates. Positive rank improvement means a better ranking. Missing compatible snapshots mean rankings are unavailable, not unchanged. Read source coverage and the disclaimer. Seasonality, search updates, other edits, and tracking changes can also affect results.",
+  "ready": null,
+  "reveal": [
+   ".tracked-keywords",
+   "#growth-action-list"
+  ],
+  "missing": "Expand a saved results summary to inspect rankings and coverage, or skip if no result exists."
+ },
+ {
+  "title": "Record your conclusion and next action",
+  "target": "[data-tour=\"action-work\"]",
+  "text": "Return to What changed / work notes and append a dated review without removing the original plan: “After [change] went live on [date], the [7/28]-day review showed [before → after metrics]. Assessment: improved, declined, mixed, or too early to tell. Limits: [missing data or other influences]. Next: [action and review date].” Click Save changes to keep it. Describe observed results; a change after publication does not prove your work caused it.",
+  "ready": null,
+  "reveal": [
+   ".tracked-keywords",
+   "#growth-action-list"
+  ],
+  "missing": "Open a saved action in Acquisition first. If it is unavailable, check access or skip this step to preview the guidance."
+ }
+];
+
 export const leadPolicySteps = [
  {
   "title": "Open Leads & funnel",
