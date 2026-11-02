@@ -13,12 +13,15 @@ const safe=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;
 function section(title,right=''){return '<div class="section-heading"><h2>'+title+'</h2><small>'+right+'</small></div>'}
 const views=[['overview','Overview'],['acquisition','Acquisition'],['leads','Leads & funnel'],['connections','Data sources']];
 if (growthAllowed) { views.splice(3,0,['growth','Growth Hunter']); icons.growth=icons.opportunities; }
+if (growthAllowed) {views.splice(4,0,['ai','AI visibility']);icons.ai=icons.keywords;}
 function render(){
  root.dataset.activeView=state.view;
  $('organic-live-host').hidden=state.view!=='overview';
  $('gsc-live-host').hidden=state.view!=='acquisition';
  $('organic-leads-host').hidden=state.view!=='leads';
  if ($('growth-hunter-host')) $('growth-hunter-host').hidden=state.view!=='growth';
+ if ($('ai-visibility-host')) $('ai-visibility-host').hidden=state.view!=='ai';
+ root.dispatchEvent(new root.ownerDocument.defaultView.CustomEvent('ai-visibility', {detail:state.view==='ai'}));
  root.dispatchEvent(new root.ownerDocument.defaultView.CustomEvent('growth-visibility', { detail: state.view==='growth' }));
  const label=views.find(v=>v[0]===state.view)[1];
  $('view-title').textContent=label;$('crumb').textContent=label;
@@ -30,6 +33,7 @@ const connectors=[
 {id:'gsc',name:'Google Search Console',mark:'G',color:'#4285f4',kind:'Search performance'},
 {id:'datorama',name:'Datorama export',mark:'D',color:'#286547',kind:'Historical leads & policies'},
 {id:'semrush',name:'Semrush',mark:'S',color:'#f17a3b',kind:'Keyword intelligence'},
+{id:'otterly',name:'Otterly',mark:'O',color:'#286547',kind:'MedicareFAQ AI visibility · daily saved reports'},
 {id:'crm',name:'CRM / Salesforce',mark:'SF',color:'#209dcc',kind:'Lead and sales records'},
 {id:'calls',name:'Call tracking',mark:'☎',color:'#7363b4',kind:'Phone lead attribution'}];
 const sourceChecks={};let sourceBusy=false,sourceStarted=false;const sourceActivity=[];
@@ -38,7 +42,7 @@ function connectionsView(){
  if(!sourceStarted){sourceStarted=true;queueMicrotask(()=>refreshSources('all',false))}
  return '<div class="panel-head"><div><h2>Source overview</h2><p class="mock-note">Live PostHog/GSC checks and historical imports · See each source for coverage.</p></div><button class="button primary" data-refresh="all" '+(sourceBusy?'disabled':'')+'>'+(sourceBusy?'Checking…':'Refresh all')+'</button></div><div class="source-grid">'+connectors.map(c=>{
  const live=['posthog','gsc'].includes(c.id),imported=c.id==='datorama',check=sourceChecks[c.id],status=check?.status||((live||imported)?'Not checked yet':'Not connected');
- return '<details class="card connection-card dashboard-source-section" open><summary class="connection-top"><span class="source-logo" style="--source-color:'+c.color+'">'+c.mark+'</span><span><strong>'+c.name+'</strong><small style="display:block">'+c.kind+'</small></span><span class="connection-state" style="color:'+(status==='Connected'?'#168455':'#68736c')+'">'+safe(status)+'</span><span class="dashboard-source-toggle"><span class="when-open">Collapse ▴</span><span class="when-closed">Expand ▾</span></span></summary><dl><dt>Workspace</dt><dd>'+ (imported?'SEO: Landing Page · workspace 72141':live?(c.id==='posthog'?'MedicareFAQ · Project 452683':'https://www.medicarefaq.com/'):'Not configured')+'</dd><dt>Report retrieved</dt><dd>'+safe(sourceTime(check?.fetchedAt))+'</dd><dt>Last checked</dt><dd>'+safe(sourceTime(check?.checkedAt))+'</dd><dt>Refresh behavior</dt><dd>'+(imported?'Manual import · no automatic sync':live?'On demand · '+(c.id==='posthog'?'5':'15')+' minute report cache':'Not connected')+'</dd><dt>Report coverage</dt><dd>'+(check?.period?safe(check.period.start+' – '+check.period.end+' · '+check.timezone):'—')+'</dd></dl><footer><span>'+(check?.error?safe(check.error):imported?'Historical export in Leads & funnel. Source definitions require confirmation.':live?(c.id==='posthog'?'Organic traffic; tracked submissions and phone clicks available in Leads & funnel.':'Finalized Google Web search data; availability lags today.'):'No live data is connected to this dashboard.')+'</span>'+(live?'<button class="refresh-btn" data-refresh="'+c.id+'" '+(sourceBusy?'disabled':'')+'>Refresh</button>':'')+'</footer></details>'
+ return '<details class="card connection-card dashboard-source-section" open><summary class="connection-top"><span class="source-logo" style="--source-color:'+c.color+'">'+c.mark+'</span><span><strong>'+c.name+'</strong><small style="display:block">'+c.kind+'</small></span><span class="connection-state" style="color:'+(status==='Connected'?'#168455':'#68736c')+'">'+safe(status)+'</span><span class="dashboard-source-toggle"><span class="when-open">Collapse ▴</span><span class="when-closed">Expand ▾</span></span></summary><dl><dt>Workspace</dt><dd>'+ (c.id==='otterly'?'MedicareFAQ · United States':imported?'SEO: Landing Page · workspace 72141':live?(c.id==='posthog'?'MedicareFAQ · Project 452683':'https://www.medicarefaq.com/'):'Not configured')+'</dd><dt>Report retrieved</dt><dd>'+safe(sourceTime(check?.fetchedAt))+'</dd><dt>Last checked</dt><dd>'+safe(sourceTime(check?.checkedAt))+'</dd><dt>Refresh behavior</dt><dd>'+(c.id==='otterly'?'Daily at 14:00 UTC · saved report history':imported?'Manual import · no automatic sync':live?'On demand · '+(c.id==='posthog'?'5':'15')+' minute report cache':'Not connected')+'</dd><dt>Report coverage</dt><dd>'+(check?.period?safe(check.period.start+' – '+check.period.end+' · '+check.timezone):'—')+'</dd></dl><footer><span>'+(check?.error?safe(check.error):c.id==='otterly'?'Open AI visibility for mentions, citations and report dates.':imported?'Historical export in Leads & funnel. Source definitions require confirmation.':live?(c.id==='posthog'?'Organic traffic; tracked submissions and phone clicks available in Leads & funnel.':'Finalized Google Web search data; availability lags today.'):'No live data is connected to this dashboard.')+'</span>'+(live?'<button class="refresh-btn" data-refresh="'+c.id+'" '+(sourceBusy?'disabled':'')+'>Refresh</button>':'')+'</footer></details>'
  }).join('')+'</div><details class="card panel dashboard-source-section" open><summary><strong>Refresh activity</strong><span class="dashboard-source-toggle"><span class="when-open">Collapse ▴</span><span class="when-closed">Expand ▾</span></span></summary><p>Checks from this page session · Refresh retrieves a report, not new events from your website.</p><div aria-live="polite">'+(sourceActivity.length?sourceActivity.map(x=>'<div class="activity-row"><span>'+safe(sourceTime(x.time))+'</span><b>'+safe(x.name)+'</b><span>'+safe(x.status)+'</span></div>').join(''):'No checks completed yet.')+'</div></details>';
 }
 async function refreshSources(id,refresh=true){
@@ -85,3 +89,4 @@ render();
 const stopSpeech=startPortraitSpeech(root.querySelector('.portrait-speech'));
 return ()=>{chatPending?.abort();chatPending=null;stopSpeech();controller.abort();document.body.style.overflow='';};
 }
+

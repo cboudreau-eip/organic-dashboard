@@ -355,3 +355,6 @@ body:has(.charlie-launch) { overflow:hidden; }
 .dashboard-page .gsc-date-controls>p{font-size:12px;line-height:1.5;margin:12px 0 0;color:#4c6253}
 .dashboard-page .gsc-date-warning{padding:12px 15px;background:#fff4df;border:1px solid #e0c58c;border-radius:8px;color:#725016}
 @media(max-width:600px){.dashboard-page .gsc-date-fields label{flex:1 1 160px;min-width:0}}
+
+.ai-toolbar{display:flex;gap:16px;align-items:center;flex-wrap:wrap;margin:20px 0}.ai-toolbar select{margin-left:8px;padding:8px;border:1px solid #d7e3d9;border-radius:6px;background:white}.ai-kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:16px}.ai-kpis .card{padding:20px}.ai-kpis h3{font-size:15px;margin:0 0 14px}.ai-kpis strong{font-size:30px}.ai-kpis p{font-size:13px}.ai-table-wrap{overflow:auto;max-height:480px}.ai-table-wrap table{width:100%;border-collapse:collapse}.ai-table-wrap th,.ai-table-wrap td{padding:12px;text-align:left;border-bottom:1px solid #e1e8e0}.ai-table-wrap th{background:#f2f6ef;position:sticky;top:0}.ai-table-wrap small{display:block;overflow-wrap:anywhere}.ai-visibility>h3{margin-top:28px}.ai-visibility .organic-definitions{margin-top:20px}
+

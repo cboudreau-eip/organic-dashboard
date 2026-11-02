@@ -3,6 +3,8 @@ import { serverAuth } from '../../../../lib/auth/server';
 import { isTeamUser } from '../../../../lib/auth/config';
 import { organicOverview } from '../../../../lib/posthog/server';
 import { searchPerformance } from '../../../../lib/gsc/server';
+import {otterlyAccess} from '../../../../lib/otterly/server';
+import {reportPeriod} from '../../../../lib/otterly/report';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -29,6 +31,13 @@ export async function GET(request) {
     }
   }));
   if (source === 'all') {
+    try {
+      const {client:otterly}=await otterlyAccess();
+      const saved=await otterly.from('otterly_snapshots').select('payload').order('period_end',{ascending:false}).limit(1);
+      if(saved.error)throw Error('storage');
+      const report=saved.data[0]?.payload;
+      sources.push({id:'otterly',checkedAt:new Date().toISOString(),status:report?(report.period.end<reportPeriod().end?'Saved report behind latest day':'Daily sync'):'Not synced',fetchedAt:report?.fetchedAt,period:report?.period,timezone:'US · source timezone not supplied'});
+    }catch{sources.push({id:'otterly',checkedAt:new Date().toISOString(),status:'Unavailable',error:'Open AI visibility to check access and saved reports.'});}
     try {
       const snapshot = datoramaSnapshot();
       sources.push({ id: 'datorama', checkedAt: new Date().toISOString(), status: snapshot ? 'Imported snapshot' : 'Not imported', ...(snapshot ? { fetchedAt: snapshot.exportedAt, period: snapshot.period, timezone: 'Timezone not supplied' } : {}) });
