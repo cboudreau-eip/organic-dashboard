@@ -5,7 +5,7 @@ import {readFile} from 'node:fs/promises';
 import {REPORT_ID,WORKSPACE_ID,reportPeriod,ownUrl,normalizeReport,normalizeStats,validateReport} from '../lib/otterly/report.js';
 import {otterlyClient} from '../lib/otterly/client.js';
 const meta={id:REPORT_ID,workspaceId:WORKSPACE_ID,brand:'MedicareFAQ',brandDomain:'medicarefaq.com',createdDate:'2026-06-19'};
-const stats={id:REPORT_ID,brand:{brand:'MedicareFAQ',brandDomain:'medicarefaq.com'},isRecalculating:false,totalPrompts:41,summary:{totalMentions:12,brandCoverage:10,domainCoverage:20,averagePosition:null},competitorBrandsAnalysis:{brandMentions:[],brandCoverageHistory:[]}};
+const stats={id:REPORT_ID,status:'finished',brand:{brand:'MedicareFAQ',brandDomain:'medicarefaq.com'},isRecalculating:false,totalPrompts:41,summary:{totalMentions:12,brandCoverage:10,domainCoverage:20,averagePosition:null},competitorBrandsAnalysis:{brandMentions:[{brand:'MedicareFAQ',isMainBrand:true,mentions:9,brandCoverage:7,averagePosition:null}],brandCoverageHistory:[]}};
 test('Otterly uses completed New York days across DST and year boundaries',()=>{
  assert.deepEqual(reportPeriod(new Date('2026-11-02T03:00:00Z')),{start:'2026-10-02',end:'2026-10-31'});
  assert.deepEqual(reportPeriod(new Date('2027-01-01T16:00:00Z')),{start:'2026-12-02',end:'2026-12-31'});
@@ -16,7 +16,7 @@ test('Otterly rejects other sites and scope drift, and preserves unavailable val
  assert.throws(()=>validateReport({...meta,brandDomainVariations:['other.com']}));
  assert.throws(()=>normalizeStats({...stats,isRecalculating:true}));
  const r=normalizeReport({meta,stats,period:{start:'2026-10-03',end:'2026-11-01'},citations:[{url:'https://www.medicarefaq.com/a',citations:0},{url:'https://other.com',citations:999}],prompts:[],engines:[]});
- assert.equal(r.pages.length,1);assert.equal(r.pages[0].citations,0);assert.equal(r.summary.position,null);
+ assert.equal(r.pages.length,1);assert.equal(r.pages[0].citations,0);assert.equal(r.summary.position,null);assert.equal(r.summary.mentions,9);assert.equal(r.summary.coverage,7);
 });
 test('Otterly follows pagination, filters domain server-side, and isolates unsupported engines',async()=>{
  const calls=[];
