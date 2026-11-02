@@ -11,7 +11,7 @@ export default function PromptOpportunities({report}){
   <h3 id="prompt-opportunities-heading">Prompts to investigate</h3>
   <p><strong>{missing} with no mentions or citations recorded · {cited} cited but not named</strong></p>
   <p>These monitored questions have no MedicareFAQ brand mentions and either competitor mentions or MedicareFAQ citations. Questions with neither mentions nor citations appear first, followed by cited-but-not-named questions; within each group, higher competitor mention counts appear first. This is a review order, not an estimate of business impact.</p>
-  <p>Counts use this report’s dates and United States scope. A zero describes the monitored answers only, not every answer on the platform. Prompt citations are Otterly’s domain-citation metric, reported by its API as domain mentions.</p>
+  <p>Counts use this report’s dates and United States scope. A zero describes the monitored answers only, not every answer on the platform. Prompt citations count references to MedicareFAQ as a source.</p>
   {!report.promptPlatforms&&<p>Platform detail was not saved with this report. Overall prompt evidence is still shown below.</p>}
   {report.promptPlatformsFetchedAt&&<p className="organic-freshness">Platform detail retrieved {new Date(report.promptPlatformsFetchedAt).toLocaleString()}. Overall counts retain the saved report’s original sync time.</p>}
   {opportunities.map(p=><article className="card" key={p.id}>
