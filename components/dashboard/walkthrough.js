@@ -1,3 +1,85 @@
+export const leadPolicySteps = [
+ {
+  "title": "Open Leads & funnel",
+  "target": "[data-nav=\"leads\"]",
+  "text": "Select Leads & funnel to review MedicareFAQ lead and policy reporting. This tour will help you identify which figures you can use and which need more evidence.",
+  "ready": "#organic-leads-host:not([hidden])",
+  "reveal": [],
+  "missing": "Select Leads & funnel to continue."
+ },
+ {
+  "title": "Choose the lead reporting dates",
+  "target": ".datorama-period-form",
+  "text": "Choose Calendar month or Custom dates, select a comparison, and click Apply comparison. Read the dates printed under the controls to confirm what loaded. Latest month to date follows the imported data, which may lag today. These controls are independent of the PostHog dates and the fixed historical archive.",
+  "ready": ".datorama-meta",
+  "reveal": [
+   ".datorama-periods"
+  ],
+  "missing": "This report is not available yet. Wait for it to load, use its Retry control if an error appears, or skip and note the gap."
+ },
+ {
+  "title": "Confirm MedicareFAQ scope and freshness",
+  "target": "[data-tour=\"lead-scope\"]",
+  "text": "Read Website scope and confirm MedicareFAQ.com and the source organic/SEO filter before using the figures. Check Lead data through, then expand Source & freshness for the import date and available history. This is an imported snapshot, not a live feed. If the scope or coverage does not match your question, note the gap before drawing a conclusion.",
+  "ready": ".datorama-meta",
+  "reveal": [
+   ".datorama-periods"
+  ],
+  "missing": "This report is not available yet. Wait for it to load, use its Retry control if an error appears, or skip and note the gap."
+ },
+ {
+  "title": "Separate submissions from EIP leads",
+  "target": "#organic-leads-host .organic-conversions .conversion-cards",
+  "text": "These PostHog cards count tracked website activity. Contact submissions count sessions with a contact-step event; phone clicks are not confirmed calls. They have not been matched to CRM lead records. Check this section’s own dates. Do not use these submissions as the denominator for Datorama policies or expect them to equal EIP leads.",
+  "ready": null,
+  "reveal": [
+   "#organic-leads-host .organic-conversions"
+  ],
+  "missing": "This report is not available yet. Wait for it to load, use its Retry control if an error appears, or skip and note the gap."
+ },
+ {
+  "title": "Read leads and policy statuses",
+  "target": ".datorama-conversion",
+  "text": "Use EIP leads and Policies in the same Datorama row. Gross and approved are separate statuses; do not add them together or assume either is a count of signatures in these calendar dates. MS means Medicare Supplement; MA means Medicare Advantage. All Medicare combines MS and MA, so do not add that total to its component rows.",
+  "ready": null,
+  "reveal": [
+   ".datorama-periods"
+  ],
+  "missing": "This report is not available yet. Wait for it to load, use its Retry control if an error appears, or skip and note the gap."
+ },
+ {
+  "title": "Interpret the lead-to-policy rate",
+  "target": "[aria-label=\"Lead-to-policy conversion\"]",
+  "text": "The rate is policies from leads created during the selected dates divided by EIP leads. Policies may be signed later, and recent leads have had less time to convert. This is policy counts per lead, not the percentage of unique people who bought. Compare the same status and coverage; rate changes use percentage points (pp). A recent lower rate alone does not establish a performance decline.",
+  "ready": null,
+  "reveal": [
+   ".datorama-periods"
+  ],
+  "missing": "This report is not available yet. Wait for it to load, use its Retry control if an error appears, or skip and note the gap."
+ },
+ {
+  "title": "Check incomplete values before comparing",
+  "target": ".datorama-totals",
+  "text": "Review Period totals and changes. Reported subtotal means some daily values are missing, not zero. Rates need complete lead and policy values; changes need complete values in both periods. Do not calculate a replacement rate from partial counts. If data is incomplete, record the affected metric and missing days, and request a source check or refreshed export.",
+  "ready": null,
+  "reveal": [
+   ".datorama-periods",
+   ".datorama-totals"
+  ],
+  "missing": "This report is not available yet. Wait for it to load, use its Retry control if an error appears, or skip and note the gap."
+ },
+ {
+  "title": "Prepare your finding for Pepper",
+  "target": ".datorama-conversion",
+  "text": "Use this outline: “For MedicareFAQ organic leads created [dates], the imported report shows [EIP leads] and [gross OR approved] [MS, MA, or all Medicare] policies. The policy-per-lead rate is [rate, or unavailable because…]. Data is through [date]. Compared with [dates], [supported change or comparison unavailable]. Next we will [specific check or action].” Label subtotals and allow for lead maturity. Write this in your review notes; finishing the tour does not save a report.",
+  "ready": null,
+  "reveal": [
+   ".datorama-periods"
+  ],
+  "missing": "This report is not available yet. Wait for it to load, use its Retry control if an error appears, or skip and note the gap."
+ }
+];
+
 export const organicPerformanceSteps = [
  {
   "title": "Open Overview",
@@ -114,6 +196,6 @@ export function visibleTarget(selector, root=document) {
 
 // Only expand presentation controls. Never submit forms or create records.
 export function revealStep(index, root=document, steps=opportunitySteps) {
- const selectors=steps===organicPerformanceSteps?steps[index].reveal||[]:index===1?['.gsc-performance']:index>=2?['.tracked-keywords', ...(index===6?['#growth-action-list']:[])]:[];
+ const selectors=steps!==opportunitySteps?steps[index].reveal||[]:index===1?['.gsc-performance']:index>=2?['.tracked-keywords', ...(index===6?['#growth-action-list']:[])]:[];
  for(const selector of selectors) for(const section of root.querySelectorAll(selector)) section.querySelector(':scope > .dashboard-section-header button[aria-expanded="false"]')?.click();
 }

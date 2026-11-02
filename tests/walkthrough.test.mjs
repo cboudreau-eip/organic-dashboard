@@ -66,6 +66,22 @@ test('waiting, skip, restart, escape, replay and unmount never write data',async
   for(let i=0;i<8;i++)await click('Skip step');
   await click('Finish walkthrough');
   assert.equal(document.querySelector('#walkthrough-panel'),null);
+  await click('Help & walkthroughs');await click('Are organic leads becoming policies?');
+  assert.match(document.querySelector('.walkthrough-top').textContent,/STEP 1 OF 8/);
+  assert.equal(button('Next').disabled,true);
+  document.body.insertAdjacentHTML('beforeend','<button data-nav="leads">Leads</button><div id="organic-leads-host"><section class="datorama-periods"><div class="dashboard-section-header"><button aria-expanded="false">Expand</button></div><div class="dashboard-section-content" hidden><form class="datorama-period-form"></form><div class="datorama-meta" hidden>Imported</div></div></section></div>');
+  const expand=document.querySelector('.datorama-periods button');
+  expand.onclick=()=>{expand.setAttribute('aria-expanded','true');document.querySelector('.datorama-periods .dashboard-section-content').hidden=false;};
+  await act(async()=>tick());await click('Next');
+  assert.equal(expand.getAttribute('aria-expanded'),'true');
+  assert.equal(button('Next').disabled,true);
+  document.querySelector('.datorama-meta').hidden=false;
+  await act(async()=>tick());assert.equal(button('Next').disabled,false);
+  await click('Next');assert.match(document.querySelector('#walkthrough-panel h2').textContent,/scope/);
+  await click('Back');await click('Restart');
+  assert.match(document.querySelector('.walkthrough-top').textContent,/STEP 1 OF 8/);
+  for(let i=0;i<7;i++)await click('Skip step');
+  await click('Finish walkthrough');assert.equal(document.querySelector('#walkthrough-panel'),null);
   await act(async()=>root.unmount());root=null;
   assert.equal(intervals.size,0);assert.equal(document.querySelector('.walkthrough-highlight'),null);assert.equal(writes,0);
  }finally{
