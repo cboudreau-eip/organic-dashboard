@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {PGlite} from '@electric-sql/pglite';
 import {readFile} from 'node:fs/promises';
-import {REPORT_ID,WORKSPACE_ID,reportPeriod,ownUrl,normalizeReport,normalizeStats,validateReport} from '../lib/otterly/report.js';
+import {REPORT_ID,WORKSPACE_ID,reportPeriod,ownUrl,normalizeReport,normalizeStats,validateReport,citationTotal} from '../lib/otterly/report.js';
 import {otterlyClient} from '../lib/otterly/client.js';
 const meta={id:REPORT_ID,workspaceId:WORKSPACE_ID,brand:'MedicareFAQ',brandDomain:'medicarefaq.com',createdDate:'2026-06-19'};
 const stats={id:REPORT_ID,status:'finished',brand:{brand:'MedicareFAQ',brandDomain:'medicarefaq.com'},isRecalculating:false,totalPrompts:41,summary:{totalMentions:12,brandCoverage:10,domainCoverage:20,averagePosition:null},competitorBrandsAnalysis:{brandMentions:[{brand:'MedicareFAQ',isMainBrand:true,mentions:9,brandCoverage:7,averagePosition:null}],brandCoverageHistory:[]}};
@@ -31,6 +31,27 @@ test('Otterly follows pagination, filters domain server-side, and isolates unsup
  const r=await otterlyClient('private-key',fetcher).sync(new Date('2026-11-02T15:00Z'));
  assert.equal(r.pages.length,2);assert.ok(calls.some(c=>c.includes('domains=medicarefaq.com')&&c.includes('offset=100')));
  assert.equal(r.engines.find(e=>e.id==='claude').available,false);assert.equal(r.engines.find(e=>e.id==='claude').mentions,null);
+ assert.equal(r.engines.find(e=>e.id==='chatgpt').citations,4);
+ assert.equal(r.engines.find(e=>e.id==='claude').citations,null);
+ assert.ok(calls.some(c=>c.includes('/citations?')&&c.includes('engines=chatgpt')&&c.includes('offset=100')));
+});
+test('Platform citations preserve zero, isolate missing data, and exclude other domains',async()=>{
+ assert.equal(citationTotal([{url:'https://medicarefaq.com/a',citations:3},{url:'https://other.com/a',citations:999}]),3);
+ assert.equal(citationTotal([{url:'https://medicarefaq.com/a'}]),null);
+ assert.throws(()=>citationTotal([{url:'https://medicarefaq.com/a',citations:2},{url:'https://medicarefaq.com/a',citations:2}]));
+ const fetcher=async u=>{
+  if(u.pathname.endsWith(REPORT_ID))return Response.json(meta);
+  if(u.pathname.endsWith('/stats'))return Response.json(u.searchParams.get('engines')==='claude'?{...stats,totalPrompts:0}:stats);
+  const engine=u.searchParams.get('engines');
+  if(u.pathname.endsWith('/citations')&&engine==='google')return new Response('',{status:503});
+  return Response.json({items:engine==='chatgpt'?[{url:'https://medicarefaq.com/a',citations:3},{url:'https://other.com/a',citations:999}]:[],paging:{offset:0,limit:100,hasMore:false}});
+ };
+ const r=await otterlyClient('private-key',fetcher).sync();
+ assert.equal(r.engines.find(e=>e.id==='chatgpt').citations,3);
+ assert.equal(r.engines.find(e=>e.id==='perplexity').citations,0);
+ assert.equal(r.engines.find(e=>e.id==='google').citations,null);
+ assert.equal(r.engines.find(e=>e.id==='google').mentions,9);
+ assert.equal(r.engines.find(e=>e.id==='claude').citations,null);
 });
 test('Otterly fails closed on bad pagination and does not forward provider secrets in errors',async()=>{
  const f=async u=>Response.json(u.pathname.endsWith(REPORT_ID)?meta:u.pathname.endsWith('/stats')?stats:{items:[],paging:{offset:0,limit:100,hasMore:true}});
