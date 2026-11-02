@@ -89,4 +89,3 @@ render();
 const stopSpeech=startPortraitSpeech(root.querySelector('.portrait-speech'));
 return ()=>{chatPending?.abort();chatPending=null;stopSpeech();controller.abort();document.body.style.overflow='';};
 }
-
