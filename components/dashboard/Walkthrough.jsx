@@ -1,7 +1,7 @@
 'use client';
 import {useEffect,useRef,useState} from 'react';
 import {createPortal} from 'react-dom';
-import {opportunitySteps,organicPerformanceSteps,leadPolicySteps,resultsReviewSteps,pepperReviewSteps,visibleTarget,revealStep} from './walkthrough';
+import {aiVisibilitySteps,opportunitySteps,organicPerformanceSteps,leadPolicySteps,resultsReviewSteps,pepperReviewSteps,visibleTarget,revealStep} from './walkthrough';
 import './walkthrough.css';
 import {REVIEW_FIELDS,emptyReview,readReview,saveReview,formatReview} from './review-draft';
 
@@ -9,7 +9,7 @@ export default function Walkthrough({allowed=false,userId}) {
  const [step,setStep]=useState(null),[menu,setMenu]=useState(false),[ready,setReady]=useState(false),[hasTarget,setHasTarget]=useState(false);
  const launcher=useRef(null),panel=useRef(null),target=useRef(null);
  const [tour,setTour]=useState('organic');
- const steps=tour==='organic'?organicPerformanceSteps:tour==='leads'?leadPolicySteps:tour==='results'?resultsReviewSteps:tour==='pepper'?pepperReviewSteps:opportunitySteps;
+ const steps=tour==='ai'?aiVisibilitySteps:tour==='organic'?organicPerformanceSteps:tour==='leads'?leadPolicySteps:tour==='results'?resultsReviewSteps:tour==='pepper'?pepperReviewSteps:opportunitySteps;
  const [draft,setDraft]=useState(emptyReview),[savedDraft,setSavedDraft]=useState(''),[savedAt,setSavedAt]=useState(''),[draftOwner,setDraftOwner]=useState(null),[draftNotice,setDraftNotice]=useState('');
  const [draftOpen,setDraftOpen]=useState(false);
  const copyText=useRef(null);
@@ -78,6 +78,7 @@ export default function Walkthrough({allowed=false,userId}) {
     <button type="button" className="button" onClick={()=>start('leads')}>Are organic leads becoming policies?</button>
     <p>Find a page to improve and record your planned work.</p>
     {allowed?<button type="button" className="button" onClick={()=>start('opportunity')}>Find and save your first opportunity</button>:<p>The opportunity and results walkthroughs require Growth Hunter team access.</p>}
+    {allowed&&<><p>Find an AI visibility gap, save its evidence, and record your planned improvements.</p><button type="button" className="button" onClick={()=>start('ai')}>Improve our visibility in AI answers</button></>}
     {allowed&&<><p>Review observed results after a website change and record your next action.</p><button type="button" className="button" onClick={()=>start('results')}>Did my changes work?</button></>}
    </>:<>
     {!ready&&<p className="walkthrough-wait" role="status">{steps[step].missing}</p>}

@@ -1,3 +1,73 @@
+export const aiVisibilitySteps = [
+  {
+    "title": "Open AI visibility",
+    "target": "[data-nav=\"ai\"]",
+    "ready": "#ai-visibility-host:not([hidden])",
+    "text": "Select AI visibility to see how MedicareFAQ appears in monitored AI answers. This walkthrough helps you choose an opportunity and record your work.",
+    "missing": "Select AI visibility to continue."
+  },
+  {
+    "title": "Check the report dates",
+    "target": ".ai-visibility .ai-toolbar",
+    "ready": ".ai-visibility .organic-freshness",
+    "text": "Choose Latest report or a saved report. Check the dates and sync time below. Otterly uses its own reporting dates. If the report is behind, an analyst can Sync latest report; the walkthrough never starts a sync for you.",
+    "missing": "Wait for a saved Otterly report to load. If none is available, an analyst can sync it, or you can skip this step."
+  },
+  {
+    "title": "Understand mentions and citations",
+    "target": "[data-tour=\"ai-platforms\"]",
+    "text": "Compare the platforms. A mention names MedicareFAQ in an answer; a citation references a MedicareFAQ page as a source. An answer can cite us without naming the brand. Unavailable is not zero. These counts describe monitored answers, not website visits, leads, or policies.",
+    "missing": "Load an Otterly report to view platform evidence, or skip if it is unavailable."
+  },
+  {
+    "title": "Choose a prompt to investigate",
+    "target": "[aria-labelledby=\"prompt-opportunities-heading\"]",
+    "text": "Read Prompts to investigate. Choose a question where competitors appear but MedicareFAQ is missing, or where we are cited without being named. Expand View platform evidence on that prompt, then use Review answers in Otterly to inspect the answers and sources. Competitor counts help prioritize investigation; they do not prove the cause or business impact.",
+    "missing": "Load a report to see prompt opportunities. If none are returned, skip and revisit after a later report."
+  },
+  {
+    "title": "Track your chosen opportunity",
+    "target": "[aria-labelledby=\"prompt-opportunities-heading\"]",
+    "text": "On your chosen prompt, click Track this opportunity. This creates a real Growth Hunter action with the original dates, mentions, citations, competitors, and available platform evidence. An already tracked prompt keeps its original baseline. Analyst access is required. You can skip if you are only exploring; Next does not save anything.",
+    "missing": "No opportunity report is visible. Return to AI visibility, load a report, or skip."
+  },
+  {
+    "title": "Open Growth Hunter",
+    "target": "[data-nav=\"growth\"]",
+    "ready": "#growth-hunter-host:not([hidden])",
+    "text": "Select Growth Hunter, or use Open Growth Hunter on your saved prompt. Find Tracked AI opportunities to continue working on the action.",
+    "missing": "Select Growth Hunter to continue."
+  },
+  {
+    "title": "Open your tracked AI action",
+    "target": "#growth-ai-action-list",
+    "ready": "#growth-ai-action-list [aria-label=\"Saved Otterly baseline\"]",
+    "reveal": [
+      "#growth-ai-action-list"
+    ],
+    "text": "Find your prompt in Tracked AI opportunities and click Open action. Check the full prompt and original baseline dates. The baseline stays unchanged when Otterly refreshes. If your list is empty, return to AI visibility and track a prompt, or skip to preview the remaining guidance.",
+    "missing": "Open an AI action to continue. Clear the status filter if needed. If none is saved, track a prompt first or skip."
+  },
+  {
+    "title": "Plan the improvement",
+    "target": "#growth-ai-action-list [data-tour=\"action-work\"]",
+    "reveal": [
+      "#growth-ai-action-list"
+    ],
+    "text": "In What changed / work notes, record the MedicareFAQ page you plan to improve, the evidence you found, the specific change, owner, and target date. Keep the action Planned or In progress and click Save changes. The walkthrough does not edit your website or save notes automatically.",
+    "missing": "Open a tracked AI action first, or skip to preview this guidance."
+  },
+  {
+    "title": "Record publication and progress",
+    "target": "#growth-ai-action-list [data-tour=\"action-work\"]",
+    "reveal": [
+      "#growth-ai-action-list"
+    ],
+    "text": "Once the website change is actually live, record what changed, enter its publication date in Pacific time, choose Published or Monitoring, and click Save changes. Keep unfinished work Planned or In progress. Automatic AI before/after comparisons are not available yet; record follow-up observations and their report dates in your notes. Finishing this walkthrough does not save changes.",
+    "missing": "Open a tracked AI action to record progress. You can finish without saving if you are only exploring."
+  }
+];
+
 export const pepperReviewSteps = [
  {
   "title": "Start with Overview",

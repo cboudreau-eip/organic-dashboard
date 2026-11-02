@@ -33,6 +33,13 @@ test('waiting, skip, restart, escape, replay and unmount never write data',async
   await act(async()=>root.render(React.createElement(module.exports.default,{allowed:true})));
   const button=name=>[...document.querySelectorAll('button')].find(b=>b.textContent===name);
   const click=async name=>{assert.ok(button(name),name);await act(async()=>button(name).click());};
+  await click('Help & walkthroughs');await click('Improve our visibility in AI answers');
+  assert.match(document.querySelector('.walkthrough-top').textContent,/STEP 1 OF 9/);
+  assert.equal(button('Next').disabled,true);
+  for(let i=0;i<8;i++)await click('Skip step');
+  assert.match(document.querySelector('#walkthrough-panel h2').textContent,/Record publication/);
+  assert.equal(writes,0);
+  await click('Finish walkthrough');
   await click('Help & walkthroughs');await click('Find and save your first opportunity');
   assert.equal(button('Next').disabled,true);
   assert.ok(document.querySelector('[data-nav]').classList.contains('walkthrough-highlight'));
@@ -51,6 +58,7 @@ test('waiting, skip, restart, escape, replay and unmount never write data',async
   await click('Help & walkthroughs');
   assert.equal(button('Find and save your first opportunity'),undefined);
   assert.equal(button('Did my changes work?'),undefined);
+  assert.equal(button('Improve our visibility in AI answers'),undefined);
   await click('How is organic performing?');
   assert.match(document.querySelector('#walkthrough-panel h2').textContent,/Open Overview/);
   assert.equal(button('Next').disabled,true);
