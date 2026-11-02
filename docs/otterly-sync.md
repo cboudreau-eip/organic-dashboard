@@ -1,6 +1,6 @@
 # Otterly AI visibility
 
-Status: implemented locally; live API validation, database migration, credentials and deployment still pending.
+Status: deployed to production November 2, 2026. Read-only Otterly credentials are stored as sensitive production secrets; the first report was synced and verified in the signed-in dashboard.
 
 The AI visibility navigation item is available to the existing Growth Hunter team membership. It reads saved reports, never calls Otterly on page views. The separate report period is 30 completed New York calendar days; these date strings are passed to Otterly, whose collection timezone is not supplied by the API. Saved snapshots overlap and must not be summed.
 
@@ -24,7 +24,7 @@ The server-only writer uses the existing `SUPABASE_SERVICE_ROLE_KEY`; its import
 
 The database claim prevents duplicate daily runs, allows at most three attempts per report date, spaced at least one hour apart. Provider calls have timeouts, reject redirects, and are capped at 40 per run. Typical use is 11 calls/day plus extra list pages (about 330/month). Worst-case retries consume more; monitor the 2,000-request allowance. No provider-side writes occur. A failed sync retains the previous snapshot and records a safe failure status.
 
-## Before release
+## Release verification checklist
 
 1. Confirm key-creation approval and securely provision the key; do not rotate the existing key.
 2. Test the authenticated API. Reconcile the exact same dates/country/engines with Otterly UI, including percentage units, metadata scope, pagination, and oldest returned history date.
@@ -33,3 +33,5 @@ The database claim prevents duplicate daily runs, allows at most three attempts 
 5. Verify AI visibility in the signed-in dashboard, history selection, missing-data states, and unauthorized API/cron denial. Check the scheduled job registration.
 
 Local validation: the 126-test suite and production build passed before live credentials were available. Provider tests use synthetic fixtures and do not establish live correctness.
+
+Live verification (November 2, 2026): October 3-November 1, US, 41 prompts; MedicareFAQ coverage 12%, 511 mentions, 866 citations across 67 own-domain URLs. Main-brand metrics come from the isMainBrand competitor-analysis row; the general summary includes other brands and is not used for MedicareFAQ totals. Platforms with zero monitored prompts show Unavailable. The saved report and signed-in UI match. Unauthenticated report/cron requests return 401; the authenticated cron endpoint returns 200 and skips the already-saved date. Daily 14:00 UTC scheduling is declared in the deployed vercel.json; automatic execution has not yet occurred. Targeted Otterly tests and the production build passed after live reconciliation.
