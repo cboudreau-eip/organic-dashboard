@@ -4,6 +4,15 @@ import {actionInput,actionWindow,rankEvidence} from '../lib/growth-hunter/action
 import {actionHandlers} from '../lib/growth-hunter/action-handlers.js';
 const id='11111111-1111-4111-8111-111111111111';
 const now=new Date('2026-10-26T18:00:00Z');
+test('tracking an Otterly prompt sends only source IDs and returns an existing baseline on duplicate',async()=>{
+ let inserted;const original={id,otterly_baseline:{prompt:{mentions:0,domainMentions:2}}};
+ const query={insert(v){inserted=v;return this;},select(){return this;},eq(){return this;},neq(){return this;},async single(){return {error:{code:'23505'}};},async maybeSingle(){return {data:original};}};
+ const h=actionHandlers({access:async()=>({client:{from:()=>query}}),origin:()=> 'https://dashboard.example'});
+ const request=new Request('https://dashboard.example/api',{method:'POST',headers:{origin:'https://dashboard.example','Content-Type':'application/json'},body:JSON.stringify({operation:'track_otterly',snapshotId:id,promptId:'01M48XVD3FBK3GBNYJCKGW571P',otterly_baseline:{forged:true}})});
+ const response=await h.POST(request);assert.equal(response.status,200);
+ assert.deepEqual(await response.json(),{action:original,alreadyTracked:true});
+ assert.deepEqual(Object.keys(inserted).sort(),['source_otterly_prompt','source_otterly_snapshot','title']);
+});
 test('action validation rejects unsafe URLs, unsupported status and future publication',()=>{
  assert.equal(actionInput({page:'https://www.medicarefaq.com/plans/#x',title:'  Update title '}).page,'https://www.medicarefaq.com/plans/');
  for(const page of ['javascript:alert(1)','https://evil.example/','https://www.medicarefaq.com/?lead=1'])assert.throws(()=>actionInput({page,title:'x'}));

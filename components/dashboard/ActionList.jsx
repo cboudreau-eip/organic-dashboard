@@ -42,14 +42,26 @@ function Editor({action,canEdit,busy,onSave}){
  <button className="button primary" type="submit">{busy?'Saving…':'Save changes'}</button>
  </fieldset></form>;
 }
-export default function ActionList({refresh=0}){
+function OtterlyBaseline({baseline}){
+ const p=baseline.prompt;
+ return <section aria-label="Saved Otterly baseline"><h4>Otterly baseline · saved evidence</h4>
+ <p><strong>{p.prompt}</strong></p><p>{baseline.period.start} – {baseline.period.end} · United States · {baseline.domain}</p>
+ <p>MedicareFAQ mentions: <strong>{num(p.mentions)}</strong> · MedicareFAQ citations: <strong>{num(p.domainMentions)}</strong></p>
+ <p>Competitors: {p.competitors.map(c=>`${c.brand} (${num(c.mentions)})`).join(', ')||'None recorded'}</p>
+ <p>Report synced {new Date(baseline.fetchedAt).toLocaleString()} · Baseline saved {new Date(baseline.capturedAt).toLocaleString()}</p>
+ <details><summary>Saved platform evidence</summary>{baseline.platformsFetchedAt&&<p>Platform evidence retrieved {new Date(baseline.platformsFetchedAt).toLocaleString()}</p>}<div className="organic-table-scroll"><table><thead><tr><th>Platform</th><th>Mentions</th><th>Citations</th><th>Competitors</th></tr></thead><tbody>{baseline.platforms.map(e=><tr key={e.id}><td>{e.label}</td><td>{num(e.prompt?.mentions)}</td><td>{num(e.prompt?.domainMentions)}</td><td>{e.prompt?e.prompt.competitors.map(c=>`${c.brand} (${num(c.mentions)})`).join(', ')||'None recorded':'Not reported'}</td></tr>)}</tbody></table></div>{!baseline.platforms.length&&<p>Platform evidence was not available in the source report.</p>}</details>
+ <p>This baseline stays unchanged when Otterly refreshes. Missing data is not zero. It measures monitored AI visibility, not visits, leads, or policies.</p>
+ </section>;
+}
+export default function ActionList({refresh=0,source=null,id='growth-action-list'}){
  const [data,setData]=useState(null),[error,setError]=useState(''),[notice,setNotice]=useState(''),[attempt,setAttempt]=useState(0);
  const [status,setStatus]=useState('all'),[offset,setOffset]=useState(0),[detail,setDetail]=useState(null),[busy,setBusy]=useState(false);
  useEffect(()=>{
   let active=true;setError('');setData(null);
-  api('?status='+status+'&offset='+offset).then(d=>{if(active)setData(d);}).catch(e=>{if(active)setError(e.message);});
+  api('?status='+status+'&offset='+offset+(source?'&source='+source:'')).then(d=>{if(active)setData(d);}).catch(e=>{if(active)setError(e.message);});
   return()=>{active=false;};
- },[refresh,attempt,status,offset]);
+ },[refresh,attempt,status,offset,source]);
+ useEffect(()=>{const reload=()=>setAttempt(n=>n+1);window.addEventListener('growth-action-saved',reload);return()=>window.removeEventListener('growth-action-saved',reload);},[]);
  async function open(id){
   setBusy(true);setError('');setNotice('');
   try{setDetail(await api('?id='+id));}catch(e){setError(e.message);}finally{setBusy(false);}
@@ -67,8 +79,8 @@ export default function ActionList({refresh=0}){
   }catch(e){setError(e.message);}finally{setBusy(false);}
  }
  const canEdit=['analyst','admin'].includes(detail?.role||data?.role);
- return <CollapsibleSection id="growth-action-list" className="sem-history" title="Saved actions" level={3} header={<h3>Saved actions · Work and results</h3>}>
- <p>Save a page opportunity below, record your work here, then measure observed results after publication. Status changes record your work; they do not publish website edits.</p>
+ return <CollapsibleSection id={id} className="sem-history" title={source==='otterly'?'Tracked AI opportunities':'Saved actions'} level={3} header={<h3>{source==='otterly'?'Tracked AI opportunities':'Saved actions · Work and results'}</h3>}>
+ <p>{source==='otterly'?'Opportunities saved from AI visibility, with their original evidence. Open an action to review its baseline and record work notes.':'Save a page or AI opportunity, then record your work here. Page actions support observed results after publication.'} Status changes record your work; they do not publish website edits.</p>
  {error&&<p role="alert">{error} <button className="button" disabled={busy} onClick={()=>setAttempt(n=>n+1)}>Reload list</button>{detail&&<button className="button" disabled={busy} onClick={()=>open(detail.action.id)}>Reload selected action</button>}</p>}
  {notice&&<p role="status">{notice}</p>}
  <label>Filter status<select value={status} onChange={e=>{setStatus(e.target.value);setOffset(0);}}><option value="all">All statuses</option>{ACTION_STATUSES.map(s=><option key={s} value={s}>{label(s)}</option>)}</select></label>
@@ -79,14 +91,15 @@ export default function ActionList({refresh=0}){
  <div className="sem-page-numbers" role="group" aria-label="Saved action pages">{Array.from({length:Math.ceil(data.total/25)},(_,i)=>i).filter(i=>i===0||i===Math.ceil(data.total/25)-1||Math.abs(i-offset/25)<=2).map(i=><button className="button" key={i} aria-current={i===offset/25?'page':undefined} onClick={()=>setOffset(i*25)}>{i+1}</button>)}</div>
  </>}
  {detail&&<section className="sem-gsc-context" aria-label="Selected saved action">
-  <h4>{detail.action.title}</h4><a href={detail.action.page} target="_blank" rel="noreferrer">{detail.action.page}</a>
+  <h4>{detail.action.title}</h4>{detail.action.page&&<a href={detail.action.page} target="_blank" rel="noreferrer">{detail.action.page}</a>}
+  {detail.action.otterly_baseline&&<OtterlyBaseline baseline={detail.action.otterly_baseline}/>}
   <Editor key={detail.action.id+'-'+detail.action.version} action={detail.action} canEdit={canEdit} busy={busy} onSave={save}/>
-  <div data-tour="action-measure"><h4>Measure results</h4><p>Equal windows before and after publication; publication day is excluded. Save your edits before measuring. Results are saved on request, not scheduled automatically.</p>
+  {detail.action.source_otterly_snapshot?<p>The AI baseline is saved. Automated before/after AI comparisons are not available yet. Use work notes to record the page and changes you plan to make.</p>:<><div data-tour="action-measure"><h4>Measure results</h4><p>Equal windows before and after publication; publication day is excluded. Save your edits before measuring. Results are saved on request, not scheduled automatically.</p>
   {[7,28].map(days=>{let waiting='';try{actionWindow(detail.action.published_on,days);}catch(e){waiting=e.message;}
    return <div key={days}><button className="button" disabled={busy||!canEdit||!!waiting||!['published','monitoring'].includes(detail.action.status)} onClick={()=>measure(days)}>{busy?'Working…':'Measure '+days+' days'}</button><small>{waiting||'Ready to check finalized source data.'}</small></div>;
   })}
   </div><p>Newest 10 saved measurements. Earlier publication dates remain labeled on historical results.</p>
-  {detail.results.map(record=><Outcome key={record.id} record={record} action={detail.action}/>)}
+  {detail.results.map(record=><Outcome key={record.id} record={record} action={detail.action}/>)}</>}
   <details><summary>Work history ({detail.action.history.length} revisions)</summary>{[...detail.action.history].reverse().map(h=><div key={h.version}><strong>Revision {h.version} · {label(h.status)}</strong><p>{new Date(h.at).toLocaleString()} · Published {h.published_on||'not yet'}</p><p>{h.title}</p><p style={{whiteSpace:'pre-wrap'}}>{h.notes||'No work notes recorded.'}</p></div>)}</details>
   <button className="button" disabled={busy} onClick={()=>setDetail(null)}>Close action</button>
  </section>}

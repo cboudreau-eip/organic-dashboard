@@ -1,8 +1,9 @@
 'use client';
 import {ENGINES,promptFinding,promptOpportunities,REPORT_URL} from '../../lib/otterly/report';
+import TrackOtterlyOpportunity from './TrackOtterlyOpportunity';
 const count=value=>value==null?'Unavailable':value.toLocaleString();
 const labels={missing:'No mentions or citations recorded',cited:'Cited, but not named',mentioned:'Brand mentioned',incomplete:'Incomplete evidence'};
-export default function PromptOpportunities({report}){
+export default function PromptOpportunities({report,snapshotId,canSave}){
  const opportunities=promptOpportunities(report.prompts);
  const missing=opportunities.filter(p=>p.finding==='missing').length;
  const cited=opportunities.filter(p=>p.finding==='cited').length;
@@ -24,6 +25,7 @@ export default function PromptOpportunities({report}){
     return <tr key={id}><td>{label}</td><td>{count(row?.mentions)}</td><td>{count(row?.domainMentions)}</td><td>{row?row.competitors.map(c=>`${c.brand} (${count(c.mentions)})`).join(', ')||'None recorded':'Unavailable'}</td><td>{row?labels[promptFinding(row)]:'Unavailable'}</td></tr>;
    })}</tbody></table></div><p>Unavailable means platform detail was not returned or saved, or the platform had no monitored prompts. It is not zero. Platform detail fetched later may differ from the original report if Otterly revises its data.</p></details>
    <a href={sourceUrl} target="_blank" rel="noreferrer">Review answers in Otterly</a>
+   <TrackOtterlyOpportunity key={snapshotId+':'+p.id} snapshotId={snapshotId} promptId={p.id} canSave={canSave}/>
   </article>)}
   {!opportunities.length&&<p>No supported prompt opportunities were returned for this period.</p>}
  </section>;
