@@ -7,6 +7,7 @@ import {readFile} from 'node:fs/promises';
 import {createRequire} from 'node:module';
 import {transform,loadBindings} from 'next/dist/build/swc/index.js';
 import * as helpers from '../components/dashboard/walkthrough.js';
+import * as reviewHelpers from '../components/dashboard/review-draft.js';
 const require=createRequire(import.meta.url);
 test('visible controls include closed summaries but exclude hidden content',()=>{
  const dom=new JSDOM('<div hidden><button data-nav="acquisition">Hidden</button></div><button data-nav="acquisition">Visible</button><details><summary>Lead impact</summary><button id="save">Save</button></details>');
@@ -27,7 +28,7 @@ test('waiting, skip, restart, escape, replay and unmount never write data',async
   await loadBindings();
   const {code}=await transform(source,{filename:'Walkthrough.jsx',jsc:{parser:{syntax:'ecmascript',jsx:true},transform:{react:{runtime:'automatic'}}},module:{type:'commonjs'}});
   const module={exports:{}};
-  new Function('require','module','exports',code)(name=>name==='./walkthrough'?helpers:name.endsWith('.css')?{}:require(name),module,module.exports);
+  new Function('require','module','exports',code)(name=>name==='./walkthrough'?helpers:name==='./review-draft'?reviewHelpers:name.endsWith('.css')?{}:require(name),module,module.exports);
   root=createRoot(document.getElementById('root'));
   await act(async()=>root.render(React.createElement(module.exports.default,{allowed:true})));
   const button=name=>[...document.querySelectorAll('button')].find(b=>b.textContent===name);
@@ -95,6 +96,22 @@ test('waiting, skip, restart, escape, replay and unmount never write data',async
   await act(async()=>tick());assert.equal(button('Next').disabled,false);
   await click('Next');await click('Next');await click('Finish walkthrough');
   assert.equal(document.querySelector('#walkthrough-panel'),null);
+  const storageValues=new Map();let saves=0;
+  const storage={getItem:key=>storageValues.get(key)||null,setItem:(key,value)=>{saves++;storageValues.set(key,value);}};
+  Object.defineProperty(window,'localStorage',{value:storage,configurable:true});
+  const seed=reviewHelpers.emptyReview();seed.period='October 2026';seed.performance='Verified test evidence';
+  reviewHelpers.saveReview(storage,'review-user',seed);saves=0;
+  await act(async()=>root.render(React.createElement(module.exports.default,{allowed:false,userId:'review-user'})));
+  await click('Help & walkthroughs');await click('Prepare a review for Pepper');
+  assert.match(document.querySelector('.walkthrough-top').textContent,/STEP 1 OF 9/);
+  await act(async()=>document.querySelector('#pepper-review-draft summary').click());
+  assert.equal(document.querySelector('#pepper-review-draft textarea').value,'October 2026');
+  assert.equal(saves,0);await click('Save draft');assert.equal(saves,1);
+  assert.match(document.querySelector('#pepper-review-draft [role="status"]').textContent,/Draft saved/);
+  for(let i=0;i<8;i++)await click('Skip step');await click('Finish walkthrough');
+  await click('Help & walkthroughs');assert.equal(document.querySelector('#pepper-review-draft textarea').value,'October 2026');
+  await act(async()=>root.render(React.createElement(module.exports.default,{allowed:false,userId:'another-user'})));
+  assert.equal(document.querySelector('#pepper-review-draft textarea').value,'');
   await act(async()=>root.unmount());root=null;
   assert.equal(intervals.size,0);assert.equal(document.querySelector('.walkthrough-highlight'),null);assert.equal(writes,0);
  }finally{
