@@ -12,6 +12,7 @@ test('owner gate rejects forged metadata and other authenticated users before op
   const h=adminHandlers({getUser:async()=>user,getStore:()=>{throw Error('must not access');},origin:()=> 'https://dashboard.test'});
   assert.equal((await h.GET()).status,403);
   assert.equal((await h.POST(req({operation:'create'}))).status,403);
+  assert.equal((await h.POST(req({operation:'delete',id:target,email:'user@example.test',version:1}))).status,403);
  }
  assert.equal(isOwner({...owner,email:'changed@example.test'}),true);
 });
@@ -39,7 +40,7 @@ test('database denies direct access, preserves owner, and atomically disables ex
  const db=new PGlite();try{
  await db.exec(`create role anon;create role authenticated;create role service_role bypassrls;create schema auth;
  create function auth.uid() returns uuid language sql as $$select nullif(current_setting('test.uid',true),'')::uuid$$;
- create table auth.users(id uuid primary key,email text,raw_user_meta_data jsonb default '{}',banned_until timestamptz,email_confirmed_at timestamptz,last_sign_in_at timestamptz,created_at timestamptz default now());
+ create table auth.users(id uuid primary key,email text,raw_user_meta_data jsonb default '{}',banned_until timestamptz,email_confirmed_at timestamptz,last_sign_in_at timestamptz,created_at timestamptz default now(),deleted_at timestamptz);
  create table public.growth_members(user_id uuid primary key references auth.users,role text,active boolean);
  create table public.growth_settings(id boolean primary key,enabled boolean);insert into public.growth_settings values(true,true);
  insert into auth.users(id,email) values('${OWNER_ID}','owner@example.test'),('${target}','user@example.test');
@@ -61,5 +62,38 @@ test('database denies direct access, preserves owner, and atomically disables ex
  assert.equal((await db.query('select public.dashboard_access() as access,public.growth_access() as growth')).rows[0].access,false);
  assert.equal((await db.query('select public.growth_access() as growth')).rows[0].growth,null);
  await db.exec('reset role;');assert.equal((await db.query('select count(*) as count from public.dashboard_user_audit')).rows[0].count,1);
+ await db.exec(await readFile(new URL('../supabase/migrations/20261103193206_owner_user_deletion.sql',import.meta.url),'utf8'));
+ await db.exec('set role authenticated;');
+ await assert.rejects(db.exec(`select public.admin_prepare_user_deletion('${OWNER_ID}','${target}','user@example.test',2)`),e=>e.code==='42501');
+ await db.exec('reset role;set role service_role;');
+ await assert.rejects(db.exec(`select public.admin_prepare_user_deletion('${target}','${target}','user@example.test',2)`),e=>e.code==='42501');
+ await assert.rejects(db.exec(`select public.admin_prepare_user_deletion('${OWNER_ID}','${OWNER_ID}','owner@example.test',1)`),e=>e.code==='42501');
+ await assert.rejects(db.exec(`select public.admin_prepare_user_deletion('${OWNER_ID}','${target}','wrong@example.test',2)`),e=>e.code==='22023');
+ await assert.rejects(db.exec(`select public.admin_prepare_user_deletion('${OWNER_ID}','${target}','user@example.test',1)`),e=>e.code==='40001');
+ await db.exec(`select public.admin_prepare_user_deletion('${OWNER_ID}','${target}','user@example.test',2)`);
+ await assert.rejects(db.exec(`select public.admin_save_member('${OWNER_ID}','${target}','User','analyst',true,3)`),e=>e.code==='42501');
+ await db.exec(`select public.admin_prepare_user_deletion('${OWNER_ID}','${target}','user@example.test',3)`);
+ await db.exec('reset role;set role authenticated;');
+ assert.equal((await db.query('select public.dashboard_access() as access')).rows[0].access,false);
+ await db.exec('reset role;');
+ await db.exec(`update auth.users set deleted_at=now() where id='${target}'`);
+ const directory=(await db.query('select public.admin_user_directory() as users')).rows[0].users;
+ assert.equal(directory.length,1);assert.equal(directory[0].id,OWNER_ID);
+ assert.equal((await db.query('select count(*) as count from public.dashboard_user_audit')).rows[0].count,3);
  }finally{await db.close();}
+});
+
+test('deletion validates confirmation, blocks access before Auth deletion, and handles partial failure',async()=>{
+ const calls=[];let prepareError=null,deleteError=null;
+ const h=adminHandlers({getUser:async()=>owner,origin:()=> 'https://dashboard.test',getStore:()=>({rpc:async(name,args)=>{calls.push([name,args]);return {error:prepareError};},auth:{admin:{deleteUser:async(id,soft)=>{calls.push(['delete',id,soft]);return {error:deleteError};}}}})});
+ const input={operation:'delete',id:target,email:'user@example.test',version:1};
+ assert.equal((await h.POST(req({...input,id:OWNER_ID}))).status,403);
+ assert.equal((await h.POST(req({...input,email:''}))).status,400);
+ assert.equal((await h.POST(req({...input,version:-1}))).status,400);
+ assert.equal(calls.length,0);
+ prepareError={code:'40001'};assert.equal((await h.POST(req(input))).status,409);assert.equal(calls.length,1);
+ calls.length=0;prepareError=null;deleteError={message:'private provider detail'};
+ const failed=await h.POST(req(input));assert.equal(failed.status,503);assert.match((await failed.json()).error,/Access is blocked/);
+ assert.equal(calls[0][0],'admin_prepare_user_deletion');assert.deepEqual(calls[1],['delete',target,true]);
+ deleteError=null;assert.equal((await h.POST(req(input))).status,200);
 });
