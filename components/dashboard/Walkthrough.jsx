@@ -1,29 +1,14 @@
 'use client';
 import {useEffect,useRef,useState} from 'react';
 import {createPortal} from 'react-dom';
-import {aiVisibilitySteps,opportunitySteps,organicPerformanceSteps,leadPolicySteps,resultsReviewSteps,pepperReviewSteps,visibleTarget,revealStep} from './walkthrough';
+import {aiVisibilitySteps,opportunitySteps,organicPerformanceSteps,leadPolicySteps,resultsReviewSteps,visibleTarget,revealStep} from './walkthrough';
 import './walkthrough.css';
-import {REVIEW_FIELDS,loadedReview,emptyReview,readReview,saveReview,formatReview} from './review-draft';
 
-export default function Walkthrough({allowed=false,userId,trafficData,searchData}) {
+export default function Walkthrough({allowed=false}) {
  const [step,setStep]=useState(null),[menu,setMenu]=useState(false),[ready,setReady]=useState(false),[hasTarget,setHasTarget]=useState(false);
  const launcher=useRef(null),panel=useRef(null),target=useRef(null);
  const [tour,setTour]=useState('organic');
- const steps=tour==='ai'?aiVisibilitySteps:tour==='organic'?organicPerformanceSteps:tour==='leads'?leadPolicySteps:tour==='results'?resultsReviewSteps:tour==='pepper'?pepperReviewSteps:opportunitySteps;
- const [draft,setDraft]=useState(emptyReview),[savedDraft,setSavedDraft]=useState(''),[savedAt,setSavedAt]=useState(''),[draftOwner,setDraftOwner]=useState(null),[draftNotice,setDraftNotice]=useState('');
- const [draftOpen,setDraftOpen]=useState(false);
- const copyText=useRef(null);
- const automatic=loadedReview(trafficData,searchData);
- const combined={...draft,...Object.fromEntries(Object.entries(automatic).filter(([key])=>!draft[key]))};
- const dirty=JSON.stringify(combined)!==savedDraft;
- useEffect(()=>{
-  let record=null,message='';
-  try{if(userId)record=readReview(window.localStorage,userId);}catch{message='Could not load the saved draft. Browser storage may be blocked or the saved data may be invalid. Copy your review to keep a separate copy.';}
-  const fields=record?.fields||emptyReview();setDraft(fields);setSavedDraft(JSON.stringify(fields));setSavedAt(record?.savedAt||'');setDraftOwner(userId||null);setDraftNotice(message);
- },[userId]);
- const draftReady=!!userId&&draftOwner===userId;
- function saveDraft(){try{const record=saveReview(window.localStorage,userId,combined);setSavedDraft(JSON.stringify(record.fields));setSavedAt(record.savedAt);setDraftNotice('Draft saved in this browser.');}catch{setDraftNotice('Draft was not saved. Browser storage may be unavailable or full. Copy the review to keep it.');}}
- async function copyReview(){try{await navigator.clipboard.writeText(formatReview(combined));setDraftNotice('Review copied. Copying does not save your draft or send it to Pepper.');}catch{setDraftNotice('Automatic copy is unavailable. Select and copy the review text below.');copyText.current?.focus();copyText.current?.select();}}
+ const steps=tour==='ai'?aiVisibilitySteps:tour==='organic'?organicPerformanceSteps:tour==='leads'?leadPolicySteps:tour==='results'?resultsReviewSteps:opportunitySteps;
  const active=step!==null;
  function exit(){setStep(null);setMenu(false);launcher.current?.focus();}
  function start(selected=tour){setTour(selected);setMenu(false);setStep(0);}
@@ -72,8 +57,6 @@ export default function Walkthrough({allowed=false,userId,trafficData,searchData
     <p>{active?steps[step].text:'Follow the dashboard controls at your own pace. Exit, skip, or replay whenever you need help.'}</p>
    </div>
    {!active? <>
-    <p>Assemble a meeting summary with evidence, three opportunities, and next actions.</p>
-    <button type="button" className="button primary" onClick={()=>start('pepper')}>Prepare a review for Pepper</button>
     <p>Compare traffic and search results, identify changes, and summarize one finding.</p>
     <button type="button" className="button primary" onClick={()=>start('organic')}>How is organic performing?</button>
     <p>Understand organic submissions, EIP leads, policy counts, and incomplete comparisons.</p>
@@ -94,17 +77,7 @@ export default function Walkthrough({allowed=false,userId,trafficData,searchData
      <button type="button" className="button primary" disabled={!ready&&step!==steps.length-1} onClick={()=>step===steps.length-1?exit():setStep(s=>s+1)}>{step===steps.length-1?'Finish walkthrough':'Next'}</button>
     </div><small>Use the highlighted controls directly. Escape exits. Skipping or finishing does not save any work.</small>
    </>}
-   {(!active||tour==='pepper')&&<details id="pepper-review-draft" className="review-draft" open={draftOpen}>
-    <summary onClick={event=>{event.preventDefault();setDraftOpen(v=>!v);}}>Review draft</summary>
-    <p>Private draft for your signed-in account, saved only in this browser. It does not sync across devices or send anything to Pepper. Save before refreshing; clearing browser data removes it.</p>
-    <p>Dates, source details, and traffic/search values fill automatically from loaded reports. Add your interpretation and next actions. Edited or previously saved fields are kept; use the button below to replace those four fields with the latest loaded data.</p><fieldset disabled={!draftReady}><legend>Meeting review notes</legend><button type="button" className="button" onClick={()=>{setDraft(d=>({...d,period:'',comparison:'',freshness:'',performance:''}));setDraftNotice('Dates and performance now follow the loaded reports. Other notes are unchanged.');}}>Use loaded dates and metrics</button>
-    {REVIEW_FIELDS.map(([key,label,hint])=><label key={key}>{label}<textarea rows={key.startsWith('opportunity')?4:3} maxLength={4000} value={combined[key]} placeholder={hint} onChange={event=>{setDraft(d=>({...d,[key]:event.target.value}));setDraftNotice('');}}/></label>)}
-    <div className="walkthrough-utilities"><button type="button" className="button primary" onClick={saveDraft}>Save draft</button><button type="button" className="button" onClick={copyReview}>Copy review</button></div>
-    <label>Review text to copy<textarea ref={copyText} readOnly rows={8} value={formatReview(combined)}/></label>
-    </fieldset>
-    {!draftReady&&<p>Sign in to load and save your private review draft.</p>}
-    <p role="status">{draftNotice|| (dirty?'Unsaved changes.':savedAt?'Last saved '+new Date(savedAt).toLocaleString():'No saved draft yet.')}</p>
-   </details>}
+
   </aside>,document.body)}
  </>;
 }
