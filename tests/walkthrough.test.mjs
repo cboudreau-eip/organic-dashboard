@@ -119,7 +119,14 @@ test('waiting, skip, restart, escape, replay and unmount never write data',async
   for(let i=0;i<8;i++)await click('Skip step');await click('Finish walkthrough');
   await click('Help & walkthroughs');assert.equal(document.querySelector('#pepper-review-draft textarea').value,'October 2026');
   await act(async()=>root.render(React.createElement(module.exports.default,{allowed:false,userId:'another-user'})));
-  assert.equal(document.querySelector('#pepper-review-draft textarea').value,'');
+  assert.equal(document.querySelector('#pepper-review-draft textarea').value,'No loaded report dates yet.');
+  const trafficData={status:'ready',result:{period:{start:'2026-10-01',end:'2026-10-31',priorStart:'2026-09-01',priorEnd:'2026-09-30'},metrics:[{key:'visitors',format:'count',value:40,previous:20}]}};
+  await act(async()=>root.render(React.createElement(module.exports.default,{allowed:false,userId:'review-user',trafficData})));
+  assert.equal(document.querySelector('#pepper-review-draft textarea').value,'October 2026');
+  await click('Use loaded dates and metrics');
+  assert.match(document.querySelector('#pepper-review-draft textarea').value,/PostHog: 2026-10-01/);
+  assert.match(document.querySelector('textarea[readonly]').value,/40 current vs 20 prior/);
+  await click('Save draft');assert.match(reviewHelpers.readReview(storage,'review-user').fields.performance,/40 current vs 20 prior/);
   await act(async()=>root.unmount());root=null;
   assert.equal(intervals.size,0);assert.equal(document.querySelector('.walkthrough-highlight'),null);assert.equal(writes,0);
  }finally{

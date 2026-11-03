@@ -29,3 +29,25 @@ export function formatReview(fields){
  const draft=validateReview(fields);
  return 'Review for Pepper — MedicareFAQ organic performance\n\n'+REVIEW_FIELDS.map(([key,label])=>label+'\n'+(draft[key].trim()||'[Not recorded]')).join('\n\n');
 }
+import {metricValue,metricChange} from '../../lib/posthog/overview.js';
+import {displayMetric,changeLabel} from '../../lib/gsc/report.js';
+
+export function loadedReview(traffic,search){
+ const fields={period:[],comparison:[],freshness:[],performance:[]};
+ for(const [label,state,zone] of [['PostHog',traffic,'America/New_York'],['Google Search Console',search,'America/Los_Angeles']]){
+  const r=state?.status==='ready'?state.result:null;
+  if(!r?.period){fields.freshness.push(`${label}: ${state?.status==='error'?'unavailable':'loading / not loaded'}. No values included.`);continue;}
+  fields.period.push(`${label}: ${r.period.start} – ${r.period.end} · ${zone}`);
+  fields.comparison.push(`${label}: ${r.period.priorStart} – ${r.period.priorEnd} · ${zone}`);
+  fields.freshness.push(`${label}: MedicareFAQ organic search · all countries and devices. Retrieved: ${r.fetchedAt||'not reported'}. Data through: ${r.availableThrough||r.period.end}. ${(r.period.warnings||[]).join(' ')}`);
+  if(label==='PostHog')for(const m of r.metrics||[]){
+   const value=Number.isFinite(m.value)?m.value:null,previous=Number.isFinite(m.previous)?m.previous:null;
+   fields.performance.push(`${label} — ${m.label||m.key}: ${metricValue(value,m.format)} current vs ${metricValue(previous,m.format)} prior; ${m.unavailableReason||metricChange({...m,value,previous})}.${m.coverage?' Measured-session coverage: '+m.coverage.measured+' of '+m.coverage.total+' current; '+(m.coverage.previousMeasured??'unavailable')+' of '+(m.coverage.previousTotal??'unavailable')+' prior.':''}`);
+  }else for(const [key,name] of [['clicks','Clicks'],['impressions','Impressions'],['ctr','Click-through rate'],['position','Average position']]){
+   const c=r.current?.[key]??null,p=r.previous?.[key]??null;
+   fields.performance.push(`${label} — ${name}: ${displayMetric(c,key)} current vs ${displayMetric(p,key)} prior; ${changeLabel(c,p,key)}.`);
+  }
+ }
+ fields.freshness.push('Sources may use different periods and time zones. Missing values are unavailable, not zero. These are observed changes, not proof of what caused them.');
+ return Object.fromEntries(Object.entries(fields).map(([k,v])=>[k,v.join('\n')||'No loaded report dates yet.']));
+}

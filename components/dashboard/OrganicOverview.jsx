@@ -7,24 +7,24 @@ import OrganicDateControls from './OrganicDateControls';
 import OrganicDetails from './OrganicDetails';
 import OrganicConversions from './OrganicConversions';
 
-export default function OrganicOverview({ days, setDays }) {
+export default function OrganicOverview({ days, setDays, onData }) {
   const requestKey=periodParams(days);
   const [attempt, setAttempt] = useState(0);
   const [result, setResult] = useState(null);
   const [error, setError] = useState('');
   useEffect(() => {
     const controller = new AbortController();
-    setResult(null); setError('');
+    setResult(null); setError(''); onData?.({status:'loading',result:null});
     (async () => {
       try {
         const response = await fetch(`/api/analytics/overview?${requestKey}`, { signal: controller.signal, cache: 'no-store' });
         const data = await response.json();
         if (!response.ok) throw new Error(data.error || 'Analytics could not be loaded.');
-        if (!controller.signal.aborted) setResult(data);
-      } catch (e) { if (!controller.signal.aborted) setError(e.message || 'Analytics could not be loaded.'); }
+        if (!controller.signal.aborted) {setResult(data);onData?.({status:'ready',result:data});}
+      } catch (e) { if (!controller.signal.aborted) {setError(e.message || 'Analytics could not be loaded.');onData?.({status:'error',result:null});} }
     })();
     return () => controller.abort();
-  }, [requestKey, attempt]);
+  }, [requestKey, attempt, onData]);
   return <CollapsibleSection className="organic-live" aria-labelledby="organic-title" title="MedicareFAQ performance" level={2} header={<div className="organic-heading"><div><span className="organic-badge">POSTHOG · ORGANIC SEARCH</span><h2 id="organic-title">MedicareFAQ performance</h2><p>medicarefaq.com · All pages · All devices</p></div>
 
     </div>}>

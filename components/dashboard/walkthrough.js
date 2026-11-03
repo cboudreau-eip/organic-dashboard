@@ -80,7 +80,7 @@ export const pepperReviewSteps = [
  {
   "title": "Set dates and summarize performance",
   "target": "#organic-live-host .gsc-date-controls",
-  "text": "Apply your review dates and comparison, then read the loaded dates, traffic cards, and trend. In Review draft, record those dates and one or two findings with current/prior values. Note source freshness and missing data; do not treat blanks as zero.",
+  "text": "Apply your review dates and comparison. Review draft automatically includes loaded dates, traffic metrics, current/prior values, changes, and source details. Review the findings and add context or next actions. If you have an older saved draft, use Use loaded dates and metrics to refresh those fields. Missing values remain unavailable, never zero.",
   "ready": "#organic-live-host .organic-live > .dashboard-section-content > .organic-freshness",
   "reveal": [
    "#organic-live-host .organic-live"
@@ -116,7 +116,7 @@ export const pepperReviewSteps = [
  {
   "title": "Add search evidence",
   "target": ".gsc-performance .gsc-cards",
-  "text": "Confirm the GSC dates and finalized data-through date. Record clicks and impressions versus the comparison, then investigate page/query changes. Use the source dates in your notes. Semrush snapshots have their own dates and device/location scope; do not mix incompatible snapshots.",
+  "text": "Confirm the GSC dates and finalized data-through date. The draft automatically includes loaded clicks, impressions, CTR, and position with current/prior values and separate GSC dates. Investigate page/query changes and add your interpretation. Semrush snapshots have their own dates and device/location scope; do not mix incompatible snapshots.",
   "ready": ".gsc-data-through",
   "reveal": [
    ".gsc-performance"
