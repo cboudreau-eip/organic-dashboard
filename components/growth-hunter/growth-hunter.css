@@ -38,3 +38,4 @@
 .dashboard-page .growth-keywords .growth-query-clues { white-space: normal; min-width: 210px; text-align: left; line-height: 1.5; }
 .dashboard-page .growth-keyword-loss { display: block; margin-top: 5px; color: #8a321e; }
 .dashboard-page .growth-query-pagination { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; margin: 12px 0; }
+[data-tour="decline-plan"] form label{display:block;font-weight:600;margin:16px 0}[data-tour="decline-plan"] textarea{display:block;box-sizing:border-box;width:100%;min-height:120px;margin-top:8px;padding:12px;border:1px solid #9ab3a6;border-radius:8px;font:inherit;line-height:1.5;color:#183b2b;background:#fff;resize:vertical}[data-tour="decline-plan"] details{margin:14px 0}[data-tour="decline-plan"] details p{overflow-wrap:anywhere}
