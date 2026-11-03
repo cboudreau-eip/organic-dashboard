@@ -1,0 +1,11 @@
+import {serverAuth} from '../../../../lib/auth/server';
+import {dashboardUser} from '../../../../lib/auth/access';
+import {siteUrl} from '../../../../lib/auth/config';
+import {adminStore} from '../../../../lib/admin/server';
+import {adminHandlers} from '../../../../lib/admin/handlers';
+export const dynamic='force-dynamic';
+export const runtime='nodejs';
+export const maxDuration=30;
+const handlers=adminHandlers({getUser:async()=>{const client=await serverAuth();return client?(await dashboardUser(client)).data.user:null;},getStore:adminStore,origin:siteUrl});
+export const GET=handlers.GET;
+export const POST=handlers.POST;

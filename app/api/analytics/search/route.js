@@ -1,3 +1,4 @@
+import {dashboardUser} from '../../../../lib/auth/access';
 import { serverAuth } from '../../../../lib/auth/server';
 import { isTeamUser } from '../../../../lib/auth/config';
 import { searchPerformance } from '../../../../lib/gsc/server';
@@ -9,7 +10,7 @@ const reply = (body, status = 200) => Response.json(body, { status, headers: { '
 export async function GET(request) {
   const client = await serverAuth();
   if (!client) return reply({ error: 'Sign in to view search performance.' }, 401);
-  const { data, error } = await client.auth.getUser();
+  const { data, error } = await dashboardUser(client);
   if (error || !isTeamUser(data.user)) return reply({ error: 'Sign in to view search performance.' }, 401);
   const params = new URL(request.url).searchParams;
   try {

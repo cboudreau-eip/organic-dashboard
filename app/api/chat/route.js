@@ -1,3 +1,4 @@
+import {dashboardUser} from '../../../lib/auth/access';
 import { datoramaSnapshot } from '../../../lib/datorama/snapshot';
 import { serverAuth } from '../../../lib/auth/server';
 import { isTeamUser, siteUrl } from '../../../lib/auth/config';
@@ -14,7 +15,7 @@ export async function POST(request) {
   if (!origin || origin !== new URL(siteUrl()).origin) return reply({ error: 'Please send your message from the dashboard.' }, 403);
   const client = await serverAuth();
   if (!client) return reply({ error: 'Sign in to ask Charlie.' }, 401);
-  const { data, error } = await client.auth.getUser();
+  const { data, error } = await dashboardUser(client);
   if (error || !isTeamUser(data.user)) return reply({ error: 'Your session expired. Sign in again.' }, 401);
   let input;
   try {

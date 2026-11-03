@@ -1,3 +1,4 @@
+import {dashboardUser} from '../../../../lib/auth/access';
 import { serverAuth } from '../../../../lib/auth/server';
 import { isTeamUser } from '../../../../lib/auth/config';
 import { datoramaSnapshot } from '../../../../lib/datorama/snapshot';
@@ -7,7 +8,7 @@ const reply = (body, status = 200) => Response.json(body, { status, headers: { '
 export async function GET() {
   const client = await serverAuth();
   if (!client) return reply({ error: 'Sign in to view imported reports.' }, 401);
-  const { data, error } = await client.auth.getUser();
+  const { data, error } = await dashboardUser(client);
   if (error || !isTeamUser(data.user)) return reply({ error: 'Sign in to view imported reports.' }, 401);
   try {
     const snapshot = datoramaSnapshot();

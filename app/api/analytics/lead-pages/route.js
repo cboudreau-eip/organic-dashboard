@@ -1,3 +1,4 @@
+import {dashboardUser} from '../../../../lib/auth/access';
 import {periodFromParams, reportingPeriod, DateRangeError} from '../../../../lib/posthog/period';
 export const maxDuration = 120;
 import { serverAuth } from '../../../../lib/auth/server';
@@ -9,7 +10,7 @@ const reply = (body, status = 200) => Response.json(body, { status, headers: { '
 export async function GET(request) {
   const client = await serverAuth();
   if (!client) return reply({ error: 'Sign in to view analytics.' }, 401);
-  const { data, error } = await client.auth.getUser();
+  const { data, error } = await dashboardUser(client);
   if (error || !isTeamUser(data.user)) return reply({ error: 'Sign in to view analytics.' }, 401);
   let days;
   try { days=periodFromParams(new URL(request.url).searchParams); if(days.mode!=='custom'||days.compare!=='custom')throw new DateRangeError('Use the GSC reporting dates.'); reportingPeriod(days); }

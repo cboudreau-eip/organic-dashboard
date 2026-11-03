@@ -1,3 +1,4 @@
+import {dashboardUser} from '../../../../../lib/auth/access';
 import { serverAuth } from '../../../../../lib/auth/server';
 import { isTeamUser } from '../../../../../lib/auth/config';
 import { datoramaDaily } from '../../../../../lib/datorama/daily';
@@ -6,5 +7,5 @@ export const dynamic='force-dynamic';
 export const runtime='nodejs';
 export const GET=createPeriodsHandler({load:datoramaDaily,authorize:async()=>{
  const client=await serverAuth();if(!client)return false;
- const {data,error}=await client.auth.getUser();return !error&&isTeamUser(data.user);
+ const {data,error}=await dashboardUser(client);return !error&&isTeamUser(data.user);
 }});

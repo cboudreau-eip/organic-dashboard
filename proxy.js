@@ -25,4 +25,4 @@ export async function proxy(request) {
   return response;
 }
 
-export const config = { matcher: ['/', '/dashboard/:path*', '/forgot-password', '/update-password', '/auth/:path*'] };
+export const config = { matcher: ['/', '/dashboard/:path*', '/admin/:path*', '/forgot-password', '/update-password', '/auth/:path*'] };

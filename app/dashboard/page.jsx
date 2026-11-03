@@ -1,3 +1,4 @@
+import {isOwner} from '../../lib/auth/access';
 import Dashboard from '../../components/dashboard/Dashboard';
 import './dashboard.css';
 import { requireUser } from '../../lib/auth/server';
@@ -11,5 +12,5 @@ export default async function DashboardPage() {
     try { await authorizeGrowth(client, true); growthAllowed = true; }
     catch { /* Optional module fails closed without breaking the dashboard. */ }
   }
-  return <Dashboard userEmail={user.email} userId={user.id} growthAllowed={growthAllowed} />;
+  return <Dashboard owner={isOwner(user)} userEmail={user.email} userId={user.id} growthAllowed={growthAllowed} />;
 }

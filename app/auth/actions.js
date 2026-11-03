@@ -1,5 +1,6 @@
 'use server';
 
+import {dashboardUser} from '../../lib/auth/access';
 import { redirect } from 'next/navigation';
 import { serverAuth, requireUser } from '../../lib/auth/server';
 import { isTeamUser, validEmail, passwordError, siteUrl } from '../../lib/auth/config';
@@ -13,7 +14,7 @@ export async function login(_previous, form) {
   const client = await serverAuth();
   if (!client) return unavailable;
   const { data, error } = await client.auth.signInWithPassword({ email, password });
-  if (error || !isTeamUser(data.user)) {
+  if (error || !isTeamUser(data.user) || !(await dashboardUser(client)).data.user) {
     if (data.session) await client.auth.signOut({ scope: 'local' });
     return { error: 'Unable to sign in. Check your email and password, or contact your administrator for access.' };
   }

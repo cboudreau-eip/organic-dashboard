@@ -1,3 +1,4 @@
+import {dashboardUser} from '../../../../lib/auth/access';
 import { datoramaSnapshot } from '../../../../lib/datorama/snapshot';
 import { serverAuth } from '../../../../lib/auth/server';
 import { isTeamUser } from '../../../../lib/auth/config';
@@ -13,7 +14,7 @@ const reply = (body, status = 200) => Response.json(body, { status, headers: { '
 export async function GET(request) {
   const client = await serverAuth();
   if (!client) return reply({ error: 'Sign in to check sources.' }, 401);
-  const { data, error } = await client.auth.getUser();
+  const { data, error } = await dashboardUser(client);
   if (error || !isTeamUser(data.user)) return reply({ error: 'Sign in to check sources.' }, 401);
   const params = new URL(request.url).searchParams;
   const source = params.get('source') || 'all';
