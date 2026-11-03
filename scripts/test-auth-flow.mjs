@@ -12,6 +12,7 @@ const jwt = (exp, sub = user.id) => ['eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9', Buf
 const access = jwt(Math.floor(Date.now()/1000)+3600);
 const session = {access_token: access,refresh_token:'test-refresh-token',expires_in:3600,token_type:'bearer',user};
 let resets = 0, updates = 0, refreshes = 0, signouts = 0, password = 'test-password-123';
+let membershipActive = true;
 const mock = createServer(async (req, res) => {
   res.setHeader('Content-Type', 'application/json');
   let body = ''; for await (const chunk of req) body += chunk;
@@ -25,6 +26,7 @@ const mock = createServer(async (req, res) => {
   }
   if (url.pathname === '/auth/v1/recover') {resets++;assert.equal(url.searchParams.get('redirect_to'), appOrigin+'/auth/callback');return send(200,{});}
   if (req.headers.authorization !== 'Bearer '+access) return send(401,{code:'bad_jwt',message:'Invalid token'});
+  if (url.pathname === '/rest/v1/rpc/dashboard_access' && req.method === 'POST') return send(200,membershipActive);
   if (url.pathname === '/auth/v1/user' && req.method === 'GET') return send(200,user);
   if (url.pathname === '/auth/v1/user' && req.method === 'PUT') {updates++;password=input.password;return send(200,user);}
   if (url.pathname === '/auth/v1/logout') {signouts++;return send(204,undefined);}
@@ -70,10 +72,22 @@ try {
   let result=await submit('/',{email:user.email,password:'incorrect-password'});
   assert.equal(result.status,200);assert.match(await result.text(),/Unable to sign in/);assert.equal(jar.size,0);
   console.log('PASS: incorrect credentials rejected');
+  membershipActive=false;
+  result=await submit('/',{email:user.email,password});
+  assert.equal(result.status,200);assert.match(await result.text(),/Unable to sign in/);assert.equal(jar.size,0);
+  membershipActive=true;
   result=await submit('/',{email:user.email,password});
   assert.equal(result.status,303);assert.equal(result.headers.get('location'),'/dashboard');assert.ok(jar.size>0);
   const dashboard=await request('/dashboard');assert.equal(dashboard.status,200);assert.match(await dashboard.text(),/test@example.com/);
   console.log('PASS: valid login sets cookies and grants protected page access');
+  assert.equal((await request('/admin')).status,404);
+  assert.equal((await request('/api/admin/users')).status,403);
+  assert.equal((await request('/api/admin/users',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({operation:'delete',id:user.id,email:user.email,version:1})})).status,403);
+  membershipActive=false;
+  assert.equal((await request('/dashboard')).status,307);
+  assert.equal((await request('/api/analytics/overview')).status,401);
+  membershipActive=true;
+  console.log('PASS: disabled accounts rejected at login and during existing sessions; ordinary users cannot administer accounts');
   assert.equal((await request('/api/analytics/overview?days=365')).status,400);
   assert.equal((await request('/api/analytics/details?days=365')).status,400);
   assert.equal((await request('/api/analytics/conversions?days=365')).status,400);
