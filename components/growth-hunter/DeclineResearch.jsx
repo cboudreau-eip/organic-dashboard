@@ -2,11 +2,23 @@
 import CollapsibleSection from '../dashboard/CollapsibleSection';
 import { useEffect, useState } from 'react';
 import KeywordResearch from './KeywordResearch';
+import DeclinePlan from './DeclinePlan';
+import ActionList from '../dashboard/ActionList';
 async function request(init,signal) {
  const response=await fetch('/api/growth-hunter/runs',{cache:'no-store',...init,signal});
  const data=await response.json(); if(!response.ok) throw new Error(data.error || 'Research is unavailable.'); return data;
 }
-function Findings({run,canRun}) {
+function Finding({run,finding,canRun,onSaved}) {
+ const [research,setResearch]=useState(null);
+ return <article className="growth-finding">
+   <h4><a href={finding.url} target="_blank" rel="noopener noreferrer">{finding.url.replace('https://www.medicarefaq.com','')}</a></h4>
+   <p><strong>{finding.lostClicks.toLocaleString()} fewer clicks ({finding.declinePercent}%)</strong> · {finding.prior.clicks.toLocaleString()} → {finding.current.clicks.toLocaleString()}</p>
+   <dl className="growth-evidence"><div><dt>Impressions</dt><dd>{finding.prior.impressions.toLocaleString()} → {finding.current.impressions.toLocaleString()} ({finding.impressionsChangePercent}%)</dd></div><div><dt>Average position</dt><dd>{finding.prior.position.toFixed(2)} → {finding.current.position.toFixed(2)} (lower is better)</dd></div><div><dt>CTR</dt><dd>{(finding.prior.ctr*100).toFixed(2)}% → {(finding.current.ctr*100).toFixed(2)}%</dd></div></dl>
+   <p><strong>Suggested investigation:</strong> Check this page’s query mix and indexing, compare search demand for these dates, and review any content or template changes. Confirm the cause before assigning edits.</p>
+   <KeywordResearch runId={run.id} page={finding.url} canRun={canRun} onEvidence={setResearch}/><DeclinePlan run={run} finding={finding} research={research} canRun={canRun} onSaved={onSaved}/>
+  </article>;
+}
+function Findings({run,canRun,onSaved}) {
  const report=run.result;
  return <section aria-label="Decline research results">
   <h4>{report.priorPeriod.start} to {report.priorPeriod.end} compared with {report.currentPeriod.start} to {report.currentPeriod.end}</h4>
@@ -14,18 +26,13 @@ function Findings({run,canRun}) {
   <p><strong>{report.candidateCount} decline candidates.</strong> Showing up to {report.displayLimit}, ordered by lost clicks. This is not a lead-value score.</p>
   {report.status==='insufficient_data' && <p className="growth-note">No matching pages. These snapshots cannot support a page decline comparison.</p>}
   {report.status==='no_candidates' && <p className="growth-note">No matched pages meet this detector’s thresholds. That does not establish that the entire site is stable.</p>}
-  {report.findings.map(finding=><article className="growth-finding" key={finding.url}>
-   <h4><a href={finding.url} target="_blank" rel="noopener noreferrer">{finding.url.replace('https://www.medicarefaq.com','')}</a></h4>
-   <p><strong>{finding.lostClicks.toLocaleString()} fewer clicks ({finding.declinePercent}%)</strong> · {finding.prior.clicks.toLocaleString()} → {finding.current.clicks.toLocaleString()}</p>
-   <dl className="growth-evidence"><div><dt>Impressions</dt><dd>{finding.prior.impressions.toLocaleString()} → {finding.current.impressions.toLocaleString()} ({finding.impressionsChangePercent}%)</dd></div><div><dt>Average position</dt><dd>{finding.prior.position.toFixed(2)} → {finding.current.position.toFixed(2)} (lower is better)</dd></div><div><dt>CTR</dt><dd>{(finding.prior.ctr*100).toFixed(2)}% → {(finding.current.ctr*100).toFixed(2)}%</dd></div></dl>
-   <p><strong>Suggested investigation:</strong> Check this page’s query mix and indexing, compare search demand for these dates, and review any content or template changes. Confirm the cause before assigning edits.</p>
-   <KeywordResearch key={run.id+finding.url} runId={run.id} page={finding.url} canRun={canRun}/>
-  </article>)}
+  {report.findings.map(finding=><Finding key={run.id+finding.url} run={run} finding={finding} canRun={canRun} onSaved={onSaved}/>)}
   <details><summary>Detection rules and evidence limits</summary><p>At least {report.thresholds.minimumPriorClicks} prior clicks, {report.thresholds.minimumPriorImpressions} prior impressions, {report.thresholds.minimumLostClicks} lost clicks and a {report.thresholds.minimumDeclinePercent}% decline. Pilot rules, not statistically validated success thresholds.</p><ul>{report.limitations.map(text=><li key={text}>{text}</li>)}</ul><p>{report.scopeConfirmation}</p><p>Saved {new Date(run.created_at).toLocaleString()} · {run.detector_version}. Results reference frozen snapshots.</p></details>
  </section>;
 }
 export default function DeclineResearch({snapshots,canRun,onEvidenceSaved}) {
  const [days,setDays]=useState(28);
+ const [actionRefresh,setActionRefresh]=useState(0);
  const [runs,setRuns]=useState(null),[selected,setSelected]=useState(null);
  const [priorId,setPrior]=useState(''),[currentId,setCurrent]=useState(''),[confirmed,setConfirmed]=useState(false);
  const [busy,setBusy]=useState(false),[error,setError]=useState(''),[notice,setNotice]=useState(''),[refresh,setRefresh]=useState(0);
@@ -54,6 +61,7 @@ export default function DeclineResearch({snapshots,canRun,onEvidenceSaved}) {
   {runs===null&&!error&&<p role="status">Loading saved research…</p>}
   {runs?.length===0&&<p>No saved research yet. Opening this panel does not start a run.</p>}
   {!!runs?.length&&<label className="growth-run-select">Saved research (newest 20)<select value={selected?.id||''} onChange={e=>setSelected(runs.find(item=>item.id===e.target.value)||null)}><option value="">Choose a saved run</option>{runs.map(item=><option key={item.id} value={item.id}>{item.result.currentPeriod.start} to {item.result.currentPeriod.end} · {item.result.candidateCount} candidates · {item.id.slice(0,8)}</option>)}</select></label>}
-  {selected&&<Findings run={selected} canRun={canRun}/>}
+  {selected&&<Findings run={selected} canRun={canRun} onSaved={()=>setActionRefresh(v=>v+1)}/>}
+ <ActionList id="decline-action-list" refresh={actionRefresh}/>
  </CollapsibleSection>;
 }

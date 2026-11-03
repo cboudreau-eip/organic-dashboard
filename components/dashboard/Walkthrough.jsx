@@ -1,14 +1,14 @@
 'use client';
 import {useEffect,useRef,useState} from 'react';
 import {createPortal} from 'react-dom';
-import {aiVisibilitySteps,opportunitySteps,organicPerformanceSteps,leadPolicySteps,resultsReviewSteps,visibleTarget,revealStep} from './walkthrough';
+import {declineSteps,aiVisibilitySteps,opportunitySteps,organicPerformanceSteps,leadPolicySteps,resultsReviewSteps,visibleTarget,revealStep} from './walkthrough';
 import './walkthrough.css';
 
 export default function Walkthrough({allowed=false}) {
  const [step,setStep]=useState(null),[menu,setMenu]=useState(false),[ready,setReady]=useState(false),[hasTarget,setHasTarget]=useState(false);
  const launcher=useRef(null),panel=useRef(null),target=useRef(null);
  const [tour,setTour]=useState('organic');
- const steps=tour==='ai'?aiVisibilitySteps:tour==='organic'?organicPerformanceSteps:tour==='leads'?leadPolicySteps:tour==='results'?resultsReviewSteps:opportunitySteps;
+ const steps=tour==='decline'?declineSteps:tour==='ai'?aiVisibilitySteps:tour==='organic'?organicPerformanceSteps:tour==='leads'?leadPolicySteps:tour==='results'?resultsReviewSteps:opportunitySteps;
  const active=step!==null;
  function exit(){setStep(null);setMenu(false);launcher.current?.focus();}
  function start(selected=tour){setTour(selected);setMenu(false);setStep(0);}
@@ -59,6 +59,7 @@ export default function Walkthrough({allowed=false}) {
    {!active? <>
     <p>Compare traffic and search results, identify changes, and summarize one finding.</p>
     <button type="button" className="button primary" onClick={()=>start('organic')}>How is organic performing?</button>
+    {allowed&&<><p>Find pages and queries losing Google clicks, check contact impact, and approve a suggested investigation.</p><button type="button" className="button" onClick={()=>start('decline')}>Where did organic traffic decline?</button></>}
     <p>Understand organic submissions, EIP leads, policy counts, and incomplete comparisons.</p>
     <button type="button" className="button" onClick={()=>start('leads')}>Are organic leads becoming policies?</button>
     <p>Find a page to improve and record your planned work.</p>

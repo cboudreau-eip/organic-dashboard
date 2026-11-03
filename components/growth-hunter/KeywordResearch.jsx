@@ -7,7 +7,7 @@ const position=value=>value.toFixed(2);
 function Metric({prior,current,name,format=number}) {
  return <>{prior?format(prior[name]):'Unavailable'} → {current?format(current[name]):'Unavailable'}</>;
 }
-export default function KeywordResearch({runId,page,canRun}) {
+export default function KeywordResearch({runId,page,canRun,onEvidence}) {
  const [research,setResearch]=useState(null),[open,setOpen]=useState(false),[busy,setBusy]=useState(false),[error,setError]=useState(''),[notice,setNotice]=useState('');
  const [mode,setMode]=useState('declining'),[offset,setOffset]=useState(0);
  const controller=useRef(null);
@@ -24,7 +24,7 @@ export default function KeywordResearch({runId,page,canRun}) {
    let data=await response.json();if(!response.ok)throw new Error(data.error||'Keyword research is unavailable.');
    if(!data.research&&canRun){response=await fetch('/api/growth-hunter/keywords',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({runId,page}),signal:requestController.signal});data=await response.json();if(!response.ok)throw new Error(data.error||'Keyword research could not be saved.');}
    if(requestController.signal.aborted)return;
-   if(data.research){setResearch(data.research);setOpen(true);setNotice(data.reused===false?'Keyword evidence saved.':'Opened saved keyword evidence.');}
+   if(data.research){setResearch(data.research);onEvidence?.(data.research);setOpen(true);setNotice(data.reused===false?'Keyword evidence saved.':'Opened saved keyword evidence.');}
    else setNotice('No keyword research saved for this page yet. An analyst can investigate it.');
   }catch(e){if(!requestController.signal.aborted)setError(e.message);}finally{if(!requestController.signal.aborted)setBusy(false);}
  }

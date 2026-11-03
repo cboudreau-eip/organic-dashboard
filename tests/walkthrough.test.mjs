@@ -106,6 +106,11 @@ test('waiting, skip, restart, escape, replay and unmount never write data',async
   await click('Help & walkthroughs');
   assert.equal(button('Prepare a review for Pepper'),undefined);
   assert.equal(document.querySelector('#pepper-review-draft'),null);
+  await click('Where did organic traffic decline?');
+  assert.match(document.querySelector('.walkthrough-top').textContent,/STEP 1 OF 7/);
+  for(let i=0;i<6;i++)await click('Skip step');
+  assert.match(document.querySelector('#walkthrough-panel h2').textContent,/Open the saved action/);
+  await click('Finish walkthrough');
   await act(async()=>root.unmount());root=null;
   assert.equal(intervals.size,0);assert.equal(document.querySelector('.walkthrough-highlight'),null);assert.equal(writes,0);
  }finally{
