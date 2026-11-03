@@ -97,3 +97,37 @@ test('deletion validates confirmation, blocks access before Auth deletion, and h
  assert.equal(calls[0][0],'admin_prepare_user_deletion');assert.deepEqual(calls[1],['delete',target,true]);
  deleteError=null;assert.equal((await h.POST(req(input))).status,200);
 });
+
+test('password operations enforce owner protection and validation before privileged storage',async()=>{
+ const password='Test-only-password-123';
+ for(const user of [null,{...owner,id:target}]){
+  const h=adminHandlers({getUser:async()=>user,getStore:()=>assert.fail('privileged access'),origin:()=> 'https://dashboard.test'});
+  for(const operation of ['password','create_password'])assert.equal((await h.POST(req({operation,id:target,password,confirmation:password}))).status,403);
+ }
+ const h=adminHandlers({getUser:async()=>owner,getStore:()=>assert.fail('invalid password reached storage'),origin:()=> 'https://dashboard.test'});
+ for(const [p,c] of [['short','short'],[password,'different'],['a'.repeat(129),'a'.repeat(129)]])assert.equal((await h.POST(req({operation:'password',id:target,password:p,confirmation:c}))).status,400);
+ assert.equal((await h.POST(req({operation:'password',id:OWNER_ID,password,confirmation:password}))).status,403);
+});
+
+test('owner creates and replaces passwords without exposing secrets or changing existing permissions',async()=>{
+ const password='Test-only-password-123',calls=[];
+ let users=[],providerError=null,saveError=null;
+ const store={rpc:async(name,args)=>{calls.push([name,args]);return name==='admin_user_directory'?{data:users}:{error:saveError};},auth:{admin:{
+ createUser:async args=>{calls.push(['create',args]);return {data:{user:{id:target}},error:providerError};},
+ updateUserById:async(id,args)=>{calls.push(['password',id,args]);return {data:{user:{id}},error:providerError};}
+ }}};
+ const h=adminHandlers({getUser:async()=>owner,getStore:()=>store,origin:()=> 'https://dashboard.test'});
+ const create={operation:'create_password',email:'New@Example.test',name:'New',access:'viewer',password,confirmation:password};
+ let r=await h.POST(req(create));assert.equal(r.status,201);assert.ok(!(await r.text()).includes(password));
+ assert.deepEqual(calls[1],['create',{email:'new@example.test',password,email_confirm:true}]);
+ assert.deepEqual(calls[2],['admin_save_member',{actor:OWNER_ID,target,display_name:'New',level:'viewer',enabled:true,expected_version:0}]);
+ const input={operation:'password',id:target,password,confirmation:password};
+ for(const list of [[],[{id:target,active:false}],[{id:target,active:true,deletionPending:true}]]){
+  users=list;calls.length=0;assert.equal((await h.POST(req(input))).status,400);assert.equal(calls.length,1);
+ }
+ users=[{id:target,active:true}];calls.length=0;
+ r=await h.POST(req(input));assert.equal(r.status,200);assert.ok(!(await r.text()).includes(password));
+ assert.deepEqual(calls,[['admin_user_directory',undefined],['password',target,{password,email_confirm:true}]]);
+ providerError={message:password};r=await h.POST(req(input));assert.equal(r.status,503);assert.ok(!(await r.text()).includes(password));
+ users=[];providerError=null;saveError={code:'unavailable'};r=await h.POST(req(create));assert.equal(r.status,503);assert.match((await r.json()).error,/access was not enabled/);
+});
