@@ -2,12 +2,12 @@
 import {useState,useEffect} from 'react';
 import {declineSuggestion,declineNotes} from '../../lib/growth-hunter/decline-plan';
 import {leadImpact} from '../../lib/semrush/lead-impact';
-export default function DeclinePlan({run,finding,research,canRun,onSaved}){
+export default function DeclinePlan({run,finding,research,canRun,onSaved,onContacts}){
  const [plan,setPlan]=useState(()=>declineSuggestion(finding)),[report,setReport]=useState(null),[load,setLoad]=useState(0),[loading,setLoading]=useState(false),[busy,setBusy]=useState(false),[saved,setSaved]=useState(false),[error,setError]=useState('');
  useEffect(()=>{
   if(!load)return;const controller=new AbortController();setLoading(true);setReport(null);setError('');
   const p=run.result,params=new URLSearchParams({mode:'custom',compare:'custom',start:p.currentPeriod.start,end:p.currentPeriod.end,priorStart:p.priorPeriod.start,priorEnd:p.priorPeriod.end});
-  (async()=>{try{const r=await fetch('/api/analytics/lead-pages?'+params,{cache:'no-store',signal:controller.signal}),d=await r.json();if(!r.ok)throw Error(d.error||'Contact data unavailable.');if(!controller.signal.aborted)setReport(d);}catch(e){if(!controller.signal.aborted)setError(e.message);}finally{if(!controller.signal.aborted)setLoading(false);}})();
+  (async()=>{try{const r=await fetch('/api/analytics/lead-pages?'+params,{cache:'no-store',signal:controller.signal}),d=await r.json();if(!r.ok)throw Error(d.error||'Contact data unavailable.');if(!controller.signal.aborted){setReport(d);onContacts?.(leadImpact([{url:finding.url}],d)[0].lead);}}catch(e){if(!controller.signal.aborted){setError(e.message);onContacts?.({current:null,previous:null});}}finally{if(!controller.signal.aborted)setLoading(false);}})();
   return()=>controller.abort();
  },[load,run]);
  const lead=leadImpact([{url:finding.url}],report)[0].lead;
