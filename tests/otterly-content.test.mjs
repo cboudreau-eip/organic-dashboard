@@ -23,7 +23,7 @@ test('source selection uses sitemap URLs and removes scripts from excerpts',asyn
 });
 test('review rejects invented targets and links and bounds saved draft',()=>{
  const r=reviewSuggestion(output,[page],'Question',period);assert.match(r.notes,/Target page:/);assert.match(r.notes,/Competitor answers were not inspected/);
- for(const bad of [{targetId:'invented'},{linkIds:['fake']},{draft:'See https://evil.example'},{draft:'x'.repeat(1801)}])assert.throws(()=>reviewSuggestion({...output,...bad},[page],'Question',period));
+ for(const bad of [{targetId:'invented'},{linkIds:['fake']},{draft:'See https://evil.example'},{draft:'You must enroll.'},{draft:'x'.repeat(1801)}])assert.throws(()=>reviewSuggestion({...output,...bad},[page],'Question',period));
 });
 test('generation enforces origin, role, input, saved evidence, no-source failure and burst limits',async()=>{
  let accessCalls=0,generated=0;const report={period,prompts:[{id:pid,prompt:'Part D question',mentions:0,domainMentions:0,competitors:[{brand:'Other',mentions:2}]}]};
