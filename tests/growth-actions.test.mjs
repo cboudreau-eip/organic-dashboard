@@ -4,6 +4,14 @@ import {actionInput,actionWindow,rankEvidence} from '../lib/growth-hunter/action
 import {actionHandlers} from '../lib/growth-hunter/action-handlers.js';
 const id='11111111-1111-4111-8111-111111111111';
 const now=new Date('2026-10-26T18:00:00Z');
+test('approved Otterly notes are bounded and saved without accepting client baselines',async()=>{
+ let inserted;
+ const query={insert(v){inserted=v;return this;},select(){return this;},async single(){return {data:inserted};}};
+ const h=actionHandlers({access:async()=>({client:{from:()=>query}}),origin:()=> 'https://dashboard.example'});
+ const request=notes=>new Request('https://dashboard.example/api',{method:'POST',headers:{origin:'https://dashboard.example'},body:JSON.stringify({operation:'track_otterly',snapshotId:id,promptId:'01M48XVD3FBK3GBNYJCKGW571P',notes,otterly_baseline:{forged:true}})});
+ assert.equal((await h.POST(request('Reviewed draft'))).status,201);assert.equal(inserted.notes,'Reviewed draft');assert.equal(inserted.otterly_baseline,undefined);
+ assert.equal((await h.POST(request('x'.repeat(4001)))).status,400);
+});
 test('tracking an Otterly prompt sends only source IDs and returns an existing baseline on duplicate',async()=>{
  let inserted;const original={id,otterly_baseline:{prompt:{mentions:0,domainMentions:2}}};
  const query={insert(v){inserted=v;return this;},select(){return this;},eq(){return this;},neq(){return this;},async single(){return {error:{code:'23505'}};},async maybeSingle(){return {data:original};}};
