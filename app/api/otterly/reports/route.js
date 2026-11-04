@@ -1,3 +1,4 @@
+import {compareReports} from '../../../../lib/otterly/changes';
 import {otterlyAccess,runOtterlySync} from '../../../../lib/otterly/server';
 import {siteUrl} from '../../../../lib/auth/config';
 export const runtime='nodejs';
@@ -13,9 +14,12 @@ export async function GET(request){
   if(history.error)throw Error('storage');
   let report=null;const selected=id||history.data[0]?.id;
   if(selected){const result=await client.from('otterly_snapshots').select('id,payload').eq('id',selected).maybeSingle();if(result.error)throw Error('storage');if(!result.data)return reply({error:'Report not found.'},404);report=result.data;}
+  let previous=null;
+  if(report){const prior=await client.from('otterly_snapshots').select('id,payload').lt('period_end',report.payload.period.end).order('period_end',{ascending:false}).limit(1);if(prior.error)throw Error('storage');previous=prior.data[0]?.payload||null;}
+  const comparison=report?compareReports(report.payload,previous):null;
   const run=await client.from('otterly_sync_runs').select('status,started_at,finished_at,message').order('period_end',{ascending:false}).limit(1);
   if(run.error)throw Error('storage');
-  return reply({report,history:history.data,run:run.data[0]||null,role,configured:Boolean(process.env.OTTERLY_API_KEY)});
+  return reply({report,comparison,history:history.data,run:run.data[0]||null,role,configured:Boolean(process.env.OTTERLY_API_KEY)});
  }catch(e){return reply({error:e.status===401?'Sign in to view AI visibility.':e.status===403?'Team access is required.':'AI visibility reports are unavailable. Please retry.'},[401,403,404].includes(e.status)?e.status:503);}
 }
 export async function POST(request){
