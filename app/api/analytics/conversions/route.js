@@ -3,7 +3,8 @@ import {periodFromParams, reportingPeriod, DateRangeError} from '../../../../lib
 export const maxDuration = 120;
 import { serverAuth } from '../../../../lib/auth/server';
 import { isTeamUser } from '../../../../lib/auth/config';
-import { organicOverview } from '../../../../lib/posthog/server';
+import {after} from 'next/server';
+import {readConversionReport,refreshConversionReport} from '../../../../lib/posthog/conversion-store';
 
 export const dynamic = 'force-dynamic';
 const reply = (body, status = 200) => Response.json(body, { status, headers: { 'Cache-Control': 'private, no-store' } });
@@ -15,7 +16,13 @@ export async function GET(request) {
   let days;
   try { days=periodFromParams(new URL(request.url).searchParams); reportingPeriod(days); }
   catch(error) { if(error instanceof DateRangeError) return reply({error:error.message},400); throw error; }
-  try { return reply(await organicOverview(days, 'conversions')); }
+  try {
+    const period=reportingPeriod(days);
+    const {view}=await readConversionReport(period);
+    const retry=new URL(request.url).searchParams.get('retry')==='1';
+    after(async()=>{try{await refreshConversionReport(period,retry);}catch{console.error('Conversion background refresh failed');}});
+    return reply({...view,refreshing:view.refreshing||retry});
+  }
   catch (error) { return reply({ error: error.message }, 503); }
 }
 

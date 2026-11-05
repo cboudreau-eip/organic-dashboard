@@ -33,3 +33,28 @@ test('partial conversion UI retains current results and recovers on retry withou
   text=document.body.textContent;assert.match(text,/selected-period funnel is unavailable/);assert.doesNotMatch(text,/NaN/);
  }finally{await act(async()=>root.unmount());dom.window.close();Object.assign(globalThis,old);}
 });
+
+test('background polling preserves saved cards, updates on completion and keeps them on request failure',async()=>{
+ const dom=new JSDOM('<div id="root"></div>',{url:'https://dashboard.example'});
+ const old={window:globalThis.window,document:globalThis.document,fetch:globalThis.fetch,setTimeout:globalThis.setTimeout,clearTimeout:globalThis.clearTimeout,IS_REACT_ACT_ENVIRONMENT:globalThis.IS_REACT_ACT_ENVIRONMENT};
+ let nextPoll;
+ Object.assign(globalThis,{window:dom.window,document:dom.window.document,IS_REACT_ACT_ENVIRONMENT:true,setTimeout:fn=>{nextPoll=fn;return 1;},clearTimeout:()=>{nextPoll=null;}});
+ const total=counts([100,20,10,8,4,5,12]);
+ const base={current:total,previous:total,pages:[],status:'complete',period:period.reportingPeriod(90),timezone:'America/New_York',fetchedAt:'2026-11-05T12:00:00Z',hasSavedReport:true,stale:true,refreshing:true};
+ globalThis.fetch=async()=>Response.json(base);
+ const root=createRoot(document.getElementById('root'));
+ try{
+  await act(async()=>root.render(React.createElement(mod.exports.default,{days:90})));
+  assert.match(document.body.textContent,/Refreshing in the background/);assert.match(document.body.textContent,/Last successful report retrieval/);
+  globalThis.fetch=async()=>{throw Error('Network unavailable');};
+  await act(async()=>nextPoll());
+  assert.match(document.body.textContent,/Network unavailable/);assert.match(document.body.textContent,/Contact submissions/);assert.match(document.body.textContent,/10/);
+  globalThis.fetch=async()=>Response.json({...base,refreshing:false,stale:false});
+  await act(async()=>[...document.querySelectorAll('button')].find(b=>b.textContent==='Retry conversions').click());
+  assert.doesNotMatch(document.body.textContent,/Network unavailable|Refreshing in the background/);
+  let finish;globalThis.fetch=()=>new Promise(resolve=>{finish=resolve;});
+  await act(async()=>root.render(React.createElement(mod.exports.default,{days:30})));
+  assert.doesNotMatch(document.body.textContent,/Contact submissions/);assert.match(document.body.textContent,/Loading organic/);
+  await act(async()=>finish(Response.json({...base,period:period.reportingPeriod(30),refreshing:false})));
+ }finally{await act(async()=>root.unmount());dom.window.close();Object.assign(globalThis,old);}
+});

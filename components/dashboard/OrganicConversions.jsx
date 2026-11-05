@@ -11,22 +11,31 @@ export default function OrganicConversions({ days, detailed = false }) {
   const [data, setData] = useState(null);
   const [error, setError] = useState('');
   const [retry, setRetry] = useState(0);
+  const [loadedKey,setLoadedKey]=useState('');
   useEffect(() => {
     const controller = new AbortController();
-    setData(null); setError('');
-    (async () => {
+    let timer,polls=0;
+    setError('');
+    const load=async(first=false) => {
       try {
-        const response = await fetch(`/api/analytics/conversions?${requestKey}`, { cache: 'no-store', signal: controller.signal });
+        const response = await fetch(`/api/analytics/conversions?${requestKey}${first&&retry?'&retry=1':''}`, { cache: 'no-store', signal: controller.signal });
         let json;try{json=await response.json();}catch{throw new Error('The conversion report did not finish loading. Please retry; no zero totals have been assumed.');}
         if (!response.ok) throw new Error(json.error || 'Conversions could not be loaded.');
-        if (!controller.signal.aborted) setData(json);
+        if (!controller.signal.aborted) {
+          setData(json);setLoadedKey(requestKey);
+          if(json.refreshing){
+            if(++polls<60)timer=setTimeout(()=>load(),5000);
+            else setError('This refresh is taking longer than expected. Your saved results remain available. Retry to check progress.');
+          }
+        }
       } catch (e) { if (!controller.signal.aborted) setError(e.message); }
-    })();
-    return () => controller.abort();
+    };
+    load(true);
+    return () => {controller.abort();clearTimeout(timer);};
   }, [requestKey, retry]);
   const heading = detailed ? 'Organic leads & funnel' : 'Organic conversions';
-  if (error) return <section className="organic-conversions"><h3>{heading}</h3><div className="organic-error" role="alert">{error} <button className="button" onClick={() => setRetry(retry + 1)}>Retry conversions</button></div></section>;
-  if (!data) return <section className="organic-conversions"><h3>{heading}</h3><p role="status">Loading organic conversion activity…</p></section>;
+  if (error&&(!data||loadedKey!==requestKey)) return <section className="organic-conversions"><h3>{heading}</h3><div className="organic-error" role="alert">{error} <button className="button" onClick={() => setRetry(retry + 1)}>Retry conversions</button></div></section>;
+  if (!data||loadedKey!==requestKey) return <section className="organic-conversions"><h3>{heading}</h3><p role="status">Loading organic conversion activity…</p></section>;
   const { current, previous, period } = data;
   const c=current||{},p=previous||{};
   const cards = [['contactSessions','Contact submissions','Sessions with a final contact-step event'],['rate','Contact conversion rate','Contact-submission sessions ÷ eligible sessions'],['quoteStarts','Quote starts','Sessions with a ZIP submission after a page view'],['phoneClicks','Phone clicks','Tracked clicks, not confirmed calls or leads']];
@@ -36,7 +45,10 @@ export default function OrganicConversions({ days, detailed = false }) {
     <p className="organic-detail-note">{formatReportDate(period.start)} – {formatReportDate(period.end)} vs {formatReportDate(period.priorStart)} – {formatReportDate(period.priorEnd)} · {data.timezone}</p>
     {period.warnings?.map(warning=><p className="gsc-date-warning" key={warning}>{warning}</p>)}
     <p>Sessions starting on MedicareFAQ through organic search, including tracked contact steps on the shared quote site.</p>
-    {data.status==='partial'&&<p className="organic-error" role="status">Part of this report could not be loaded: {(data.unavailable||[]).map(key=>({current:'selected-period totals',previous:'comparison-period totals',pages:'landing-page breakdown'}[key])).join(', ')}. Available results remain visible. Missing values are not zero. <button type="button" className="button" onClick={()=>setRetry(value=>value+1)}>Retry unavailable data</button></p>}
+    {data.fetchedAt&&<p className="organic-detail-note">Last successful {data.hasSavedReport?'report':'sections'} retrieval: {new Date(data.fetchedAt).toLocaleString()}{data.stale?' · Saved results for the dates shown above.':''}</p>}
+    {data.refreshing&&!error&&<p role="status">{data.hasSavedReport?'Refreshing in the background. Your last complete report stays visible until the new report is ready.':'Preparing your report in the background. Sections appear as they finish; this page checks progress automatically.'}</p>}
+    {(error||data.refreshFailed)&&<p className="organic-error" role="alert">{error||'The refresh could not finish. Any saved results shown retain their original retrieval time.'} <button type="button" className="button" onClick={()=>setRetry(value=>value+1)}>Retry conversions</button></p>}
+    {data.status==='partial'&&!data.refreshing&&<p className="organic-error" role="status">Part of this report could not be loaded: {(data.unavailable||[]).map(key=>({current:'selected-period totals',previous:'comparison-period totals',pages:'landing-page breakdown'}[key])).join(', ')}. Available results remain visible. Missing values are not zero. <button type="button" className="button" onClick={()=>setRetry(value=>value+1)}>Retry unavailable data</button></p>}
     <div className="organic-cards conversion-cards overview-kpis">{cards.map(([key,label,note]) => {
       const comparable=c[key]!=null&&p[key]!=null;
       const delta=comparable?c[key]-p[key]:null;
@@ -57,6 +69,6 @@ export default function OrganicConversions({ days, detailed = false }) {
     {detailed && current && <CollapsibleSection className="card conversion-funnel" title="Same-session quote journey" level={3} header={<h3>Same-session quote journey</h3>}><p>Ordered steps completed within the selected reporting period.</p>{stages.map(([label,value],i) => <div className="conversion-stage" key={label}><div><span>{label}</span><strong>{fmt(value)}</strong></div><div className="conversion-rail"><span style={{width:`${c.sessions ? value/c.sessions*100 : 0}%`}} /></div>{i>0 && <small>{stages[i-1][1] ? `${rate(value/stages[i-1][1]*100)} progressed from the previous step · ${fmt(stages[i-1][1]-value)} did not reach this step` : 'No previous-step sessions'}</small>}</div>)}<p>{fmt(c.contactSessions-c.completedFunnel)} contact-submission sessions had no observed preceding ZIP step and are excluded from the final funnel stage. Phone clicks occurred in {fmt(c.phoneSessions)} sessions.</p></CollapsibleSection>}
     {detailed&&!current&&<p role="status">The selected-period funnel is unavailable until its totals load.</p>}
     <CollapsibleSection className="card organic-landing" title="Landing pages producing contact submissions" level={3} header={<h3>Landing pages producing contact submissions</h3>}><p>Up to 100 by contact-submission sessions, then eligible sessions</p><div className="organic-table-scroll"><table><thead><tr><th scope="col">Landing page</th><th scope="col">Eligible sessions</th><th scope="col">Contact submissions</th><th scope="col">Conversion rate</th></tr></thead><tbody>{(data.pages||[]).map(row => <tr key={row.page}><td>{row.page}</td><td>{fmt(row.sessions)}</td><td>{fmt(row.contactSessions)}</td><td>{rate(row.rate)}</td></tr>)}</tbody></table></div>{data.pages===null ? <p role="status">Landing-page breakdown unavailable. Use Retry unavailable data above.</p> : !data.pages.length && <p>No eligible organic sessions in this period.</p>}</CollapsibleSection>
-    <details className="organic-definitions"><summary>Conversion definitions and tracking limits</summary><p>Eligible sessions start on www.medicarefaq.com or medicarefaq.com, are classified Organic Search, and have a MedicareFAQ page view. Contact submissions use form_submitted with step_3_contact on demographics.medicarecompared.com. ZIP steps use step_1_zip. Only events on MedicareFAQ, rates.medicarefaq.com, and demographics.medicarecompared.com within the same session and reporting period are considered.</p><p>Repeated contact events in a session count once. We have not verified backend acceptance or matched these events to CRM lead records. New sessions, lost cross-domain identifiers, untracked calls, and completions after the reporting period are not attributed. The landing-session denominator is narrower than the traffic overview, which includes visits reaching MedicareFAQ after starting elsewhere. No additional bot or internal-user exclusion is applied to this conversion cohort.</p><p>This PostHog report does not verify applications or sales. Historical Datorama exports, when available, appear separately in Leads & funnel. Retrieved {new Date(data.fetchedAt).toLocaleString()}; results may be cached for five minutes plus source caching.</p></details>
+    <details className="organic-definitions"><summary>Conversion definitions and tracking limits</summary><p>Eligible sessions start on www.medicarefaq.com or medicarefaq.com, are classified Organic Search, and have a MedicareFAQ page view. Contact submissions use form_submitted with step_3_contact on demographics.medicarecompared.com. ZIP steps use step_1_zip. Only events on MedicareFAQ, rates.medicarefaq.com, and demographics.medicarecompared.com within the same session and reporting period are considered.</p><p>Repeated contact events in a session count once. We have not verified backend acceptance or matched these events to CRM lead records. New sessions, lost cross-domain identifiers, untracked calls, and completions after the reporting period are not attributed. The landing-session denominator is narrower than the traffic overview, which includes visits reaching MedicareFAQ after starting elsewhere. No additional bot or internal-user exclusion is applied to this conversion cohort.</p><p>This PostHog report does not verify applications or sales. Historical Datorama exports, when available, appear separately in Leads & funnel. Complete reports are saved for these exact dates and refreshed on access after 15 minutes, subject to PostHog source caching. Closing the page stops progress checks; returning resumes them.</p></details>
   </CollapsibleSection>;
 }
