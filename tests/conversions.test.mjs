@@ -1,6 +1,6 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
-import {conversionQueries,parseConversions} from '../lib/posthog/conversions.js';
+import {conversionQueries,parseConversions,parseConversionResults} from '../lib/posthog/conversions.js';
 import {overviewPeriod} from '../lib/posthog/overview.js';
 test('conversion cohort is scoped to organic MedicareFAQ entrants with explicit final step and ordering',()=>{
   const queries=conversionQueries(overviewPeriod(7,new Date('2026-10-09T12:00:00Z')));
@@ -16,6 +16,21 @@ test('conversion cohort is scoped to organic MedicareFAQ entrants with explicit 
   assert.match(queries[0].query,/2026-10-09 00:00:00/);
   assert.match(queries[1].query,/2026-09-25 00:00:00/);
   assert.throws(()=>conversionQueries({start:"invalid'",end:'2026-10-08'}));
+});
+
+test('independent failures preserve valid totals, never zero-fill, and permit retry',()=>{
+ const ok=results=>({status:'fulfilled',value:{results}}),bad={status:'rejected',reason:Error('timeout')};
+ const row=[100,20,10,8,4,5,12];
+ const partial=parseConversionResults([ok([row]),bad,bad]);
+ assert.equal(partial.current.contactSessions,10);assert.equal(partial.previous,null);assert.equal(partial.pages,null);
+ assert.equal(partial.status,'partial');assert.deepEqual(partial.unavailable,['previous','pages']);
+ const reversed=parseConversionResults([bad,ok([row]),ok([])]);assert.equal(reversed.current,null);assert.equal(reversed.previous.sessions,100);assert.deepEqual(reversed.pages,[]);
+ const zero=parseConversionResults([ok([[0,0,0,0,0,0,0]]),ok([row]),ok([])]);assert.equal(zero.current.sessions,0);assert.equal(zero.current.rate,null);assert.equal(zero.status,'complete');
+ for(const value of [{results:[]},{results:[[1,0,2,2,0,0,2]]},{results:[row],query_status:{complete:false}},{error:'failed',results:[row]}]){
+  assert.equal(parseConversionResults([{status:'fulfilled',value},ok([row]),ok([])]).current,null);
+ }
+ assert.throws(()=>parseConversionResults([bad,bad,bad]),/temporarily unavailable/);
+ assert.equal(parseConversionResults([ok([row]),ok([row]),ok([['/a/',...row]])]).status,'complete');
 });
 test('conversion rates use session denominator, preserve zero and reject impossible funnel or missing values',()=>{
   const row=[100,20,10,8,4,5,12];const r={results:[row]};
