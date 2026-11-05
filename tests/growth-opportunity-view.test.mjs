@@ -24,7 +24,7 @@ const filename=resolve('components/growth-hunter/OpportunityReview.jsx');
 const {code}=await transform(await readFile(filename,'utf8'),{filename,jsc:{parser:{syntax:'ecmascript',jsx:true},transform:{react:{runtime:'automatic'}}},module:{type:'commonjs'}});
 function Draft(){const [value,setValue]=useState('Original plan');return React.createElement('input',{'aria-label':'Test draft',value,onChange:e=>setValue(e.target.value)});}
 const mod={exports:{}};
-new Function('require','module','exports',code)(name=>name.includes('opportunity-view')?helpers:name==='./DeclinePlan'?Draft:name==='./KeywordResearch'?()=>React.createElement('div',null,'Keyword evidence'):require(name),mod,mod.exports);
+new Function('require','module','exports',code)(name=>name.includes('opportunity-view')?helpers:name==='./DeclinePlan'?Draft:name==='./ContentSuggestion'?()=>React.createElement('div',null,'Content suggestion'):name==='./KeywordResearch'?()=>React.createElement('div',null,'Keyword evidence'):require(name),mod,mod.exports);
 test('only one review is visible and returning to the list preserves edited work',async()=>{
  const dom=new JSDOM('<div id="root"></div>',{url:'https://dashboard.example'});
  const old={window:globalThis.window,document:globalThis.document,IS_REACT_ACT_ENVIRONMENT:globalThis.IS_REACT_ACT_ENVIRONMENT};

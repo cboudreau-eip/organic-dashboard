@@ -2,6 +2,7 @@
 import {useEffect,useRef,useState} from 'react';
 import KeywordResearch from './KeywordResearch';
 import DeclinePlan from './DeclinePlan';
+import ContentSuggestion from './ContentSuggestion';
 import {opportunitySignal,pageLabel,visibleOpportunities,contactLabel} from '../../lib/growth-hunter/opportunity-view';
 
 function Review({run,finding,canRun,onSaved,onContacts,onBack}){
@@ -14,7 +15,8 @@ function Review({run,finding,canRun,onSaved,onContacts,onBack}){
   <dl className="growth-review-metrics"><div><dt>Clicks</dt><dd>{finding.prior.clicks.toLocaleString()} → {finding.current.clicks.toLocaleString()}</dd></div><div><dt>Impressions</dt><dd>{finding.prior.impressions.toLocaleString()} → {finding.current.impressions.toLocaleString()}</dd></div><div><dt>Click-through rate</dt><dd>{(finding.prior.ctr*100).toFixed(2)}% → {(finding.current.ctr*100).toFixed(2)}%</dd></div><div><dt>Average position</dt><dd>{finding.prior.position.toFixed(2)} → {finding.current.position.toFixed(2)}</dd></div></dl>
   <p>{signal.description} These are investigation signals, not proven causes. Lower average position is better.</p></section>
   <details className="growth-support"><summary>Investigate supporting keywords</summary><p>Load query evidence to see which searches lost clicks. Evidence you load here is attached when you save the proposed next step.</p><KeywordResearch runId={run.id} page={finding.url} canRun={canRun} onEvidence={setResearch}/></details>
-  <div className="growth-review-section"><DeclinePlan run={run} finding={finding} research={research} canRun={canRun} onSaved={onSaved} onContacts={onContacts}/></div>
+  <ContentSuggestion run={run} finding={finding} canRun={canRun} onSaved={onSaved}/>
+  <details className="growth-support"><summary>Plan an investigation instead</summary><DeclinePlan run={run} finding={finding} research={research} canRun={canRun} onSaved={onSaved} onContacts={onContacts}/></details>
  </article>;
 }
 export default function OpportunityReview({run,canRun,onSaved}){
