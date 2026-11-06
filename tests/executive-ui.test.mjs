@@ -1,0 +1,32 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import React,{act} from 'react';
+import {createRoot} from 'react-dom/client';
+import {JSDOM} from 'jsdom';
+import {readFile} from 'node:fs/promises';
+import {createRequire} from 'node:module';
+import {resolve} from 'node:path';
+import {transform,loadBindings} from 'next/dist/build/swc/index.js';
+import * as period from '../lib/posthog/period.js';
+import * as executive from '../lib/posthog/executive.js';
+const require=createRequire(import.meta.url);await loadBindings();
+const filename=resolve('components/dashboard/ExecutiveSummary.jsx');
+const {code}=await transform(await readFile(filename,'utf8'),{filename,jsc:{parser:{syntax:'ecmascript',jsx:true},transform:{react:{runtime:'automatic'}}},module:{type:'commonjs'}});
+const mod={exports:{}};
+new Function('require','module','exports',code)(name=>name.endsWith('.css')?{}:name.includes('posthog/executive')?executive:name.includes('posthog/period')?period:require(name),mod,mod.exports);
+test('scorecard distinguishes missing business KPIs, lead gaps and independent traffic failures',async()=>{
+ const dom=new JSDOM('<div id="root"></div>');const old={window:globalThis.window,document:globalThis.document,fetch:globalThis.fetch,IS_REACT_ACT_ENVIRONMENT:globalThis.IS_REACT_ACT_ENVIRONMENT};
+ Object.assign(globalThis,{window:dom.window,document:dom.window.document,IS_REACT_ACT_ENVIRONMENT:true});
+ let inspected;
+ globalThis.fetch=async url=>url.includes('/overview')?Response.json({error:'source failed'},{status:503}):Response.json({available:{start:'2020-01-01'},leadDataThrough:'2020-01-02',exportedAt:'2020-01-03T00:00:00Z'});
+ const root=createRoot(document.getElementById('root'));
+ try{
+  await act(async()=>root.render(React.createElement(mod.exports.default,{onInspectPages:s=>{inspected=s;}})));
+  const text=document.body.textContent;
+  assert.match(text,/Traffic could not be loaded/);assert.match(text,/only through 2020-01-02/);
+  assert.equal([...document.querySelectorAll('tbody tr')].length,5);assert.equal((text.match(/Not yet measured/g)||[]).length,2);
+  assert.doesNotMatch(text,/NaN|Infinity/);
+  await act(async()=>[...document.querySelectorAll('button')].find(b=>b.textContent==='Review pages for these dates').click());
+  assert.equal(inspected.compare,'year');assert.equal(inspected.mode,'month');
+ }finally{await act(async()=>root.unmount());dom.window.close();Object.assign(globalThis,old);}
+});
