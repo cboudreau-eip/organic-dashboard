@@ -23,6 +23,8 @@ test('help opens by keyboard or tap, has associated text, and dismisses with Esc
   await act(async()=>button.focus());
   let tip=document.querySelector('[role="tooltip"]');assert.ok(tip);assert.equal(button.getAttribute('aria-describedby'),tip.id);assert.match(tip.textContent,/Completed quote journeys ÷ quote starts/);
   assert.equal(tip.parentElement,document.body);
+  await act(async()=>window.dispatchEvent(new dom.window.Event('scroll')));
+  assert.ok(document.querySelector('[role="tooltip"]'),'Scrolling a focused trigger into view must not dismiss help');
   await act(async()=>document.dispatchEvent(new dom.window.KeyboardEvent('keydown',{key:'Escape',bubbles:true})));
   assert.equal(document.querySelector('[role="tooltip"]'),null);assert.equal(document.activeElement,button);
   await act(async()=>button.click());assert.ok(document.querySelector('[role="tooltip"]'));
