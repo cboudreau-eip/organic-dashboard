@@ -1,3 +1,4 @@
+import * as definitions from '../lib/metric-definitions.js';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import React,{act} from 'react';
@@ -13,7 +14,7 @@ const require=createRequire(import.meta.url);await loadBindings();
 const filename=resolve('components/dashboard/ExecutiveSummary.jsx');
 const {code}=await transform(await readFile(filename,'utf8'),{filename,jsc:{parser:{syntax:'ecmascript',jsx:true},transform:{react:{runtime:'automatic'}}},module:{type:'commonjs'}});
 const mod={exports:{}};
-new Function('require','module','exports',code)(name=>name.endsWith('.css')?{}:name.includes('posthog/executive')?executive:name.includes('posthog/period')?period:require(name),mod,mod.exports);
+new Function('require','module','exports',code)(name=>name==='./MetricHelp'?()=>null:name.includes('metric-definitions')?definitions:name.endsWith('.css')?{}:name.includes('posthog/executive')?executive:name.includes('posthog/period')?period:require(name),mod,mod.exports);
 test('scorecard distinguishes missing business KPIs, lead gaps and independent traffic failures',async()=>{
  const dom=new JSDOM('<div id="root"></div>');const old={window:globalThis.window,document:globalThis.document,fetch:globalThis.fetch,IS_REACT_ACT_ENVIRONMENT:globalThis.IS_REACT_ACT_ENVIRONMENT};
  Object.assign(globalThis,{window:dom.window,document:dom.window.document,IS_REACT_ACT_ENVIRONMENT:true});

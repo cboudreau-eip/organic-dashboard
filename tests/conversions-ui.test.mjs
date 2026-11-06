@@ -1,3 +1,4 @@
+import * as definitions from '../lib/metric-definitions.js';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import React,{act} from 'react';
@@ -16,7 +17,7 @@ await loadBindings();
 const filename=resolve('components/dashboard/OrganicConversions.jsx');
 const {code}=await transform(await readFile(filename,'utf8'),{filename,jsc:{parser:{syntax:'ecmascript',jsx:true},transform:{react:{runtime:'automatic'}}},module:{type:'commonjs'}});
 const mod={exports:{}};
-new Function('require','module','exports',code)(name=>name.includes('posthog/quote-journey')?journey:name.includes('posthog/period')?period:name.includes('posthog/overview')?overview:name==='./CollapsibleSection'?({children,header})=>React.createElement('section',null,header,children):require(name),mod,mod.exports);
+new Function('require','module','exports',code)(name=>name==='./MetricHelp'?()=>null:name.includes('metric-definitions')?definitions:name.includes('posthog/quote-journey')?journey:name.includes('posthog/period')?period:name.includes('posthog/overview')?overview:name==='./CollapsibleSection'?({children,header})=>React.createElement('section',null,header,children):require(name),mod,mod.exports);
 test('partial conversion UI retains current results and recovers on retry without false zeros',async()=>{
  const dom=new JSDOM('<div id="root"></div>',{url:'https://dashboard.example'});
  const old={window:globalThis.window,document:globalThis.document,fetch:globalThis.fetch,IS_REACT_ACT_ENVIRONMENT:globalThis.IS_REACT_ACT_ENVIRONMENT};

@@ -1,4 +1,6 @@
 'use client';
+import MetricHelp from './MetricHelp';
+import {METRIC_HELP} from '../../lib/metric-definitions';
 import {formatReportDate,periodParams,normalizePeriod} from '../../lib/posthog/period';
 import CollapsibleSection from './CollapsibleSection';
 import { useEffect, useState } from 'react';
@@ -42,7 +44,7 @@ export default function OrganicOverview({ days, setDays }) {
       // Engagement direction alone does not establish a better visitor outcome.
       const tone=!comparable||delta===0?'neutral':metric.format==='count'?(delta>0?'positive':'negative'):'context';
       return <article className="card overview-kpi" data-tone={tone} key={key}>
-        <span className="overview-kpi-label">{key === 'session duration' && metric?.coverage ? `Measured ${label.toLowerCase()}` : label}</span>
+        <span className="overview-kpi-label">{key === 'session duration' && metric?.coverage ? `Measured ${label.toLowerCase()}` : label}<MetricHelp label={label} definition={METRIC_HELP[key]} /></span>
         <strong className="overview-kpi-value">{metric ? metricValue(metric.value, metric.format) : '—'}</strong>
         <div className="overview-kpi-change">
           <span className="overview-kpi-badge"><span aria-hidden="true">{direction==='up'?'↗':direction==='down'?'↘':'–'}</span><span>{metric?.unavailableReason || (metric ? metricChange(metric) : error ? 'Unavailable' : 'Loading…')}</span></span>
