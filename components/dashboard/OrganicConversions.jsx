@@ -3,6 +3,7 @@ import {formatReportDate,periodParams} from '../../lib/posthog/period';
 import CollapsibleSection from './CollapsibleSection';
 import { useEffect, useState } from 'react';
 import { metricChange } from '../../lib/posthog/overview';
+import {quoteJourney} from '../../lib/posthog/quote-journey';
 const fmt = n => n == null ? 'Unavailable' : n.toLocaleString('en-US');
 const rate = n => n == null ? 'Unavailable' : `${n.toFixed(2)}%`;
 
@@ -38,6 +39,7 @@ export default function OrganicConversions({ days, detailed = false }) {
   if (!data||loadedKey!==requestKey) return <section className="organic-conversions"><h3>{heading}</h3><p role="status">Loading organic conversion activity…</p></section>;
   const { current, previous, period } = data;
   const c=current||{},p=previous||{};
+  const journey=quoteJourney(current),priorJourney=quoteJourney(previous);
   const cards = [['contactSessions','Contact submissions','Sessions with a final contact-step event'],['rate','Contact conversion rate','Contact-submission sessions ÷ eligible sessions'],['quoteStarts','Quote starts','Sessions with a ZIP submission after a page view'],['phoneClicks','Phone clicks','Tracked clicks, not confirmed calls or leads']];
   const stages = [['Organic landing sessions',c.sessions],['ZIP submitted after page view',c.quoteStarts],['Contact submitted after ZIP',c.completedFunnel]];
   return <CollapsibleSection className="organic-conversions" title={heading} level={3} header={<h3>{heading}</h3>}>
@@ -66,6 +68,30 @@ export default function OrganicConversions({ days, detailed = false }) {
       </article>;
     })}</div>
     {current&&<p className="organic-detail-note">Rate denominator: {fmt(c.sessions)} eligible sessions. Each contact-submission session counts once; {fmt(c.contactEvents)} contact events were recorded. These are tracked submissions, not CRM-verified or unique-person leads.</p>}
+    {detailed&&<section aria-label="Quote completion summary" className="conversion-funnel">
+      <h3>Are quote starters completing the journey?</h3>
+      <p>From ZIP submission to the final contact step in the same session and reporting period.</p>
+      <div className="organic-cards conversion-cards overview-kpis">{[
+        ['starts','Quote starts',false,'Sessions with a ZIP submission after a page view'],
+        ['completed','Completed quote journeys',false,'Sessions with a final contact step after the ZIP step'],
+        ['completionRate','Completion rate',true,'Completed quote journeys ÷ quote starts'],
+        ['dropOffRate','Drop-off rate',true,'Quote starts without an observed completion ÷ quote starts'],
+      ].map(([key,label,percent,note])=>{
+        const value=journey[key],prior=priorJourney[key],comparable=value!=null&&prior!=null;
+        const delta=comparable?value-prior:null;
+        const tone=delta===null||delta===0?'neutral':key==='starts'?'context':(key==='dropOffRate'?delta<0:delta>0)?'positive':'negative';
+        return <article className="card overview-kpi" data-tone={tone} key={key}>
+          <span className="overview-kpi-label">{label}</span>
+          <strong className="overview-kpi-value">{percent?rate(value):fmt(value)}</strong>
+          <div className="overview-kpi-change"><span className="overview-kpi-badge"><span aria-hidden="true">{delta===null||delta===0?'–':delta>0?'↗':'↘'}</span><span>{comparable?metricChange({value,previous:prior,format:percent?'percent':'count'}):'Comparison unavailable'}</span></span><span className="overview-kpi-delta">{percent?'Change vs. comparison period · pp = percentage points':'Change vs. comparison period'}</span></div>
+          <div className="overview-kpi-prior"><span>Comparison period</span><strong>{percent?rate(prior):fmt(prior)}</strong></div>
+          <small>{note}</small>
+        </article>;
+      })}</div>
+      {journey.starts>0&&<p><strong>{fmt(journey.completed)} of {fmt(journey.starts)} quote-start sessions reached the final contact step.</strong> {fmt(journey.dropOff)} had no observed completion in the same session and period.</p>}
+      {journey.starts===0&&<p>No quote starts were recorded. Completion and drop-off rates cannot be calculated.</p>}
+      <p className="organic-detail-note">A completed journey is a tracked contact-step submission, not a confirmed policy or CRM-verified lead. Drop-off does not prove abandonment: later completions and lost tracking can be excluded.</p>
+    </section>}
     {detailed && current && <CollapsibleSection className="card conversion-funnel" title="Same-session quote journey" level={3} header={<h3>Same-session quote journey</h3>}><p>Ordered steps completed within the selected reporting period.</p>{stages.map(([label,value],i) => <div className="conversion-stage" key={label}><div><span>{label}</span><strong>{fmt(value)}</strong></div><div className="conversion-rail"><span style={{width:`${c.sessions ? value/c.sessions*100 : 0}%`}} /></div>{i>0 && <small>{stages[i-1][1] ? `${rate(value/stages[i-1][1]*100)} progressed from the previous step · ${fmt(stages[i-1][1]-value)} did not reach this step` : 'No previous-step sessions'}</small>}</div>)}<p>{fmt(c.contactSessions-c.completedFunnel)} contact-submission sessions had no observed preceding ZIP step and are excluded from the final funnel stage. Phone clicks occurred in {fmt(c.phoneSessions)} sessions.</p></CollapsibleSection>}
     {detailed&&!current&&<p role="status">The selected-period funnel is unavailable until its totals load.</p>}
     <CollapsibleSection className="card organic-landing" title="Landing pages producing contact submissions" level={3} header={<h3>Landing pages producing contact submissions</h3>}><p>Up to 100 by contact-submission sessions, then eligible sessions</p><div className="organic-table-scroll"><table><thead><tr><th scope="col">Landing page</th><th scope="col">Eligible sessions</th><th scope="col">Contact submissions</th><th scope="col">Conversion rate</th></tr></thead><tbody>{(data.pages||[]).map(row => <tr key={row.page}><td>{row.page}</td><td>{fmt(row.sessions)}</td><td>{fmt(row.contactSessions)}</td><td>{rate(row.rate)}</td></tr>)}</tbody></table></div>{data.pages===null ? <p role="status">Landing-page breakdown unavailable. Use Retry unavailable data above.</p> : !data.pages.length && <p>No eligible organic sessions in this period.</p>}</CollapsibleSection>
