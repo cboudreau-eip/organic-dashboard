@@ -2,6 +2,19 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {validateDaily,resolvePeriods,compareDaily,createPeriodsHandler} from '../lib/datorama/periods.js';
 const keys=['allLeads','filteredLeads','soldLeads','eipLeads','grossMS','grossMA','approvedMS','approvedMA'];
+test('version 2 opportunity counts reconcile, aggregate by cohort and suppress incomplete comparisons',()=>{
+ const d=fixture();d.version=2;d.metrics.push({key:'opportunities',label:'Salesforce Opportunity Count'});
+ for(const r of d.rows)r.values.opportunities=1;
+ d.totals.opportunities=d.rows.length;validateDaily(d);
+ let report=compareDaily(d,{month:'2024-03'}),metric=report.metrics.at(-1);
+ assert.equal(metric.total,31);assert.equal(metric.previous.total,29);
+ assert.equal(report.months.at(-1).metrics.at(-1).total,31);
+ d.rows.find(r=>r.date==='2024-03-01').values.opportunities=null;d.totals.opportunities--;validateDaily(d);
+ metric=compareDaily(d,{month:'2024-03'}).metrics.at(-1);
+ assert.equal(metric.total,30);assert.equal(metric.missingDays,1);assert.equal(metric.percentChange,null);
+ d.totals.opportunities++;assert.throws(()=>validateDaily(d));
+ d.version=1;assert.throws(()=>validateDaily(d));
+});
 function fixture(){const rows=[];for(let d=Date.parse('2023-01-01');d<=Date.parse('2024-03-31');d+=86400000)rows.push({date:new Date(d).toISOString().slice(0,10),values:Object.fromEntries(keys.map(k=>[k,2]))});return {version:1,period:{start:'2023-01-01',end:'2024-03-31'},leadDataThrough:'2024-03-31',exportedAt:'2024-04-01T12:00:00Z',metrics:keys.map(key=>({key,label:key})),rows,totals:Object.fromEntries(keys.map(k=>[k,rows.length*2]))};}
 test('calendar months, leap years, MTD clamping and custom equal periods',()=>{const d=fixture();assert.deepEqual(resolvePeriods(d,{mode:'month',month:'2024-03'}),{mode:'month',compare:'previous',month:'2024-03',start:'2024-03-01',end:'2024-03-31',priorStart:'2024-02-01',priorEnd:'2024-02-29'});assert.equal(resolvePeriods(d,{mode:'mtd'}).priorEnd,'2024-02-29');assert.equal(resolvePeriods(d,{mode:'month',month:'2024-02',compare:'year'}).priorEnd,'2023-02-28');const p=resolvePeriods(d,{mode:'custom',start:'2024-03-10',end:'2024-03-15'});assert.equal(p.priorStart,'2024-03-04');assert.equal(p.priorEnd,'2024-03-09');assert.throws(()=>resolvePeriods(d,{mode:'custom',start:'2024-02-30',end:'2024-03-01'}));assert.throws(()=>resolvePeriods(d,{mode:'month',month:'2023-01'}));assert.throws(()=>resolvePeriods(d,{mode:'custom',start:'2023-01-01',end:'2024-03-31'}));});
 test('sums, daily averages, prior-zero baseline and incomplete values',()=>{const d=fixture();validateDaily(d);let r=compareDaily(d,{mode:'month',month:'2024-03'});assert.equal(r.metrics[0].total,62);assert.equal(r.metrics[0].previous.total,58);assert.equal(r.metrics[0].delta,4);assert.equal(r.metrics[0].dailyAverage,2);d.rows.find(r=>r.date==='2024-03-01').values.allLeads=null;d.totals.allLeads-=2;validateDaily(d);r=compareDaily(d,{mode:'month',month:'2024-03'});assert.equal(r.metrics[0].total,60);assert.equal(r.metrics[0].missingDays,1);assert.equal(r.metrics[0].dailyAverage,null);assert.equal(r.metrics[0].delta,null);for(const row of d.rows)if(row.date.startsWith('2024-02'))row.values.filteredLeads=0;r=compareDaily(d,{mode:'month',month:'2024-03'});assert.equal(r.metrics[1].percentChange,null);assert.equal(r.metrics[1].comparisonStatus,'No prior baseline');for(const row of d.rows)if(row.date.startsWith('2024-03'))row.values.grossMA=null;r=compareDaily(d,{mode:'month',month:'2024-03'});assert.equal(r.metrics[5].total,null);});

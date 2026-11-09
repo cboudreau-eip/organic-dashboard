@@ -22,3 +22,11 @@ test('latest cohort totals preserve gaps, zero, and separate policy statuses', (
   cohort.partial=true;
   assert.equal(cohortMetrics(cohort)[0].incomplete,true);
 });
+
+test('opportunity cohorts show source subtotal and retain missing-day warning', () => {
+  const cohort={partial:false,metrics:[{key:'opportunities',total:14,reportedDays:29,missingDays:2}]};
+  const metric=cohortMetrics(cohort).find(m=>m.label==='Salesforce opportunities');
+  assert.equal(metric.total,14);
+  assert.equal(metric.unavailable,false);
+  assert.equal(metric.incomplete,true);
+});
