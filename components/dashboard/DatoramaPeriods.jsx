@@ -1,5 +1,6 @@
 'use client';
 import MetricHelp from './MetricHelp';
+import DatoramaCohorts from './DatoramaCohorts';
 import {METRIC_HELP} from '../../lib/metric-definitions';
 import CollapsibleSection from './CollapsibleSection';
 import { useEffect, useState } from 'react';
@@ -33,6 +34,7 @@ export default function DatoramaPeriods(){
    <div className="datorama-meta"><span>Imported snapshot</span><span>Lead data through {data.leadDataThrough}</span><details><summary>Source & freshness</summary><p>{data.dateBasis}. {data.scope}</p><p>Imported {new Date(data.exportedAt).toLocaleString()} · History: {data.available.start} to {data.available.end}. This is an imported snapshot, not a live feed.</p></details></div>
    {data.overlapping&&<p className="datorama-gap">The selected periods overlap.</p>}
    {data.metrics.some(m=>m.missingDays||m.previous.missingDays)&&<p className="datorama-gap" role="status"><strong>Some daily data is incomplete.</strong> Affected metrics show reported subtotals. Changes require complete data in both periods; daily averages require complete data in that period. Blanks are not counted as zero.</p>}
+   <DatoramaCohorts data={data} />
    <section aria-labelledby="lead-policy-title" className="datorama-conversion">
     <h3 id="lead-policy-title">Lead-to-policy conversion</h3>
     <p>Policies from leads created during the selected dates ÷ EIP leads. This matches Datorama’s closing-ratio denominator. Policies may be signed later; newer leads have had less time to convert.</p>
