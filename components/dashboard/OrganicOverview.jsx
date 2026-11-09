@@ -7,6 +7,7 @@ import { useEffect, useState } from 'react';
 import { METRICS, metricValue, metricChange } from '../../lib/posthog/overview';
 import OrganicDateControls from './OrganicDateControls';
 import OrganicDetails from './OrganicDetails';
+import PagePerformance from './PagePerformance';
 import OrganicConversions from './OrganicConversions';
 import ExecutiveSummary from './ExecutiveSummary';
 
@@ -58,7 +59,7 @@ export default function OrganicOverview({ days, setDays }) {
     })}</div>
     {result?.engagementStatus === 'partial' && <p role="status">Some engagement data could not be loaded. <button type="button" className="button" onClick={() => setAttempt(value => value + 1)}>Retry engagement</button></p>}
     <OrganicConversions key={`conversions-${requestKey}`} days={days} />
-    <div id="overview-page-performance"><OrganicDetails key={`traffic-details-${requestKey}`} days={days} refresh={attempt} /></div>
+    <div id="overview-page-performance"><PagePerformance key={`pages-${requestKey}`} days={days} refresh={attempt}/><OrganicDetails key={`traffic-details-${requestKey}`} days={days} refresh={attempt} /></div>
     <details className="organic-definitions"><summary>About these metrics</summary><p>Only sessions classified by PostHog as Organic Search are included, with page views on www.medicarefaq.com or medicarefaq.com. Traffic uses only the GTM/CDN PostHog stream; the duplicate website-installed stream is excluded. Visitors are distinct people and sessions are distinct PostHog sessions represented by the selected stream. Measured engagement is rebuilt from GTM/CDN events on MedicareFAQ, rather than mixed-stream session totals. Duration runs from the first pageview to last observed activity and requires a recorded exit at or after the final pageview. Single-page session rate is the share of all tracked organic sessions with exactly one recorded pageview, regardless of time spent, clicks or whether an exit was recorded. It is not bounce rate. Reloads count as additional pageviews. Duration coverage is shown separately and describes only visits with a recorded final exit. Adjacent-day events are included so midnight does not cut sessions short. Coverage may differ between comparison periods. Organic classification comes from PostHog; all dates use America/New_York. The comparison uses the dates selected above. Calendar months can have different lengths; count changes compare totals, not daily averages. Year-over-year comparisons use calendar dates, not matched weekdays. Single-page session rate changes are percentage points (pp).</p><p>Results may be cached for five minutes plus PostHog’s source cache. Zero means no matching activity; a dash means unavailable. These cards use the reporting period above. Ask Charlie uses live data and its own reporting-period selector. Historical lead and policy imports appear separately in Leads & funnel.</p></details>
     {result && <p className="organic-freshness">Retrieved {new Date(result.fetchedAt).toLocaleString()} {result.sourceUpdatedAt && `· Source calculated ${new Date(result.sourceUpdatedAt).toLocaleString()}`} · <a href="https://us.posthog.com/project/452683/web" target="_blank" rel="noreferrer">Open PostHog</a></p>}
   </CollapsibleSection></>;
