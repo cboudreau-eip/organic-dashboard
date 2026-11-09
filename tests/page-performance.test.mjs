@@ -10,7 +10,8 @@ test('measured denominators and independent failures remain explicit',()=>{
  const e=ok([['/x/',100,60,6000,70,12,40,20]]),c=ok([['/x/',98,10,7,6,0,0,7]]);
  const r=parsePerformance([e,c]);assert.equal(r.rows[0].engagement.bounceRate,20);assert.equal(r.rows[0].engagement.scroll,50);assert.equal(r.rows[0].conversions.sessions,98);
  assert.deepEqual(parsePerformance([e,bad]).unavailable,['conversions']);assert.equal(parsePerformance([bad,c]).rows[0].engagement,undefined);
- const empty=parsePerformance([ok([['/x/',10,0,0,10,0,0,0]]),ok([])]);assert.equal(empty.rows[0].engagement.scroll,null);assert.equal(empty.rows[0].engagement.bounceRate,null);assert.equal(empty.rows[0].conversions,undefined);
+ const empty=parsePerformance([ok([['/x/',10,0,0,10,0,0,null]]),ok([])]);assert.equal(empty.rows[0].engagement.scroll,null);assert.equal(empty.rows[0].engagement.bounceRate,null);assert.equal(empty.rows[0].conversions,undefined);
+ assert.throws(()=>parsePerformance([ok([['/x/',10,5,10,6,1,2,null]]),bad]));
  assert.throws(()=>parsePerformance([bad,bad]));
  assert.throws(()=>parsePerformance([ok([['/x/',10,5,10,6,7,2,1]]),bad]));
 });
