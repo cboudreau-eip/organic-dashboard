@@ -1,0 +1,11 @@
+import {timingSafeEqual} from 'node:crypto';
+import {saveCurrentCheckpoints} from '../../../../lib/datorama/checkpoint-store';
+export const dynamic='force-dynamic';
+export const runtime='nodejs';
+export async function GET(request){
+ const secret=process.env.CRON_SECRET;
+ const supplied=Buffer.from(request.headers.get('authorization')||''),expected=Buffer.from('Bearer '+(secret||''));
+ if(!secret||supplied.length!==expected.length||!timingSafeEqual(supplied,expected))return Response.json({error:'Unauthorized'},{status:401});
+ try{return Response.json(await saveCurrentCheckpoints(),{headers:{'Cache-Control':'no-store'}});}
+ catch{return Response.json({error:'Checkpoint save failed.'},{status:503});}
+}

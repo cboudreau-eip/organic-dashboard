@@ -1,6 +1,7 @@
 'use client';
 import {useState} from 'react';
 import CollapsibleSection from './CollapsibleSection';
+import CohortHistory from './CohortHistory';
 import {cohortMetrics, followUpMonths} from '../../lib/datorama/cohorts';
 import './datorama-cohorts.css';
 
@@ -22,6 +23,8 @@ export default function DatoramaCohorts({data}) {
     <h4>Four months after the lead-created month</h4>
     <p>Each checkpoint is the end of the following calendar month. Status is based on imported lead coverage through {data.leadDataThrough}, not today’s date.</p>
     <ol className="cohort-followups">{followUpMonths(cohort.month, data.leadDataThrough).map(point => <li key={point.number}><span>Follow-up {point.number}</span><strong>{label(point.month)}</strong><small>Checkpoint: {point.end}</small><p>{point.status}</p></li>)}</ol>
-    <details><summary>Why are follow-up results unavailable?</summary><p>The current import is one snapshot. It does not preserve what this cohort’s results were at each earlier checkpoint, so we cannot reconstruct changes or policy retention from it. This view lays out the follow-up schedule; it does not yet save checkpoints or calculate persistency.</p><p>Revenue, first-year policy value, and persistency will remain unavailable until their source fields are connected. Missing values are never treated as zero.</p></details>
+    <p>This schedule shows month-end targets. Saved exports below retain their actual source dates; they are not reconstructed month-end measurements.</p>
+    <CohortHistory key={cohort.month} month={cohort.month} exportedAt={data.exportedAt}/>
+    <details><summary>Follow-up measurement limits</summary><p>History starts with the first saved source export. Earlier checkpoint values cannot be reconstructed. Revenue, first-year policy value, and persistency remain unavailable until their source fields are connected. Missing values are never treated as zero.</p></details>
   </CollapsibleSection>;
 }

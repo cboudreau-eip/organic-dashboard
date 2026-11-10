@@ -4,8 +4,10 @@ import {readFileSync,writeFileSync} from 'node:fs';
 import {gzipSync,gunzipSync} from 'node:zlib';
 import assert from 'node:assert/strict';
 import {validateDaily} from '../lib/datorama/periods.js';
+import {preserveCheckpoints} from './save-datorama-checkpoints.mjs';
 const data=validateDaily(JSON.parse(gunzipSync(Buffer.from(process.env.DATORAMA_DAILY_GZIP,'base64'))));
 assert.equal(data.scopeId,'medicarefaq-production');
+await preserveCheckpoints(data);
 const input=JSON.parse(readFileSync(process.argv[2],'utf8'));
 assert.equal(Object.keys(input.opportunities).length,data.rows.length);
 for(const row of data.rows){
@@ -18,6 +20,7 @@ data.metrics=data.metrics.filter(m=>m.key!=='opportunities');
 data.metrics.push({key:'opportunities',label:'Salesforce Opportunity Count'});
 data.totals.opportunities=input.total;
 validateDaily(data);
+await preserveCheckpoints(data);
 const value=gzipSync(JSON.stringify(data)).toString('base64');
 const env=readFileSync('.env.local','utf8');
 assert.match(env,/^DATORAMA_DAILY_GZIP=.*$/m);

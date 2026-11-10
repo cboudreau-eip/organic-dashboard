@@ -14,6 +14,14 @@ To enrich the existing private snapshot, run `scripts/extract-datorama-opportuni
 
 ## Data handling
 
+### Saved cohort checkpoints
+
+`datorama_cohort_checkpoints` stores immutable monthly aggregates for each distinct export and tracked-value revision. Server-only SELECT/INSERT permissions and RLS block browser reads/writes; the history endpoint checks active dashboard access before using server credentials. No update/delete is granted to the application service role. IDs hash normalized source facts, not capture time, so repeated or concurrent saves are idempotent. Saved time and source export time are separate. A correction to the same export timestamp creates another revision without a growth comparison.
+
+The cohort history view saves the current trusted server import before reading history. A daily Vercel job also captures the current import (14:15 UTC); neither job downloads data from Datorama. Before replacing any import, run `node --env-file=.env.local scripts/save-datorama-checkpoints.mjs` against the existing source, and again against the new validated source. The opportunity merge script enforces these saves and stops on storage errors. Other import procedures must also preserve the old snapshot before replacing it; background checks cannot recover an import that was replaced before capture.
+
+History displays actual source-export dates, latest 100 records per cohort, and changes for EIP leads, opportunities, gross MS/MA and approved MS/MA separately. Changes require the same complete cohort date range, complete numeric values, and strictly later source-export timestamps. Partial cohorts, missing values, same-date revisions and first baselines have no delta. Earlier month-end values and policy persistency cannot be inferred from this history. Stored records have no automatic expiry.
+
 Daily version 1 is a server-only gzip/base64 JSON snapshot in DATORAMA_DAILY_GZIP, separate from the DATORAMA_SNAPSHOT_GZIP archive, which is also restricted to production MedicareFAQ URL rows. Keep both out of public source and client bundles. The authenticated periods endpoint returns period/month aggregates only. Auth matches existing team analytics access. Failed requests never render zeros. Input is bounded to 366 days per period and imported history. Daily rows must be contiguous, unique, ordered, nonnegative safe integer counts or null; all eight observed daily sums must match source control totals.
 
 Blank source cells stay null. Reported subtotals display the count of unreported days. Percentages, numerical changes and daily averages are suppressed when either comparison period has missing numeric values (averages require the corresponding period to be complete). This is deliberately conservative pending a confirmed source definition for blank policy cells. Do not silently replace blanks with zero. Full export totals reconcile but do not by themselves establish the meaning of each blank daily cell.

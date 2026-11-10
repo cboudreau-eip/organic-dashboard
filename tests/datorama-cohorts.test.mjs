@@ -5,7 +5,7 @@ import {followUpMonths, cohortMetrics} from '../lib/datorama/cohorts.js';
 test('four subsequent calendar checkpoints cross years and leap February', () => {
   const points = followUpMonths('2023-11', '2024-02-29');
   assert.deepEqual(points.map(p => p.end), ['2023-12-31','2024-01-31','2024-02-29','2024-03-31']);
-  assert.equal(points[2].status, 'Historical checkpoint unavailable');
+  assert.equal(points[2].status, 'Follow-up date reached · see saved exports');
   assert.equal(points[3].status, 'Not yet due in this import');
   assert.throws(() => followUpMonths('2024-13', '2024-02-29'));
 });
