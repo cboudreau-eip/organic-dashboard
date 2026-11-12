@@ -6,3 +6,4 @@ out/
 .vercel/
 *.log
 supabase/.temp/
+docs/content-plan/evidence/

@@ -1,0 +1,10 @@
+{
+  "reviewedAt": "2026-11-12",
+  "purpose": "Editorial review observations, not verified Medicare benefit or carrier facts. Validate substantive claims against authoritative sources before publication.",
+  "pages": [
+    {"id":"florida-g","url":"https://www.medicarefaq.com/medicare-supplement-plans/florida/plan-g/","finding":"Existing state page already includes a carrier table and quote CTA. Year-labelled deductible values differ from the national Plan G page; headline lowest price also differs from the table minimum. Prioritize source/date reconciliation and price methodology before expanding copy."},
+    {"id":"aetna","url":"https://www.medicarefaq.com/medicare-supplement-plans/medigap-by-carrier/aetna-medicare-supplement-plans/","finding":"Existing carrier page includes availability, underwriting-brand, discount and review claims. Validate each against current carrier documentation before positioning it as a 2027 buying recommendation; do not infer availability from historical keyword volume."},
+    {"id":"high-g","url":"https://www.medicarefaq.com/medicare-supplement-plans/high-deductible-plan-g/","finding":"Existing comparison has a deductible labelled as an out-of-pocket maximum and a simplified savings scenario. Review labels, excluded costs, switching qualifications and arithmetic with authoritative benefit sources before extending the comparison."},
+    {"id":"g-price","url":"https://www.medicarefaq.com/blog/why-two-medigap-plan-g-policies-cost-different-amounts/","finding":"Existing page already explains quote assumptions, pricing methods and replacement eligibility. Recommend focused update/link refinement after query-to-page checks, not another generic cost article."}
+  ]
+}

@@ -14,6 +14,7 @@ function section(title,right=''){return '<div class="section-heading"><h2>'+titl
 const views=[['overview','Overview'],['acquisition','Acquisition'],['leads','Leads & funnel'],['connections','Data sources']];
 if (growthAllowed) { views.splice(3,0,['growth','Growth Hunter']); icons.growth=icons.opportunities; }
 if (growthAllowed) {views.splice(4,0,['ai','AI visibility']);icons.ai=icons.keywords;}
+if (growthAllowed) {views.splice(5,0,['plan','Content Plan']);icons.plan=icons.content;}
 function render(){
  root.dataset.activeView=state.view;
  $('organic-live-host').hidden=state.view!=='overview';
@@ -21,6 +22,8 @@ function render(){
  $('organic-leads-host').hidden=state.view!=='leads';
  if ($('growth-hunter-host')) $('growth-hunter-host').hidden=state.view!=='growth';
  if ($('ai-visibility-host')) $('ai-visibility-host').hidden=state.view!=='ai';
+ if ($('content-plan-host')) $('content-plan-host').hidden=state.view!=='plan';
+ root.dispatchEvent(new root.ownerDocument.defaultView.CustomEvent('plan-visibility', {detail:state.view==='plan'}));
  root.dispatchEvent(new root.ownerDocument.defaultView.CustomEvent('ai-visibility', {detail:state.view==='ai'}));
  root.dispatchEvent(new root.ownerDocument.defaultView.CustomEvent('growth-visibility', { detail: state.view==='growth' }));
  const label=views.find(v=>v[0]===state.view)[1];

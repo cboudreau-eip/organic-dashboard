@@ -1,0 +1,1775 @@
+{
+  "version": 1,
+  "createdAt": "2026-11-12T21:21:09.779Z",
+  "status": "Ranked shortlist — awaiting user review",
+  "planningWindow": {
+    "start": "2027-01-01",
+    "end": "2027-03-31",
+    "schedulingApproved": false
+  },
+  "sources": {
+    "gsc": {
+      "start": "2026-08-13",
+      "end": "2026-11-10",
+      "timezone": "America/Los_Angeles",
+      "queryRows": 62780,
+      "pageRows": 1009
+    },
+    "semrush": {
+      "end": "2026-11-02",
+      "count": 547,
+      "scope": {
+        "device": "mobile",
+        "engine": "Google",
+        "location": "United States"
+      },
+      "start": "2026-10-27",
+      "campaignId": "7197265",
+      "freshApiUnavailable": true
+    },
+    "posthog": {
+      "start": "2026-10-13",
+      "end": "2026-11-11",
+      "timezone": "America/New_York",
+      "coverage": "Top 500 landing pages by quote starts; absent rows are unknown, not zero."
+    },
+    "otterly": {
+      "end": "2026-11-11",
+      "start": "2026-10-13",
+      "snapshotId": "3773daae-ae7c-4cb6-a6ee-5b613627555b"
+    }
+  },
+  "limitations": [
+    "Scores are editorial priorities, not revenue or conversion predictions.",
+    "Source windows and populations differ; do not blend their counts into conversion rates.",
+    "Site-wide GSC query rows are topic evidence, not query-to-target-page attribution.",
+    "No completion rates used due to cross-domain attribution gap.",
+    "Missing keyword volume is unknown. Source keyword intents are retained; editorial intent may differ.",
+    "Long questions in Otterly are monitored prompts, not measured search demand.",
+    "This draft does not yet include fresh competitor keyword discovery or a complete site content audit."
+  ],
+  "items": [
+    {
+      "id": "compare-plans",
+      "title": "Compare Medicare plans side by side",
+      "targetUrl": "https://www.medicarefaq.com/blog/best-medicare-plan-comparison-tools/",
+      "type": "Update",
+      "status": "Needs review",
+      "scheduledDate": null,
+      "owner": null,
+      "terms": [
+        "compare medicare plans",
+        "compare medicare plans side by side"
+      ],
+      "action": "Separate comparison workflows by plan type and make the route to a relevant quote clear.",
+      "longTailQuestions": [
+        "How can I compare Medicare plans side by side using my doctors and prescriptions?",
+        "Which comparison tool should I use for Medigap versus Medicare Advantage?"
+      ],
+      "longTailLabel": "Suggested editorial questions — not asserted search volume",
+      "contentReview": "Comparison tool guide already exists. Clarify product-specific workflows and verify tool coverage claims rather than creating another tools article.",
+      "outline": [
+        "Answer: How can I compare Medicare plans side by side using my doctors and prescriptions?",
+        "What to compare: a concise decision table with explicit assumptions",
+        "Eligibility and cost checks: Which comparison tool should I use for Medigap versus Medicare Advantage?",
+        "Documents, details and questions to prepare before requesting a quote",
+        "Relevant next step, FAQs and dated source notes"
+      ],
+      "internalLinks": [
+        {
+          "label": "Plan G coverage",
+          "url": "https://www.medicarefaq.com/medicare-supplement-plans/plan-g/"
+        },
+        {
+          "label": "Compare Plan G companies",
+          "url": "https://www.medicarefaq.com/blog/best-medicare-supplement-plan-g-companies/"
+        },
+        {
+          "label": "Why Plan G prices differ",
+          "url": "https://www.medicarefaq.com/blog/why-two-medigap-plan-g-policies-cost-different-amounts/"
+        }
+      ],
+      "nextAction": "Compare relevant local options or request a licensed-agent eligibility review; avoid promises of acceptance, savings or full-market coverage.",
+      "verification": "Before publication, validate 2027 benefit figures with Medicare.gov/CMS, applicable state rules with the state regulator, and carrier-specific availability/rates with current carrier sources. Do not copy unsupported numbers from existing pages.",
+      "successMeasure": "Track this page’s GSC clicks and relevant queries, plus organic landing-session quote starts. Use dated baselines; no revenue or completion-rate claims until attribution is validated.",
+      "score": 97,
+      "scoreComponents": {
+        "intent": {
+          "value": 5,
+          "max": 5,
+          "weight": 40,
+          "reason": "Editorial assessment of proximity to comparing, choosing or applying for coverage."
+        },
+        "businessFit": {
+          "value": 5,
+          "max": 5,
+          "weight": 25,
+          "reason": "Medicare supplement selection and quote journey relevance; geography-specific business priorities still need confirmation."
+        },
+        "evidence": {
+          "value": 5,
+          "max": 5,
+          "weight": 20,
+          "reason": "Up to 2 points for GSC impressions (0.5/1/1.5/2 at >0/1,000/3,000/10,000), 2 for quote starts (0.5/1/1.5/2 at >0/5/20/50), and 0.5 each for attached Semrush and Otterly evidence. Missing evidence adds no points but is not a measured zero."
+        },
+        "feasibility": {
+          "value": 4,
+          "max": 5,
+          "weight": 15,
+          "reason": "Existing page available; lower score where carrier/state or product-detail review is needed. Provisional pending full content review."
+        }
+      },
+      "confidence": "Moderate",
+      "evidence": {
+        "gscPage": {
+          "clicks": 43,
+          "impressions": 19054,
+          "ctr": 0.0022567439907630943,
+          "position": 20.166106854203843
+        },
+        "gscQueries": [
+          {
+            "query": "compare medicare plans",
+            "clicks": 0,
+            "impressions": 2133,
+            "position": 13.207688701359588
+          },
+          {
+            "query": "compare medicare plans side by side",
+            "clicks": 0,
+            "impressions": 431,
+            "position": 10.287703016241299
+          }
+        ],
+        "semrush": [
+          {
+            "keyword": "compare medicare plans",
+            "position": 28,
+            "volume": 2900,
+            "difficulty": 63,
+            "intents": "i|t",
+            "landing": "https://www.medicarefaq.com/blog/best-medicare-plan-comparison-tools/"
+          }
+        ],
+        "posthog": {
+          "sessions": 310,
+          "quoteStarts": 54
+        },
+        "otterly": {
+          "id": "01KVG77MZFT5CQ2M2B6TC8AJY0",
+          "prompt": "What are the best ways to compare Medicare plans?",
+          "mentions": 21,
+          "competitors": [
+            {
+              "brand": "Boomer Benefits",
+              "mentions": 1
+            }
+          ],
+          "domainMentions": 39
+        }
+      },
+      "rank": 1
+    },
+    {
+      "id": "g-companies",
+      "title": "Compare Medicare Supplement Plan G companies",
+      "targetUrl": "https://www.medicarefaq.com/blog/best-medicare-supplement-plan-g-companies/",
+      "type": "Update",
+      "status": "Needs review",
+      "scheduledDate": null,
+      "owner": null,
+      "terms": [
+        "best medicare supplement plan g",
+        "best plan g medicare supplement"
+      ],
+      "action": "Refresh the existing company comparison with documented criteria, local availability and links to the quote worksheet.",
+      "longTailQuestions": [
+        "Which Plan G companies are available in my ZIP code?",
+        "How should I compare rate history, discounts and complaint records?"
+      ],
+      "longTailLabel": "Suggested editorial questions — not asserted search volume",
+      "contentReview": "Company comparison already links to the worksheet and reviews guide. Strengthen verifiable selection criteria rather than inventing a national best carrier.",
+      "outline": [
+        "Answer: Which Plan G companies are available in my ZIP code?",
+        "What to compare: a concise decision table with explicit assumptions",
+        "Eligibility and cost checks: How should I compare rate history, discounts and complaint records?",
+        "Documents, details and questions to prepare before requesting a quote",
+        "Relevant next step, FAQs and dated source notes"
+      ],
+      "internalLinks": [
+        {
+          "label": "Plan G coverage",
+          "url": "https://www.medicarefaq.com/medicare-supplement-plans/plan-g/"
+        },
+        {
+          "label": "Why Plan G prices differ",
+          "url": "https://www.medicarefaq.com/blog/why-two-medigap-plan-g-policies-cost-different-amounts/"
+        }
+      ],
+      "nextAction": "Compare relevant local options or request a licensed-agent eligibility review; avoid promises of acceptance, savings or full-market coverage.",
+      "verification": "Before publication, validate 2027 benefit figures with Medicare.gov/CMS, applicable state rules with the state regulator, and carrier-specific availability/rates with current carrier sources. Do not copy unsupported numbers from existing pages.",
+      "successMeasure": "Track this page’s GSC clicks and relevant queries, plus organic landing-session quote starts. Use dated baselines; no revenue or completion-rate claims until attribution is validated.",
+      "score": 93,
+      "scoreComponents": {
+        "intent": {
+          "value": 5,
+          "max": 5,
+          "weight": 40,
+          "reason": "Editorial assessment of proximity to comparing, choosing or applying for coverage."
+        },
+        "businessFit": {
+          "value": 5,
+          "max": 5,
+          "weight": 25,
+          "reason": "Medicare supplement selection and quote journey relevance; geography-specific business priorities still need confirmation."
+        },
+        "evidence": {
+          "value": 4,
+          "max": 5,
+          "weight": 20,
+          "reason": "Up to 2 points for GSC impressions (0.5/1/1.5/2 at >0/1,000/3,000/10,000), 2 for quote starts (0.5/1/1.5/2 at >0/5/20/50), and 0.5 each for attached Semrush and Otterly evidence. Missing evidence adds no points but is not a measured zero."
+        },
+        "feasibility": {
+          "value": 4,
+          "max": 5,
+          "weight": 15,
+          "reason": "Existing page available; lower score where carrier/state or product-detail review is needed. Provisional pending full content review."
+        }
+      },
+      "confidence": "Moderate",
+      "evidence": {
+        "gscPage": {
+          "clicks": 35,
+          "impressions": 6669,
+          "ctr": 0.005248163142899985,
+          "position": 14.487329434697855
+        },
+        "gscQueries": [
+          {
+            "query": "best plan g medicare supplement",
+            "clicks": 1,
+            "impressions": 198,
+            "position": 35.38383838383838
+          },
+          {
+            "query": "best medicare supplement plan g",
+            "clicks": 0,
+            "impressions": 40,
+            "position": 36.475
+          }
+        ],
+        "semrush": [
+          {
+            "keyword": "best medicare supplement plan g",
+            "position": 55,
+            "volume": 20,
+            "difficulty": 42,
+            "intents": "c",
+            "landing": "https://www.medicarefaq.com/blog/best-medicare-supplement-plan-g-companies/"
+          },
+          {
+            "keyword": "best plan g medicare supplement",
+            "position": 86,
+            "volume": 480,
+            "difficulty": 46,
+            "intents": "c",
+            "landing": "https://www.medicarefaq.com/blog/best-medicare-supplement-plan-g-companies/"
+          }
+        ],
+        "posthog": {
+          "sessions": 215,
+          "quoteStarts": 28
+        },
+        "otterly": {
+          "id": "01KVG77NQVEPQBJ0DACJPJATBG",
+          "prompt": "Which Medicare supplement companies offer reliable Medigap Plan G?",
+          "mentions": 3,
+          "competitors": [
+            {
+              "brand": "Boomer Benefits",
+              "mentions": 2
+            },
+            {
+              "brand": "Medigap.com",
+              "mentions": 2
+            },
+            {
+              "brand": "Medicare Solutions",
+              "mentions": 5
+            }
+          ],
+          "domainMentions": 25
+        }
+      },
+      "rank": 2
+    },
+    {
+      "id": "plan-g",
+      "title": "Compare Plan G coverage, costs and quotes",
+      "targetUrl": "https://www.medicarefaq.com/medicare-supplement-plans/plan-g/",
+      "type": "Update",
+      "status": "Needs review",
+      "scheduledDate": null,
+      "owner": null,
+      "terms": [
+        "medicare supplement plan g",
+        "medigap plan g"
+      ],
+      "action": "Review the existing quote worksheet and cost guidance before adding anything; prioritize accurate, current comparisons.",
+      "longTailQuestions": [
+        "How do I compare Plan G quotes using the same coverage start date?",
+        "What should I compare besides the monthly Plan G premium?"
+      ],
+      "longTailLabel": "Suggested editorial questions — not asserted search volume",
+      "contentReview": "National coverage page already links to a quote worksheet. Preserve that path; verify benefit limits, pricing assumptions and 2027 figures before refreshing.",
+      "outline": [
+        "Answer: How do I compare Plan G quotes using the same coverage start date?",
+        "What to compare: a concise decision table with explicit assumptions",
+        "Eligibility and cost checks: What should I compare besides the monthly Plan G premium?",
+        "Documents, details and questions to prepare before requesting a quote",
+        "Relevant next step, FAQs and dated source notes"
+      ],
+      "internalLinks": [
+        {
+          "label": "Compare Plan G companies",
+          "url": "https://www.medicarefaq.com/blog/best-medicare-supplement-plan-g-companies/"
+        },
+        {
+          "label": "Why Plan G prices differ",
+          "url": "https://www.medicarefaq.com/blog/why-two-medigap-plan-g-policies-cost-different-amounts/"
+        }
+      ],
+      "nextAction": "Compare relevant local options or request a licensed-agent eligibility review; avoid promises of acceptance, savings or full-market coverage.",
+      "verification": "Before publication, validate 2027 benefit figures with Medicare.gov/CMS, applicable state rules with the state regulator, and carrier-specific availability/rates with current carrier sources. Do not copy unsupported numbers from existing pages.",
+      "successMeasure": "Track this page’s GSC clicks and relevant queries, plus organic landing-session quote starts. Use dated baselines; no revenue or completion-rate claims until attribution is validated.",
+      "score": 91,
+      "scoreComponents": {
+        "intent": {
+          "value": 5,
+          "max": 5,
+          "weight": 40,
+          "reason": "Editorial assessment of proximity to comparing, choosing or applying for coverage."
+        },
+        "businessFit": {
+          "value": 5,
+          "max": 5,
+          "weight": 25,
+          "reason": "Medicare supplement selection and quote journey relevance; geography-specific business priorities still need confirmation."
+        },
+        "evidence": {
+          "value": 3.5,
+          "max": 5,
+          "weight": 20,
+          "reason": "Up to 2 points for GSC impressions (0.5/1/1.5/2 at >0/1,000/3,000/10,000), 2 for quote starts (0.5/1/1.5/2 at >0/5/20/50), and 0.5 each for attached Semrush and Otterly evidence. Missing evidence adds no points but is not a measured zero."
+        },
+        "feasibility": {
+          "value": 4,
+          "max": 5,
+          "weight": 15,
+          "reason": "Existing page available; lower score where carrier/state or product-detail review is needed. Provisional pending full content review."
+        }
+      },
+      "confidence": "Moderate",
+      "evidence": {
+        "gscPage": {
+          "clicks": 0,
+          "impressions": 541,
+          "ctr": 0,
+          "position": 17.994454713493532
+        },
+        "gscQueries": [
+          {
+            "query": "medicare supplement plan g",
+            "clicks": 1,
+            "impressions": 129,
+            "position": 46.10077519379845
+          },
+          {
+            "query": "medigap plan g",
+            "clicks": 0,
+            "impressions": 93,
+            "position": 37.29032258064516
+          }
+        ],
+        "semrush": [
+          {
+            "keyword": "medicare supplement plan g",
+            "position": null,
+            "volume": 14800,
+            "difficulty": 42,
+            "intents": "i",
+            "landing": ""
+          },
+          {
+            "keyword": "medigap plan g",
+            "position": 55,
+            "volume": 3600,
+            "difficulty": 42,
+            "intents": "i",
+            "landing": "https://www.medicarefaq.com/faqs/medicare-plan-g-reviews/"
+          }
+        ],
+        "posthog": {
+          "sessions": 603,
+          "quoteStarts": 129
+        },
+        "otterly": {
+          "id": "01KVG77ZBFBRVG6F0GC7XZ1ZH6",
+          "prompt": "How can I compare Medigap Plan G quotes easily?",
+          "mentions": 0,
+          "competitors": [
+            {
+              "brand": "Boomer Benefits",
+              "mentions": 12
+            },
+            {
+              "brand": "Medigap.com",
+              "mentions": 5
+            }
+          ],
+          "domainMentions": 22
+        }
+      },
+      "rank": 3
+    },
+    {
+      "id": "florida-g",
+      "title": "Compare Florida Plan G options",
+      "targetUrl": "https://www.medicarefaq.com/medicare-supplement-plans/florida/plan-g/",
+      "type": "Update",
+      "status": "Needs review",
+      "scheduledDate": null,
+      "owner": null,
+      "terms": [
+        "medicare supplement plan g florida",
+        "medicare plan g florida"
+      ],
+      "action": "Review local quote assumptions, availability and a clearly scoped comparison next step.",
+      "longTailQuestions": [
+        "How do I compare Medicare Supplement Plan G quotes in Florida?",
+        "Which local pricing and eligibility details should I check before changing my Florida Medigap policy?"
+      ],
+      "longTailLabel": "Suggested editorial questions — not asserted search volume",
+      "contentReview": "Existing Florida Plan G page already has pricing, benefits and quote controls. Verify the year-labelled deductible amounts and price assumptions. Reconcile headline rates with the comparison table and cite the quote methodology.",
+      "outline": [
+        "Answer: How do I compare Medicare Supplement Plan G quotes in Florida?",
+        "What to compare: a concise decision table with explicit assumptions",
+        "Eligibility and cost checks: Which local pricing and eligibility details should I check before changing my Florida Medigap policy?",
+        "Documents, details and questions to prepare before requesting a quote",
+        "Relevant next step, FAQs and dated source notes"
+      ],
+      "internalLinks": [
+        {
+          "label": "Plan G coverage",
+          "url": "https://www.medicarefaq.com/medicare-supplement-plans/plan-g/"
+        },
+        {
+          "label": "Compare Plan G companies",
+          "url": "https://www.medicarefaq.com/blog/best-medicare-supplement-plan-g-companies/"
+        },
+        {
+          "label": "Why Plan G prices differ",
+          "url": "https://www.medicarefaq.com/blog/why-two-medigap-plan-g-policies-cost-different-amounts/"
+        }
+      ],
+      "nextAction": "Compare relevant local options or request a licensed-agent eligibility review; avoid promises of acceptance, savings or full-market coverage.",
+      "verification": "Before publication, validate 2027 benefit figures with Medicare.gov/CMS, applicable state rules with the state regulator, and carrier-specific availability/rates with current carrier sources. Do not copy unsupported numbers from existing pages.",
+      "successMeasure": "Track this page’s GSC clicks and relevant queries, plus organic landing-session quote starts. Use dated baselines; no revenue or completion-rate claims until attribution is validated.",
+      "score": 91,
+      "scoreComponents": {
+        "intent": {
+          "value": 5,
+          "max": 5,
+          "weight": 40,
+          "reason": "Editorial assessment of proximity to comparing, choosing or applying for coverage."
+        },
+        "businessFit": {
+          "value": 5,
+          "max": 5,
+          "weight": 25,
+          "reason": "Medicare supplement selection and quote journey relevance; geography-specific business priorities still need confirmation."
+        },
+        "evidence": {
+          "value": 3.5,
+          "max": 5,
+          "weight": 20,
+          "reason": "Up to 2 points for GSC impressions (0.5/1/1.5/2 at >0/1,000/3,000/10,000), 2 for quote starts (0.5/1/1.5/2 at >0/5/20/50), and 0.5 each for attached Semrush and Otterly evidence. Missing evidence adds no points but is not a measured zero."
+        },
+        "feasibility": {
+          "value": 4,
+          "max": 5,
+          "weight": 15,
+          "reason": "Existing page available; lower score where carrier/state or product-detail review is needed. Provisional pending full content review."
+        }
+      },
+      "confidence": "Moderate",
+      "evidence": {
+        "gscPage": {
+          "clicks": 42,
+          "impressions": 3573,
+          "ctr": 0.011754827875734676,
+          "position": 13.138259165966975
+        },
+        "gscQueries": [
+          {
+            "query": "medicare plan g florida",
+            "clicks": 0,
+            "impressions": 15,
+            "position": 31.266666666666666
+          },
+          {
+            "query": "medicare supplement plan g florida",
+            "clicks": 0,
+            "impressions": 4,
+            "position": 45.5
+          }
+        ],
+        "semrush": [],
+        "posthog": {
+          "sessions": 96,
+          "quoteStarts": 53
+        },
+        "otterly": null
+      },
+      "rank": 4
+    },
+    {
+      "id": "switch",
+      "title": "Switch from Medicare Advantage to Medigap",
+      "targetUrl": "https://www.medicarefaq.com/faqs/switch-medicare-advantage-to-medicare-supplement/",
+      "type": "Update",
+      "status": "Needs review",
+      "scheduledDate": null,
+      "owner": null,
+      "terms": [
+        "can i switch from medicare advantage to medigap",
+        "can you switch from medicare advantage to medigap without underwriting"
+      ],
+      "action": "Audit overlap with the existing switching blog. Improve the eligibility decision path without promising acceptance.",
+      "longTailQuestions": [
+        "Can I switch from Medicare Advantage to Medigap without underwriting?",
+        "What should I confirm before ending my Medicare Advantage coverage?"
+      ],
+      "longTailLabel": "Suggested editorial questions — not asserted search volume",
+      "contentReview": "Switching FAQ and a separate switching blog both exist in source evidence. Check their query overlap before expanding either; no redirect or consolidation is authorized.",
+      "outline": [
+        "Answer: Can I switch from Medicare Advantage to Medigap without underwriting?",
+        "What to compare: a concise decision table with explicit assumptions",
+        "Eligibility and cost checks: What should I confirm before ending my Medicare Advantage coverage?",
+        "Documents, details and questions to prepare before requesting a quote",
+        "Relevant next step, FAQs and dated source notes"
+      ],
+      "internalLinks": [
+        {
+          "label": "Prepare for Medigap underwriting",
+          "url": "https://www.medicarefaq.com/blog/pass-medigap-underwriting/"
+        },
+        {
+          "label": "Plan G coverage",
+          "url": "https://www.medicarefaq.com/medicare-supplement-plans/plan-g/"
+        }
+      ],
+      "nextAction": "Compare relevant local options or request a licensed-agent eligibility review; avoid promises of acceptance, savings or full-market coverage.",
+      "verification": "Before publication, validate 2027 benefit figures with Medicare.gov/CMS, applicable state rules with the state regulator, and carrier-specific availability/rates with current carrier sources. Do not copy unsupported numbers from existing pages.",
+      "successMeasure": "Track this page’s GSC clicks and relevant queries, plus organic landing-session quote starts. Use dated baselines; no revenue or completion-rate claims until attribution is validated.",
+      "score": 91,
+      "scoreComponents": {
+        "intent": {
+          "value": 5,
+          "max": 5,
+          "weight": 40,
+          "reason": "Editorial assessment of proximity to comparing, choosing or applying for coverage."
+        },
+        "businessFit": {
+          "value": 5,
+          "max": 5,
+          "weight": 25,
+          "reason": "Medicare supplement selection and quote journey relevance; geography-specific business priorities still need confirmation."
+        },
+        "evidence": {
+          "value": 3.5,
+          "max": 5,
+          "weight": 20,
+          "reason": "Up to 2 points for GSC impressions (0.5/1/1.5/2 at >0/1,000/3,000/10,000), 2 for quote starts (0.5/1/1.5/2 at >0/5/20/50), and 0.5 each for attached Semrush and Otterly evidence. Missing evidence adds no points but is not a measured zero."
+        },
+        "feasibility": {
+          "value": 4,
+          "max": 5,
+          "weight": 15,
+          "reason": "Existing page available; lower score where carrier/state or product-detail review is needed. Provisional pending full content review."
+        }
+      },
+      "confidence": "Moderate",
+      "evidence": {
+        "gscPage": {
+          "clicks": 72,
+          "impressions": 11162,
+          "ctr": 0.006450456907364272,
+          "position": 12.613510123633757
+        },
+        "gscQueries": [
+          {
+            "query": "can i switch from medicare advantage to medigap",
+            "clicks": 0,
+            "impressions": 362,
+            "position": 14.560773480662984
+          },
+          {
+            "query": "can you switch from medicare advantage to medigap without underwriting",
+            "clicks": 0,
+            "impressions": 155,
+            "position": 16.670967741935485
+          }
+        ],
+        "semrush": [],
+        "posthog": {
+          "sessions": 1092,
+          "quoteStarts": 10
+        },
+        "otterly": {
+          "id": "01M48XV9Y6PHGK485KRP1J17CG",
+          "prompt": "How can I switch from Medicare Advantage to a Medicare Supplement plan?",
+          "mentions": 21,
+          "competitors": [
+            {
+              "brand": "Boomer Benefits",
+              "mentions": 3
+            },
+            {
+              "brand": "The Medicare Family",
+              "mentions": 10
+            }
+          ],
+          "domainMentions": 46
+        }
+      },
+      "rank": 5
+    },
+    {
+      "id": "g-price",
+      "title": "Compare Plan G prices on equal assumptions",
+      "targetUrl": "https://www.medicarefaq.com/blog/why-two-medigap-plan-g-policies-cost-different-amounts/",
+      "type": "Update",
+      "status": "Needs review",
+      "scheduledDate": null,
+      "owner": null,
+      "terms": [
+        "compare medicare plan g prices",
+        "medicare supplement plan g price comparison"
+      ],
+      "action": "Improve the existing price-comparison explanation and link clearly to the quote worksheet; do not invent representative prices.",
+      "longTailQuestions": [
+        "Why do two companies charge different prices for the same Plan G benefits?",
+        "Which assumptions must match when I compare Medicare Supplement quotes?"
+      ],
+      "longTailLabel": "Suggested editorial questions — not asserted search volume",
+      "contentReview": "Existing article already explains matching applicant assumptions and rating methods. Focus on measured query opportunities and useful navigation rather than duplicate explanations.",
+      "outline": [
+        "Answer: Why do two companies charge different prices for the same Plan G benefits?",
+        "What to compare: a concise decision table with explicit assumptions",
+        "Eligibility and cost checks: Which assumptions must match when I compare Medicare Supplement quotes?",
+        "Documents, details and questions to prepare before requesting a quote",
+        "Relevant next step, FAQs and dated source notes"
+      ],
+      "internalLinks": [
+        {
+          "label": "Plan G coverage",
+          "url": "https://www.medicarefaq.com/medicare-supplement-plans/plan-g/"
+        },
+        {
+          "label": "Compare Plan G companies",
+          "url": "https://www.medicarefaq.com/blog/best-medicare-supplement-plan-g-companies/"
+        }
+      ],
+      "nextAction": "Compare relevant local options or request a licensed-agent eligibility review; avoid promises of acceptance, savings or full-market coverage.",
+      "verification": "Before publication, validate 2027 benefit figures with Medicare.gov/CMS, applicable state rules with the state regulator, and carrier-specific availability/rates with current carrier sources. Do not copy unsupported numbers from existing pages.",
+      "successMeasure": "Track this page’s GSC clicks and relevant queries, plus organic landing-session quote starts. Use dated baselines; no revenue or completion-rate claims until attribution is validated.",
+      "score": 91,
+      "scoreComponents": {
+        "intent": {
+          "value": 5,
+          "max": 5,
+          "weight": 40,
+          "reason": "Editorial assessment of proximity to comparing, choosing or applying for coverage."
+        },
+        "businessFit": {
+          "value": 5,
+          "max": 5,
+          "weight": 25,
+          "reason": "Medicare supplement selection and quote journey relevance; geography-specific business priorities still need confirmation."
+        },
+        "evidence": {
+          "value": 3.5,
+          "max": 5,
+          "weight": 20,
+          "reason": "Up to 2 points for GSC impressions (0.5/1/1.5/2 at >0/1,000/3,000/10,000), 2 for quote starts (0.5/1/1.5/2 at >0/5/20/50), and 0.5 each for attached Semrush and Otterly evidence. Missing evidence adds no points but is not a measured zero."
+        },
+        "feasibility": {
+          "value": 4,
+          "max": 5,
+          "weight": 15,
+          "reason": "Existing page available; lower score where carrier/state or product-detail review is needed. Provisional pending full content review."
+        }
+      },
+      "confidence": "Moderate",
+      "evidence": {
+        "gscPage": {
+          "clicks": 124,
+          "impressions": 8464,
+          "ctr": 0.014650283553875236,
+          "position": 7.666587901701323
+        },
+        "gscQueries": [
+          {
+            "query": "compare medicare plan g prices",
+            "clicks": 0,
+            "impressions": 4,
+            "position": 69
+          },
+          {
+            "query": "medicare supplement plan g price comparison",
+            "clicks": 0,
+            "impressions": 28,
+            "position": 20.857142857142858
+          }
+        ],
+        "semrush": [
+          {
+            "keyword": "compare medicare plan g prices",
+            "position": 71,
+            "volume": 30,
+            "difficulty": 48,
+            "intents": "t",
+            "landing": "https://www.medicarefaq.com/blog/why-two-medigap-plan-g-policies-cost-different-amounts/"
+          }
+        ],
+        "posthog": {
+          "sessions": 187,
+          "quoteStarts": 9
+        },
+        "otterly": {
+          "id": "01M48XVEAV50ZRX4S34S98QY8Y",
+          "prompt": "Why do Medigap Plan G policies cost different amounts if the benefits are standardized?",
+          "mentions": 13,
+          "competitors": [
+            {
+              "brand": "The Medicare Family",
+              "mentions": 1
+            }
+          ],
+          "domainMentions": 40
+        }
+      },
+      "rank": 6
+    },
+    {
+      "id": "high-g",
+      "title": "Compare high-deductible Plan G with standard Plan G",
+      "targetUrl": "https://www.medicarefaq.com/medicare-supplement-plans/high-deductible-plan-g/",
+      "type": "Update",
+      "status": "Needs review",
+      "scheduledDate": null,
+      "owner": null,
+      "terms": [
+        "high deductible plan g",
+        "high deductible medicare supplement plan g"
+      ],
+      "action": "Use transparent premium-versus-cost-sharing scenarios with verified 2027 inputs and no universal savings claims.",
+      "longTailQuestions": [
+        "When could high-deductible Plan G cost less overall than standard Plan G?",
+        "Which costs count toward the high-deductible Plan G deductible?"
+      ],
+      "longTailLabel": "Suggested editorial questions — not asserted search volume",
+      "contentReview": "Existing page labels its deductible as an out-of-pocket maximum and gives simplified savings examples. Review labels and arithmetic before expanding the comparison.",
+      "outline": [
+        "Answer: When could high-deductible Plan G cost less overall than standard Plan G?",
+        "What to compare: a concise decision table with explicit assumptions",
+        "Eligibility and cost checks: Which costs count toward the high-deductible Plan G deductible?",
+        "Documents, details and questions to prepare before requesting a quote",
+        "Relevant next step, FAQs and dated source notes"
+      ],
+      "internalLinks": [
+        {
+          "label": "Plan G coverage",
+          "url": "https://www.medicarefaq.com/medicare-supplement-plans/plan-g/"
+        },
+        {
+          "label": "Compare Plan G companies",
+          "url": "https://www.medicarefaq.com/blog/best-medicare-supplement-plan-g-companies/"
+        },
+        {
+          "label": "Why Plan G prices differ",
+          "url": "https://www.medicarefaq.com/blog/why-two-medigap-plan-g-policies-cost-different-amounts/"
+        }
+      ],
+      "nextAction": "Compare relevant local options or request a licensed-agent eligibility review; avoid promises of acceptance, savings or full-market coverage.",
+      "verification": "Before publication, validate 2027 benefit figures with Medicare.gov/CMS, applicable state rules with the state regulator, and carrier-specific availability/rates with current carrier sources. Do not copy unsupported numbers from existing pages.",
+      "successMeasure": "Track this page’s GSC clicks and relevant queries, plus organic landing-session quote starts. Use dated baselines; no revenue or completion-rate claims until attribution is validated.",
+      "score": 86,
+      "scoreComponents": {
+        "intent": {
+          "value": 5,
+          "max": 5,
+          "weight": 40,
+          "reason": "Editorial assessment of proximity to comparing, choosing or applying for coverage."
+        },
+        "businessFit": {
+          "value": 5,
+          "max": 5,
+          "weight": 25,
+          "reason": "Medicare supplement selection and quote journey relevance; geography-specific business priorities still need confirmation."
+        },
+        "evidence": {
+          "value": 3,
+          "max": 5,
+          "weight": 20,
+          "reason": "Up to 2 points for GSC impressions (0.5/1/1.5/2 at >0/1,000/3,000/10,000), 2 for quote starts (0.5/1/1.5/2 at >0/5/20/50), and 0.5 each for attached Semrush and Otterly evidence. Missing evidence adds no points but is not a measured zero."
+        },
+        "feasibility": {
+          "value": 3,
+          "max": 5,
+          "weight": 15,
+          "reason": "Existing page available; lower score where carrier/state or product-detail review is needed. Provisional pending full content review."
+        }
+      },
+      "confidence": "Moderate",
+      "evidence": {
+        "gscPage": {
+          "clicks": 5,
+          "impressions": 828,
+          "ctr": 0.006038647342995169,
+          "position": 24.067632850241544
+        },
+        "gscQueries": [
+          {
+            "query": "high deductible plan g",
+            "clicks": 0,
+            "impressions": 18,
+            "position": 57.388888888888886
+          }
+        ],
+        "semrush": [
+          {
+            "keyword": "high deductible plan g",
+            "position": null,
+            "volume": 880,
+            "difficulty": 23,
+            "intents": "i",
+            "landing": ""
+          }
+        ],
+        "posthog": {
+          "sessions": 431,
+          "quoteStarts": 61
+        },
+        "otterly": null
+      },
+      "rank": 7
+    },
+    {
+      "id": "california-g",
+      "title": "Compare California Plan G options",
+      "targetUrl": "https://www.medicarefaq.com/medicare-supplement-plans/california/plan-g/",
+      "type": "Update",
+      "status": "Needs review",
+      "scheduledDate": null,
+      "owner": null,
+      "terms": [
+        "best medicare supplement plans in california",
+        "medicare supplement plans california"
+      ],
+      "action": "Review California-specific switching protections against current official guidance and connect to a quote comparison.",
+      "longTailQuestions": [
+        "How do I compare Medicare Supplement Plan G quotes in California?",
+        "Which local pricing and eligibility details should I check before changing my California Medigap policy?"
+      ],
+      "longTailLabel": "Suggested editorial questions — not asserted search volume",
+      "contentReview": "Existing California Plan G page already has pricing, benefits and quote controls. Verify the year-labelled deductible amounts and price assumptions. Reconcile headline rates with the comparison table and cite the quote methodology.",
+      "outline": [
+        "Answer: How do I compare Medicare Supplement Plan G quotes in California?",
+        "What to compare: a concise decision table with explicit assumptions",
+        "Eligibility and cost checks: Which local pricing and eligibility details should I check before changing my California Medigap policy?",
+        "Documents, details and questions to prepare before requesting a quote",
+        "Relevant next step, FAQs and dated source notes"
+      ],
+      "internalLinks": [
+        {
+          "label": "Plan G coverage",
+          "url": "https://www.medicarefaq.com/medicare-supplement-plans/plan-g/"
+        },
+        {
+          "label": "Compare Plan G companies",
+          "url": "https://www.medicarefaq.com/blog/best-medicare-supplement-plan-g-companies/"
+        },
+        {
+          "label": "Why Plan G prices differ",
+          "url": "https://www.medicarefaq.com/blog/why-two-medigap-plan-g-policies-cost-different-amounts/"
+        }
+      ],
+      "nextAction": "Compare relevant local options or request a licensed-agent eligibility review; avoid promises of acceptance, savings or full-market coverage.",
+      "verification": "Before publication, validate 2027 benefit figures with Medicare.gov/CMS, applicable state rules with the state regulator, and carrier-specific availability/rates with current carrier sources. Do not copy unsupported numbers from existing pages.",
+      "successMeasure": "Track this page’s GSC clicks and relevant queries, plus organic landing-session quote starts. Use dated baselines; no revenue or completion-rate claims until attribution is validated.",
+      "score": 86,
+      "scoreComponents": {
+        "intent": {
+          "value": 5,
+          "max": 5,
+          "weight": 40,
+          "reason": "Editorial assessment of proximity to comparing, choosing or applying for coverage."
+        },
+        "businessFit": {
+          "value": 5,
+          "max": 5,
+          "weight": 25,
+          "reason": "Medicare supplement selection and quote journey relevance; geography-specific business priorities still need confirmation."
+        },
+        "evidence": {
+          "value": 3,
+          "max": 5,
+          "weight": 20,
+          "reason": "Up to 2 points for GSC impressions (0.5/1/1.5/2 at >0/1,000/3,000/10,000), 2 for quote starts (0.5/1/1.5/2 at >0/5/20/50), and 0.5 each for attached Semrush and Otterly evidence. Missing evidence adds no points but is not a measured zero."
+        },
+        "feasibility": {
+          "value": 3,
+          "max": 5,
+          "weight": 15,
+          "reason": "Existing page available; lower score where carrier/state or product-detail review is needed. Provisional pending full content review."
+        }
+      },
+      "confidence": "Moderate",
+      "evidence": {
+        "gscPage": {
+          "clicks": 33,
+          "impressions": 3450,
+          "ctr": 0.009565217391304347,
+          "position": 9.454492753623189
+        },
+        "gscQueries": [
+          {
+            "query": "best medicare supplement plans in california",
+            "clicks": 0,
+            "impressions": 22,
+            "position": 30.727272727272727
+          },
+          {
+            "query": "medicare supplement plans california",
+            "clicks": 0,
+            "impressions": 138,
+            "position": 51.789855072463766
+          }
+        ],
+        "semrush": [
+          {
+            "keyword": "best medicare supplement plans in california",
+            "position": 36,
+            "volume": 210,
+            "difficulty": 43,
+            "intents": "c",
+            "landing": "https://www.medicarefaq.com/medicare-supplement-plans/california/plan-g/"
+          },
+          {
+            "keyword": "medicare supplement plans california",
+            "position": null,
+            "volume": 880,
+            "difficulty": 42,
+            "intents": "i",
+            "landing": ""
+          }
+        ],
+        "posthog": {
+          "sessions": 39,
+          "quoteStarts": 19
+        },
+        "otterly": null
+      },
+      "rank": 8
+    },
+    {
+      "id": "texas-g",
+      "title": "Compare Texas Plan G options",
+      "targetUrl": "https://www.medicarefaq.com/medicare-supplement-plans/texas/plan-g/",
+      "type": "Update",
+      "status": "Needs review",
+      "scheduledDate": null,
+      "owner": null,
+      "terms": [
+        "best medicare supplement plan g in texas",
+        "medicare supplement plan g in texas"
+      ],
+      "action": "Verify local availability and pricing assumptions; strengthen state-specific comparison usefulness.",
+      "longTailQuestions": [
+        "How do I compare Medicare Supplement Plan G quotes in Texas?",
+        "Which local pricing and eligibility details should I check before changing my Texas Medigap policy?"
+      ],
+      "longTailLabel": "Suggested editorial questions — not asserted search volume",
+      "contentReview": "Existing Texas Plan G page already has pricing, benefits and quote controls. Verify the year-labelled deductible amounts and price assumptions. Reconcile headline rates with the comparison table and cite the quote methodology.",
+      "outline": [
+        "Answer: How do I compare Medicare Supplement Plan G quotes in Texas?",
+        "What to compare: a concise decision table with explicit assumptions",
+        "Eligibility and cost checks: Which local pricing and eligibility details should I check before changing my Texas Medigap policy?",
+        "Documents, details and questions to prepare before requesting a quote",
+        "Relevant next step, FAQs and dated source notes"
+      ],
+      "internalLinks": [
+        {
+          "label": "Plan G coverage",
+          "url": "https://www.medicarefaq.com/medicare-supplement-plans/plan-g/"
+        },
+        {
+          "label": "Compare Plan G companies",
+          "url": "https://www.medicarefaq.com/blog/best-medicare-supplement-plan-g-companies/"
+        },
+        {
+          "label": "Why Plan G prices differ",
+          "url": "https://www.medicarefaq.com/blog/why-two-medigap-plan-g-policies-cost-different-amounts/"
+        }
+      ],
+      "nextAction": "Compare relevant local options or request a licensed-agent eligibility review; avoid promises of acceptance, savings or full-market coverage.",
+      "verification": "Before publication, validate 2027 benefit figures with Medicare.gov/CMS, applicable state rules with the state regulator, and carrier-specific availability/rates with current carrier sources. Do not copy unsupported numbers from existing pages.",
+      "successMeasure": "Track this page’s GSC clicks and relevant queries, plus organic landing-session quote starts. Use dated baselines; no revenue or completion-rate claims until attribution is validated.",
+      "score": 86,
+      "scoreComponents": {
+        "intent": {
+          "value": 5,
+          "max": 5,
+          "weight": 40,
+          "reason": "Editorial assessment of proximity to comparing, choosing or applying for coverage."
+        },
+        "businessFit": {
+          "value": 5,
+          "max": 5,
+          "weight": 25,
+          "reason": "Medicare supplement selection and quote journey relevance; geography-specific business priorities still need confirmation."
+        },
+        "evidence": {
+          "value": 3,
+          "max": 5,
+          "weight": 20,
+          "reason": "Up to 2 points for GSC impressions (0.5/1/1.5/2 at >0/1,000/3,000/10,000), 2 for quote starts (0.5/1/1.5/2 at >0/5/20/50), and 0.5 each for attached Semrush and Otterly evidence. Missing evidence adds no points but is not a measured zero."
+        },
+        "feasibility": {
+          "value": 3,
+          "max": 5,
+          "weight": 15,
+          "reason": "Existing page available; lower score where carrier/state or product-detail review is needed. Provisional pending full content review."
+        }
+      },
+      "confidence": "Moderate",
+      "evidence": {
+        "gscPage": {
+          "clicks": 35,
+          "impressions": 3349,
+          "ctr": 0.010450880859958196,
+          "position": 9.312033442818752
+        },
+        "gscQueries": [
+          {
+            "query": "best medicare supplement plan g in texas",
+            "clicks": 0,
+            "impressions": 6,
+            "position": 11.5
+          },
+          {
+            "query": "medicare supplement plan g in texas",
+            "clicks": 0,
+            "impressions": 21,
+            "position": 33.80952380952381
+          }
+        ],
+        "semrush": [
+          {
+            "keyword": "best medicare supplement plan g in texas",
+            "position": 43,
+            "volume": 30,
+            "difficulty": 0,
+            "intents": "c",
+            "landing": "https://www.medicarefaq.com/medicare-supplement-plans/texas/plan-g/"
+          },
+          {
+            "keyword": "medicare supplement plan g in texas",
+            "position": 51,
+            "volume": 170,
+            "difficulty": 23,
+            "intents": "i",
+            "landing": "https://www.medicarefaq.com/medicare-supplement-plans/texas/plan-g/"
+          }
+        ],
+        "posthog": {
+          "sessions": 46,
+          "quoteStarts": 15
+        },
+        "otterly": null
+      },
+      "rank": 9
+    },
+    {
+      "id": "aetna",
+      "title": "Review Aetna Medicare Supplement options",
+      "targetUrl": "https://www.medicarefaq.com/medicare-supplement-plans/medigap-by-carrier/aetna-medicare-supplement-plans/",
+      "type": "Update",
+      "status": "Needs review",
+      "scheduledDate": null,
+      "owner": null,
+      "terms": [
+        "aetna medicare supplement plan g reviews",
+        "aetna medicare supplement plan g",
+        "aetna plan g cost"
+      ],
+      "action": "Verify carrier availability and underwriting entity before refreshing reviews and comparison guidance.",
+      "longTailQuestions": [
+        "Is Aetna Medicare Supplement available for new applicants in my state?",
+        "Which company underwrites the Aetna or Accendo quote I received?"
+      ],
+      "longTailLabel": "Suggested editorial questions — not asserted search volume",
+      "contentReview": "Existing page makes carrier availability, subsidiary, discount and rating claims. Current carrier verification is a prerequisite to a refreshed buying recommendation.",
+      "outline": [
+        "Answer: Is Aetna Medicare Supplement available for new applicants in my state?",
+        "What to compare: a concise decision table with explicit assumptions",
+        "Eligibility and cost checks: Which company underwrites the Aetna or Accendo quote I received?",
+        "Documents, details and questions to prepare before requesting a quote",
+        "Relevant next step, FAQs and dated source notes"
+      ],
+      "internalLinks": [
+        {
+          "label": "Plan G coverage",
+          "url": "https://www.medicarefaq.com/medicare-supplement-plans/plan-g/"
+        },
+        {
+          "label": "Compare Plan G companies",
+          "url": "https://www.medicarefaq.com/blog/best-medicare-supplement-plan-g-companies/"
+        },
+        {
+          "label": "Why Plan G prices differ",
+          "url": "https://www.medicarefaq.com/blog/why-two-medigap-plan-g-policies-cost-different-amounts/"
+        }
+      ],
+      "nextAction": "Compare relevant local options or request a licensed-agent eligibility review; avoid promises of acceptance, savings or full-market coverage.",
+      "verification": "Before publication, validate 2027 benefit figures with Medicare.gov/CMS, applicable state rules with the state regulator, and carrier-specific availability/rates with current carrier sources. Do not copy unsupported numbers from existing pages.",
+      "successMeasure": "Track this page’s GSC clicks and relevant queries, plus organic landing-session quote starts. Use dated baselines; no revenue or completion-rate claims until attribution is validated.",
+      "score": 84,
+      "scoreComponents": {
+        "intent": {
+          "value": 5,
+          "max": 5,
+          "weight": 40,
+          "reason": "Editorial assessment of proximity to comparing, choosing or applying for coverage."
+        },
+        "businessFit": {
+          "value": 5,
+          "max": 5,
+          "weight": 25,
+          "reason": "Medicare supplement selection and quote journey relevance; geography-specific business priorities still need confirmation."
+        },
+        "evidence": {
+          "value": 2.5,
+          "max": 5,
+          "weight": 20,
+          "reason": "Up to 2 points for GSC impressions (0.5/1/1.5/2 at >0/1,000/3,000/10,000), 2 for quote starts (0.5/1/1.5/2 at >0/5/20/50), and 0.5 each for attached Semrush and Otterly evidence. Missing evidence adds no points but is not a measured zero."
+        },
+        "feasibility": {
+          "value": 3,
+          "max": 5,
+          "weight": 15,
+          "reason": "Existing page available; lower score where carrier/state or product-detail review is needed. Provisional pending full content review."
+        }
+      },
+      "confidence": "Moderate",
+      "evidence": {
+        "gscPage": {
+          "clicks": 4,
+          "impressions": 11773,
+          "ctr": 0.00033976046886944705,
+          "position": 47.076785865964496
+        },
+        "gscQueries": [
+          {
+            "query": "aetna medicare supplement plan g",
+            "clicks": 0,
+            "impressions": 309,
+            "position": 52.09708737864078
+          },
+          {
+            "query": "aetna medicare supplement plan g reviews",
+            "clicks": 0,
+            "impressions": 27,
+            "position": 30.85185185185185
+          },
+          {
+            "query": "aetna plan g cost",
+            "clicks": 0,
+            "impressions": 184,
+            "position": 51.130434782608695
+          }
+        ],
+        "semrush": [
+          {
+            "keyword": "aetna medicare supplement plan g",
+            "position": 56,
+            "volume": 1300,
+            "difficulty": 23,
+            "intents": "i|t",
+            "landing": "https://www.medicarefaq.com/medicare-supplement-plans/medigap-by-carrier/aetna-medicare-supplement-plans/"
+          },
+          {
+            "keyword": "aetna medicare supplement plan g reviews",
+            "position": 31,
+            "volume": 170,
+            "difficulty": 17,
+            "intents": "c",
+            "landing": "https://www.medicarefaq.com/medicare-supplement-plans/medigap-by-carrier/aetna-medicare-supplement-plans/"
+          }
+        ],
+        "posthog": null,
+        "otterly": null
+      },
+      "rank": 10
+    },
+    {
+      "id": "plan-n",
+      "title": "Compare Plan N benefits and out-of-pocket costs",
+      "targetUrl": "https://www.medicarefaq.com/medicare-supplement-plans/plan-n/",
+      "type": "Update",
+      "status": "Needs review",
+      "scheduledDate": null,
+      "owner": null,
+      "terms": [
+        "medicare supplement plan n",
+        "plan n medicare supplement"
+      ],
+      "action": "Review existing coverage, comparison links and quote entry points; investigate weak search performance before adding more text.",
+      "longTailQuestions": [
+        "How do I compare Plan N premium savings against copays and other costs?",
+        "Can I change from Plan N to Plan G without health questions?"
+      ],
+      "longTailLabel": "Suggested editorial questions — not asserted search volume",
+      "contentReview": "National page already presents cost sharing and a quote action. Review comparison accuracy and internal links; weak rankings alone do not prove a content gap.",
+      "outline": [
+        "Answer: How do I compare Plan N premium savings against copays and other costs?",
+        "What to compare: a concise decision table with explicit assumptions",
+        "Eligibility and cost checks: Can I change from Plan N to Plan G without health questions?",
+        "Documents, details and questions to prepare before requesting a quote",
+        "Relevant next step, FAQs and dated source notes"
+      ],
+      "internalLinks": [
+        {
+          "label": "Plan G coverage",
+          "url": "https://www.medicarefaq.com/medicare-supplement-plans/plan-g/"
+        },
+        {
+          "label": "Why Plan G prices differ",
+          "url": "https://www.medicarefaq.com/blog/why-two-medigap-plan-g-policies-cost-different-amounts/"
+        }
+      ],
+      "nextAction": "Compare relevant local options or request a licensed-agent eligibility review; avoid promises of acceptance, savings or full-market coverage.",
+      "verification": "Before publication, validate 2027 benefit figures with Medicare.gov/CMS, applicable state rules with the state regulator, and carrier-specific availability/rates with current carrier sources. Do not copy unsupported numbers from existing pages.",
+      "successMeasure": "Track this page’s GSC clicks and relevant queries, plus organic landing-session quote starts. Use dated baselines; no revenue or completion-rate claims until attribution is validated.",
+      "score": 82,
+      "scoreComponents": {
+        "intent": {
+          "value": 4,
+          "max": 5,
+          "weight": 40,
+          "reason": "Editorial assessment of proximity to comparing, choosing or applying for coverage."
+        },
+        "businessFit": {
+          "value": 5,
+          "max": 5,
+          "weight": 25,
+          "reason": "Medicare supplement selection and quote journey relevance; geography-specific business priorities still need confirmation."
+        },
+        "evidence": {
+          "value": 4,
+          "max": 5,
+          "weight": 20,
+          "reason": "Up to 2 points for GSC impressions (0.5/1/1.5/2 at >0/1,000/3,000/10,000), 2 for quote starts (0.5/1/1.5/2 at >0/5/20/50), and 0.5 each for attached Semrush and Otterly evidence. Missing evidence adds no points but is not a measured zero."
+        },
+        "feasibility": {
+          "value": 3,
+          "max": 5,
+          "weight": 15,
+          "reason": "Existing page available; lower score where carrier/state or product-detail review is needed. Provisional pending full content review."
+        }
+      },
+      "confidence": "Moderate",
+      "evidence": {
+        "gscPage": {
+          "clicks": 0,
+          "impressions": 3166,
+          "ctr": 0,
+          "position": 66.55369551484523
+        },
+        "gscQueries": [
+          {
+            "query": "medicare supplement plan n",
+            "clicks": 0,
+            "impressions": 921,
+            "position": 30.37024972855592
+          },
+          {
+            "query": "plan n medicare supplement",
+            "clicks": 0,
+            "impressions": 404,
+            "position": 43.51485148514851
+          }
+        ],
+        "semrush": [
+          {
+            "keyword": "medicare supplement plan n",
+            "position": 63,
+            "volume": 4400,
+            "difficulty": 26,
+            "intents": "i",
+            "landing": "https://www.medicarefaq.com/medicare-supplement-plans/plan-n/"
+          },
+          {
+            "keyword": "plan n medicare supplement",
+            "position": 84,
+            "volume": 3600,
+            "difficulty": 20,
+            "intents": "i",
+            "landing": "https://www.medicarefaq.com/medicare-supplement-plans/plan-n/"
+          }
+        ],
+        "posthog": {
+          "sessions": 153,
+          "quoteStarts": 26
+        },
+        "otterly": {
+          "id": "01M48XVDJ7EXMR25KF4GZNDVKT",
+          "prompt": "What does Medigap Plan N cover, and what costs would I still pay?",
+          "mentions": 12,
+          "competitors": [
+            {
+              "brand": "Boomer Benefits",
+              "mentions": 1
+            },
+            {
+              "brand": "The Medicare Family",
+              "mentions": 5
+            }
+          ],
+          "domainMentions": 19
+        }
+      },
+      "rank": 11
+    },
+    {
+      "id": "pennsylvania-g",
+      "title": "Compare Pennsylvania Plan G options",
+      "targetUrl": "https://www.medicarefaq.com/medicare-supplement-plans/pennsylvania/plan-g/",
+      "type": "Update",
+      "status": "Needs review",
+      "scheduledDate": null,
+      "owner": null,
+      "terms": [
+        "medicare supplement plan g pennsylvania",
+        "medicare supplement plans pennsylvania"
+      ],
+      "action": "Strengthen location-specific comparison detail after validating carrier and pricing information.",
+      "longTailQuestions": [
+        "How do I compare Medicare Supplement Plan G quotes in Pennsylvania?",
+        "Which local pricing and eligibility details should I check before changing my Pennsylvania Medigap policy?"
+      ],
+      "longTailLabel": "Suggested editorial questions — not asserted search volume",
+      "contentReview": "Existing Pennsylvania Plan G page already has pricing, benefits and quote controls. Verify the year-labelled deductible amounts and price assumptions. Reconcile headline rates with the comparison table and cite the quote methodology.",
+      "outline": [
+        "Answer: How do I compare Medicare Supplement Plan G quotes in Pennsylvania?",
+        "What to compare: a concise decision table with explicit assumptions",
+        "Eligibility and cost checks: Which local pricing and eligibility details should I check before changing my Pennsylvania Medigap policy?",
+        "Documents, details and questions to prepare before requesting a quote",
+        "Relevant next step, FAQs and dated source notes"
+      ],
+      "internalLinks": [
+        {
+          "label": "Plan G coverage",
+          "url": "https://www.medicarefaq.com/medicare-supplement-plans/plan-g/"
+        },
+        {
+          "label": "Compare Plan G companies",
+          "url": "https://www.medicarefaq.com/blog/best-medicare-supplement-plan-g-companies/"
+        },
+        {
+          "label": "Why Plan G prices differ",
+          "url": "https://www.medicarefaq.com/blog/why-two-medigap-plan-g-policies-cost-different-amounts/"
+        }
+      ],
+      "nextAction": "Compare relevant local options or request a licensed-agent eligibility review; avoid promises of acceptance, savings or full-market coverage.",
+      "verification": "Before publication, validate 2027 benefit figures with Medicare.gov/CMS, applicable state rules with the state regulator, and carrier-specific availability/rates with current carrier sources. Do not copy unsupported numbers from existing pages.",
+      "successMeasure": "Track this page’s GSC clicks and relevant queries, plus organic landing-session quote starts. Use dated baselines; no revenue or completion-rate claims until attribution is validated.",
+      "score": 79,
+      "scoreComponents": {
+        "intent": {
+          "value": 5,
+          "max": 5,
+          "weight": 40,
+          "reason": "Editorial assessment of proximity to comparing, choosing or applying for coverage."
+        },
+        "businessFit": {
+          "value": 4,
+          "max": 5,
+          "weight": 25,
+          "reason": "Medicare supplement selection and quote journey relevance; geography-specific business priorities still need confirmation."
+        },
+        "evidence": {
+          "value": 2.5,
+          "max": 5,
+          "weight": 20,
+          "reason": "Up to 2 points for GSC impressions (0.5/1/1.5/2 at >0/1,000/3,000/10,000), 2 for quote starts (0.5/1/1.5/2 at >0/5/20/50), and 0.5 each for attached Semrush and Otterly evidence. Missing evidence adds no points but is not a measured zero."
+        },
+        "feasibility": {
+          "value": 3,
+          "max": 5,
+          "weight": 15,
+          "reason": "Existing page available; lower score where carrier/state or product-detail review is needed. Provisional pending full content review."
+        }
+      },
+      "confidence": "Moderate",
+      "evidence": {
+        "gscPage": {
+          "clicks": 30,
+          "impressions": 2651,
+          "ctr": 0.011316484345529988,
+          "position": 7.388909845341381
+        },
+        "gscQueries": [
+          {
+            "query": "medicare supplement plans pennsylvania",
+            "clicks": 0,
+            "impressions": 106,
+            "position": 19.4811320754717
+          }
+        ],
+        "semrush": [],
+        "posthog": {
+          "sessions": 54,
+          "quoteStarts": 20
+        },
+        "otterly": null
+      },
+      "rank": 12
+    },
+    {
+      "id": "florida-n",
+      "title": "Compare Florida Plan N options",
+      "targetUrl": "https://www.medicarefaq.com/medicare-supplement-plans/florida/plan-n/",
+      "type": "Update",
+      "status": "Needs review",
+      "scheduledDate": null,
+      "owner": null,
+      "terms": [
+        "medicare supplement plan n florida",
+        "medicare plan n florida"
+      ],
+      "action": "Explain how to compare Plan N quotes and link to the existing Plan G alternative without duplicating the national guide.",
+      "longTailQuestions": [
+        "How do I compare Medicare Supplement Plan N quotes in Florida?",
+        "Which local pricing and eligibility details should I check before changing my Florida Medigap policy?"
+      ],
+      "longTailLabel": "Suggested editorial questions — not asserted search volume",
+      "contentReview": "Existing Florida Plan N page already has pricing, benefits and quote controls. Verify the year-labelled deductible amounts and price assumptions. The introductory description of Plan N cost sharing needs specific review against official benefits.",
+      "outline": [
+        "Answer: How do I compare Medicare Supplement Plan N quotes in Florida?",
+        "What to compare: a concise decision table with explicit assumptions",
+        "Eligibility and cost checks: Which local pricing and eligibility details should I check before changing my Florida Medigap policy?",
+        "Documents, details and questions to prepare before requesting a quote",
+        "Relevant next step, FAQs and dated source notes"
+      ],
+      "internalLinks": [
+        {
+          "label": "Plan N coverage",
+          "url": "https://www.medicarefaq.com/medicare-supplement-plans/plan-n/"
+        },
+        {
+          "label": "Plan G coverage",
+          "url": "https://www.medicarefaq.com/medicare-supplement-plans/plan-g/"
+        },
+        {
+          "label": "Why Plan G prices differ",
+          "url": "https://www.medicarefaq.com/blog/why-two-medigap-plan-g-policies-cost-different-amounts/"
+        }
+      ],
+      "nextAction": "Compare relevant local options or request a licensed-agent eligibility review; avoid promises of acceptance, savings or full-market coverage.",
+      "verification": "Before publication, validate 2027 benefit figures with Medicare.gov/CMS, applicable state rules with the state regulator, and carrier-specific availability/rates with current carrier sources. Do not copy unsupported numbers from existing pages.",
+      "successMeasure": "Track this page’s GSC clicks and relevant queries, plus organic landing-session quote starts. Use dated baselines; no revenue or completion-rate claims until attribution is validated.",
+      "score": 77,
+      "scoreComponents": {
+        "intent": {
+          "value": 5,
+          "max": 5,
+          "weight": 40,
+          "reason": "Editorial assessment of proximity to comparing, choosing or applying for coverage."
+        },
+        "businessFit": {
+          "value": 4,
+          "max": 5,
+          "weight": 25,
+          "reason": "Medicare supplement selection and quote journey relevance; geography-specific business priorities still need confirmation."
+        },
+        "evidence": {
+          "value": 2,
+          "max": 5,
+          "weight": 20,
+          "reason": "Up to 2 points for GSC impressions (0.5/1/1.5/2 at >0/1,000/3,000/10,000), 2 for quote starts (0.5/1/1.5/2 at >0/5/20/50), and 0.5 each for attached Semrush and Otterly evidence. Missing evidence adds no points but is not a measured zero."
+        },
+        "feasibility": {
+          "value": 3,
+          "max": 5,
+          "weight": 15,
+          "reason": "Existing page available; lower score where carrier/state or product-detail review is needed. Provisional pending full content review."
+        }
+      },
+      "confidence": "Moderate",
+      "evidence": {
+        "gscPage": {
+          "clicks": 35,
+          "impressions": 2112,
+          "ctr": 0.016571969696969696,
+          "position": 10.188446969696969
+        },
+        "gscQueries": [],
+        "semrush": [],
+        "posthog": {
+          "sessions": 34,
+          "quoteStarts": 18
+        },
+        "otterly": null
+      },
+      "rank": 13
+    },
+    {
+      "id": "g-f",
+      "title": "Compare Plan G and Plan F before changing coverage",
+      "targetUrl": "https://www.medicarefaq.com/blog/aarp-plan-g-vs-plan-f/",
+      "type": "Update",
+      "status": "Needs review",
+      "scheduledDate": null,
+      "owner": null,
+      "terms": [
+        "medicare plan g vs f",
+        "aarp plan g vs plan f"
+      ],
+      "action": "Review eligibility and switching constraints, distinguishing carrier-specific comparisons from standardized benefits.",
+      "longTailQuestions": [
+        "How should I compare keeping Plan F with switching to Plan G?",
+        "What eligibility and underwriting checks come before changing my Medigap plan?"
+      ],
+      "longTailLabel": "Suggested editorial questions — not asserted search volume",
+      "contentReview": "Existing carrier-specific comparison already covers eligibility. Keep its carrier scope clear and distinguish it from a general Plan G/Plan F guide.",
+      "outline": [
+        "Answer: How should I compare keeping Plan F with switching to Plan G?",
+        "What to compare: a concise decision table with explicit assumptions",
+        "Eligibility and cost checks: What eligibility and underwriting checks come before changing my Medigap plan?",
+        "Documents, details and questions to prepare before requesting a quote",
+        "Relevant next step, FAQs and dated source notes"
+      ],
+      "internalLinks": [
+        {
+          "label": "Plan G coverage",
+          "url": "https://www.medicarefaq.com/medicare-supplement-plans/plan-g/"
+        },
+        {
+          "label": "Compare Plan G companies",
+          "url": "https://www.medicarefaq.com/blog/best-medicare-supplement-plan-g-companies/"
+        },
+        {
+          "label": "Why Plan G prices differ",
+          "url": "https://www.medicarefaq.com/blog/why-two-medigap-plan-g-policies-cost-different-amounts/"
+        }
+      ],
+      "nextAction": "Compare relevant local options or request a licensed-agent eligibility review; avoid promises of acceptance, savings or full-market coverage.",
+      "verification": "Before publication, validate 2027 benefit figures with Medicare.gov/CMS, applicable state rules with the state regulator, and carrier-specific availability/rates with current carrier sources. Do not copy unsupported numbers from existing pages.",
+      "successMeasure": "Track this page’s GSC clicks and relevant queries, plus organic landing-session quote starts. Use dated baselines; no revenue or completion-rate claims until attribution is validated.",
+      "score": 75,
+      "scoreComponents": {
+        "intent": {
+          "value": 4,
+          "max": 5,
+          "weight": 40,
+          "reason": "Editorial assessment of proximity to comparing, choosing or applying for coverage."
+        },
+        "businessFit": {
+          "value": 4,
+          "max": 5,
+          "weight": 25,
+          "reason": "Medicare supplement selection and quote journey relevance; geography-specific business priorities still need confirmation."
+        },
+        "evidence": {
+          "value": 3.5,
+          "max": 5,
+          "weight": 20,
+          "reason": "Up to 2 points for GSC impressions (0.5/1/1.5/2 at >0/1,000/3,000/10,000), 2 for quote starts (0.5/1/1.5/2 at >0/5/20/50), and 0.5 each for attached Semrush and Otterly evidence. Missing evidence adds no points but is not a measured zero."
+        },
+        "feasibility": {
+          "value": 3,
+          "max": 5,
+          "weight": 15,
+          "reason": "Existing page available; lower score where carrier/state or product-detail review is needed. Provisional pending full content review."
+        }
+      },
+      "confidence": "Moderate",
+      "evidence": {
+        "gscPage": {
+          "clicks": 26,
+          "impressions": 13035,
+          "ctr": 0.0019946298427311084,
+          "position": 13.999002685078635
+        },
+        "gscQueries": [
+          {
+            "query": "medicare plan g vs f",
+            "clicks": 0,
+            "impressions": 38,
+            "position": 37.60526315789474
+          }
+        ],
+        "semrush": [
+          {
+            "keyword": "medicare plan g vs f",
+            "position": 74,
+            "volume": 110,
+            "difficulty": 15,
+            "intents": "c",
+            "landing": "https://www.medicarefaq.com/blog/aarp-plan-g-vs-plan-f/"
+          }
+        ],
+        "posthog": {
+          "sessions": 37,
+          "quoteStarts": 1
+        },
+        "otterly": {
+          "id": "01KVG77RR3QRK217N4WT1W0XDC",
+          "prompt": "Where can I review Medicare Supplement Plan F, G, and N?",
+          "mentions": 0,
+          "competitors": [
+            {
+              "brand": "Boomer Benefits",
+              "mentions": 9
+            },
+            {
+              "brand": "United Medicare Advisors",
+              "mentions": 7
+            },
+            {
+              "brand": "Medigap.com",
+              "mentions": 3
+            }
+          ],
+          "domainMentions": 0
+        }
+      },
+      "rank": 14
+    },
+    {
+      "id": "underwriting",
+      "title": "Prepare for Medicare Supplement underwriting",
+      "targetUrl": "https://www.medicarefaq.com/blog/pass-medigap-underwriting/",
+      "type": "Update",
+      "status": "Needs review",
+      "scheduledDate": null,
+      "owner": null,
+      "terms": [
+        "medicare supplement underwriting eligibility questions",
+        "medigap underwriting questions"
+      ],
+      "action": "Provide an accurate preparation checklist and eligibility review next step; never suggest hiding medical information or guarantee acceptance.",
+      "longTailQuestions": [
+        "What health questions might I be asked when applying for Medigap?",
+        "How do I check whether I have a protection that avoids medical underwriting?"
+      ],
+      "longTailLabel": "Suggested editorial questions — not asserted search volume",
+      "contentReview": "Existing article already targets 2027. A year-only refresh is unnecessary; prioritize specific application questions and state/carrier verification.",
+      "outline": [
+        "Answer: What health questions might I be asked when applying for Medigap?",
+        "What to compare: a concise decision table with explicit assumptions",
+        "Eligibility and cost checks: How do I check whether I have a protection that avoids medical underwriting?",
+        "Documents, details and questions to prepare before requesting a quote",
+        "Relevant next step, FAQs and dated source notes"
+      ],
+      "internalLinks": [
+        {
+          "label": "Switching from Medicare Advantage to Medigap",
+          "url": "https://www.medicarefaq.com/faqs/switch-medicare-advantage-to-medicare-supplement/"
+        },
+        {
+          "label": "Plan G coverage",
+          "url": "https://www.medicarefaq.com/medicare-supplement-plans/plan-g/"
+        }
+      ],
+      "nextAction": "Compare relevant local options or request a licensed-agent eligibility review; avoid promises of acceptance, savings or full-market coverage.",
+      "verification": "Before publication, validate 2027 benefit figures with Medicare.gov/CMS, applicable state rules with the state regulator, and carrier-specific availability/rates with current carrier sources. Do not copy unsupported numbers from existing pages.",
+      "successMeasure": "Track this page’s GSC clicks and relevant queries, plus organic landing-session quote starts. Use dated baselines; no revenue or completion-rate claims until attribution is validated.",
+      "score": 74,
+      "scoreComponents": {
+        "intent": {
+          "value": 4,
+          "max": 5,
+          "weight": 40,
+          "reason": "Editorial assessment of proximity to comparing, choosing or applying for coverage."
+        },
+        "businessFit": {
+          "value": 5,
+          "max": 5,
+          "weight": 25,
+          "reason": "Medicare supplement selection and quote journey relevance; geography-specific business priorities still need confirmation."
+        },
+        "evidence": {
+          "value": 2,
+          "max": 5,
+          "weight": 20,
+          "reason": "Up to 2 points for GSC impressions (0.5/1/1.5/2 at >0/1,000/3,000/10,000), 2 for quote starts (0.5/1/1.5/2 at >0/5/20/50), and 0.5 each for attached Semrush and Otterly evidence. Missing evidence adds no points but is not a measured zero."
+        },
+        "feasibility": {
+          "value": 3,
+          "max": 5,
+          "weight": 15,
+          "reason": "Existing page available; lower score where carrier/state or product-detail review is needed. Provisional pending full content review."
+        }
+      },
+      "confidence": "Moderate",
+      "evidence": {
+        "gscPage": {
+          "clicks": 19,
+          "impressions": 1944,
+          "ctr": 0.00977366255144033,
+          "position": 8.76954732510288
+        },
+        "gscQueries": [
+          {
+            "query": "medicare supplement underwriting eligibility questions",
+            "clicks": 0,
+            "impressions": 69,
+            "position": 27.217391304347824
+          },
+          {
+            "query": "medigap underwriting questions",
+            "clicks": 0,
+            "impressions": 28,
+            "position": 36.714285714285715
+          }
+        ],
+        "semrush": [],
+        "posthog": {
+          "sessions": 31,
+          "quoteStarts": 2
+        },
+        "otterly": {
+          "id": "01M48XVD3FBK3GBNYJCKGW571P",
+          "prompt": "What health questions do insurers ask when I apply for a Medicare Supplement plan?",
+          "mentions": 3,
+          "competitors": [
+            {
+              "brand": "Medigap.com",
+              "mentions": 29
+            },
+            {
+              "brand": "The Medicare Family",
+              "mentions": 1
+            }
+          ],
+          "domainMentions": 5
+        }
+      },
+      "rank": 15
+    }
+  ]
+}
