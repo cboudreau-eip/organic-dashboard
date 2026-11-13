@@ -65,3 +65,13 @@ test('primary verification preserves completed results and appends only unreview
  tables.research_runs=[{id,status:'complete',payload:{results:{items:[item('seen','https://www.medicarefaq.com/old'),item('duplicate','https://www.medicarefaq.com/old'),item('fresh','https://www.medicarefaq.com/new')]},inventory:{pages:[]}}}];
  const response=await h.POST(req({action:'advance',runId:id,id,version:1}));assert.equal(response.status,201);const {run}=await response.json();assert.equal(run.payload.addedTopics,1);assert.equal(run.payload.assignments.length,3);assert.equal(run.payload.assignments[0].state,'done');assert.equal(run.payload.assignments[1].primaryVerification,true);assert.equal(run.payload.assignments[2].topics[0].rank,3);assert.equal(old.payload.assignments.length,2);
 });
+
+test('decision audit snapshots holds and a bounded sample, retaining untouched results',async()=>{
+ const {h,tables}=fixture();const old=tables.research_validations[0];old.status='complete';
+ old.payload.assignments=Array.from({length:7},(_,i)=>({key:String(i),priority:i,state:'done',topics:[{title:'Plan G'}],candidateUrls:[],result:{readiness:'No change suggested',summary:'Saved '+i}}));
+ old.payload.assignments.push({key:'held',state:'done',topics:[{title:'Plan G'}],candidateUrls:[],result:{readiness:'Needs research'}});
+ tables.research_runs=[{id,status:'complete',payload:{inventory:{pages:[]}}}];
+ assert.equal((await h.POST(req({action:'audit',runId:id,id,version:9}))).status,409);
+ const {run}=await (await h.POST(req({action:'audit',runId:id,id,version:1}))).json();
+ assert.equal(run.payload.decisionAudit.keys.length,6);assert.equal(run.payload.assignments.filter(a=>a.state==='pending').length,6);assert.equal(run.payload.assignments[0].result.summary,'Saved 0');assert.ok(old.payload.assignments.every(a=>a.state==='done'));assert.equal(old.payload.decisionAudit,undefined);
+});
