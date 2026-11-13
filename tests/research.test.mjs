@@ -35,6 +35,13 @@ test('inventory restricts host and retains page meaning instead of just URL word
  assert.equal(page.status,'read');assert.match(page.headings[0],/Compare/);
  assert.equal(page.url,'https://www.medicarefaq.com/medigap/plan-g');
 });
+test('candidate cap retains commercial tracked terms and low-volume monitored long tails',()=>{
+ const evidence={gsc:{rows:Array.from({length:1100},(_,i)=>({keys:['medicare enrollment '+i,url],impressions:1000,clicks:4}))},semrush:{rows:[{keyword:'medigap company reviews',intents:'c',difficulty:25,volume:0}]},otterly:{prompts:[{prompt:'compare part d plans for a rare prescription',mentions:0,domainMentions:0}]}};
+ const result=rankOpportunities(evidence,[],DEFAULTS,false);
+ assert.equal(result.items.length,1000);assert.equal(result.counts.capped,true);
+ assert.ok(result.items.some(x=>x.title==='medigap company reviews'));
+ assert.ok(result.items.some(x=>x.title==='compare part d plans for a rare prescription'));
+});
 test('resumable research handles partial failures and never returns page text or raw query corpus to browser',async()=>{
  let gscCalls=0;const adapters={gsc:async previous=>{gscCalls++;return {...source.gsc,rows:[...(previous?.rows||[]),...source.gsc.rows],more:gscCalls===1};},posthog:async()=>{throw Error('private detail');},semrush:async()=>source.semrush,otterly:async()=>source.otterly,read:async requested=>({url:requested,html:requested.endsWith('sitemap.xml')?'<urlset><url><loc>'+url+'</loc></url></urlset>':html})};
  let run={settings:DEFAULTS,payload:initialPayload(),stage:'gsc',status:'running'};
