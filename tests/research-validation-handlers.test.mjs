@@ -46,7 +46,15 @@ test('resolution snapshots only held assignments and preserves successful work a
 });
 
 test('completed resolution is idempotent and retry preserves the previous finding context',async()=>{
- let calls=0;const {h,tables}=fixture('analyst',async()=>{calls++;});const old=tables.research_validations[0];old.status='complete';old.payload.resolution={version:'resolution-v1',selected:1};old.payload.assignments=[{key,state:'done',result:{readiness:'Needs research',retryable:true,summary:'Prior evidence',resolution:{failure:{stage:'verification'}}}}];
+ let calls=0;const {h,tables}=fixture('analyst',async()=>{calls++;});const old=tables.research_validations[0];old.status='complete';old.payload.resolution={version:'resolution-v2',selected:1};old.payload.assignments=[{key,state:'done',result:{readiness:'Needs research',retryable:true,summary:'Prior evidence',resolution:{failure:{stage:'verification'}}}}];
  assert.equal((await h.POST(req({action:'resolve',runId:id,id,version:1}))).status,200);assert.equal(calls,0);assert.equal(tables.research_validations.length,1);
  const {run}=await (await h.POST(req({action:'retry',runId:id}))).json();assert.equal(run.payload.assignments[0].result.summary,'Prior evidence');assert.equal(run.payload.assignments[0].state,'pending');assert.equal(calls,0);
+});
+
+test('updated resolution retains valid coverage but reopens a falsely cleared brand-specific query',async()=>{
+ const {h,tables}=fixture();const old=tables.research_validations[0];old.status='complete';old.payload.resolution={version:'resolution-v1'};
+ const result={readiness:'No change suggested',sources:[{id:'own1',url:'https://www.medicarefaq.com/plan-g',title:'Plan G comparison'}],findings:[{topicKey:'one',judgement:'covered',sourceId:'own1',quote:'Compare Plan G using the same applicant details.'}],resolution:{version:'resolution-v1',blockers:[]}};
+ old.payload.assignments=[{key,state:'done',targetUrl:null,candidateUrls:[],topics:[{key:'one',title:'Lumico Medicare supplement'}],result:structuredClone(result)},{key:'b'.repeat(24),state:'done',targetUrl:null,candidateUrls:[],topics:[{key:'one',title:'Compare Plan G'}],result:structuredClone(result)}];
+ tables.research_runs=[{id,status:'complete',payload:{inventory:{pages:[]}}}];
+ const {run}=await (await h.POST(req({action:'resolve',runId:id,id,version:1}))).json();assert.equal(run.payload.resolution.reused,1);assert.equal(run.payload.assignments[0].state,'pending');assert.match(run.payload.assignments[0].result.resolution.blockers[0].question,/named carrier/);assert.equal(run.payload.assignments[1].state,'done');assert.equal(run.payload.assignments[1].result.resolution.version,'resolution-v2');assert.equal(old.payload.assignments[0].result.readiness,'No change suggested');
 });

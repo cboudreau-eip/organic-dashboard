@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {applyResolution,blockersFor,sourceAuthority,resolutionSchema} from '../lib/research/resolution.js';
+import {applyResolution,blockersFor,sourceAuthority,resolutionSchema,coverageMismatch} from '../lib/research/resolution.js';
 import {resolveAssignment,resolutionCandidates} from '../lib/research/resolution-sources.js';
 const url='https://www.medicarefaq.com/medicare-supplement-plans/plan-g';
 const a={targetUrl:null,topics:[{key:'one',title:'Compare Plan G costs',terms:[],evidence:{}}],candidateUrls:[url],coverage:{inventoryComplete:false},result:{readiness:'Needs research',checks:[],verification:{verdicts:[]}}};
@@ -49,6 +49,13 @@ test('new-page scope and stale metrics remain blocked, optional checks do not bl
 test('candidate matching prefers the correct plan letter, keeps the assigned target and caps reads',()=>{
  const inventory=[{url:'https://www.medicarefaq.com/plan-n',title:'Compare Plan N costs'},...Array.from({length:10},(_,i)=>({url:url+'-'+i,title:'Compare Plan G costs'}))];
  const urls=resolutionCandidates({...a,targetUrl:url},inventory);assert.equal(urls.length,6);assert.equal(urls[0],url);assert.ok(!urls.includes(inventory[0].url));
+});
+test('generic pages cannot clear brand, review, calculator or plan-specific intent',()=>{
+ assert.match(coverageMismatch({title:'Lumico Medicare supplement'},{url,title:'Plan G comparison'},'Compare carriers with the same benefits.'),/named carrier/);
+ assert.match(coverageMismatch({title:'Part D cost calculator'},{url:'https://www.medicarefaq.com/medicare-101',title:'Medicare 101'},'Part D covers prescription drugs.'),/calculator/);
+ assert.match(coverageMismatch({title:'Aetna Plan G reviews'},{url:'https://www.medicarefaq.com/aetna-plan-g',title:'Aetna Plan G'},'Aetna has a strong financial rating.'),/review/);
+ assert.match(coverageMismatch({title:'Compare plans'},{url:'https://www.medicarefaq.com/blog',title:'Blog'},'Compare plans by cost.'),/index/);
+ assert.equal(coverageMismatch({title:'Humana Part D'},{url:'https://www.medicarefaq.com/best-part-d',title:'Best Part D plans'},'Humana Part D has these documented commercial features.'),null);
 });
 test('resolution bounds searches and repairs, saves actual citations, and does not rerun evidence for repair',async()=>{
  let searches=0,reads=0,generations=0;const r=await resolveAssignment(a,{}, {read:async()=>{reads++;return {url,html:'<main>'+page.passages[0].text.repeat(6)+'</main>'};},search:async()=>{searches++;return {status:'available',sources:[]};},generate:async()=>{if(++generations===1)throw Error('invalid response');return output(finding);},verify:async()=>output(verdict(finding))});
