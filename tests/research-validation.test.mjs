@@ -64,5 +64,6 @@ test('live adapter requires the independent pass and preserves a failed-verifica
  const without=await validateAssignment(a,dates,adapters);assert.equal(without.verification.status,'Unavailable');assert.equal(without.readiness,'Needs research');
  const verify=async evidence=>({verdicts:[{topicKey:'a',support:'supported',qualifications:'preserved',overlap:'distinct',authority:'not applicable',reason:'The comparison task follows the passage.',sourceId:'own1',passageId:evidence.pages[0].passages[0].id}]});
  const passed=await validateAssignment(a,dates,{...adapters,verify});assert.equal(passed.verification.status,'Passed');assert.equal(passed.readiness,'Ready for review');
+ let attempts=0;const repaired=await validateAssignment(a,dates,{...adapters,verify,generate:async evidence=>{attempts++;return attempts===1?{findings:[]}:adapters.generate(evidence);}});assert.equal(attempts,2);assert.equal(repaired.verification.status,'Passed');
  const held=await validateAssignment(a,dates,{...adapters,verify:async()=>{throw Error('private');}});assert.equal(held.readiness,'Needs research');assert.equal(held.retryable,true);assert.ok(!JSON.stringify(held).includes('private'));
 });
