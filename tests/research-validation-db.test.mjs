@@ -5,7 +5,7 @@ import {PGlite} from '@electric-sql/pglite';
 test('validation storage enforces team roles, immutable results, valid assignments and version conflicts',async()=>{
  const db=new PGlite();try{
  await db.exec(`create role anon;create role authenticated;create schema auth;create table auth.users(id uuid primary key);insert into auth.users values ('11111111-1111-4111-8111-111111111111');create function auth.uid() returns uuid language sql stable as $$select '11111111-1111-4111-8111-111111111111'::uuid$$;create function public.growth_access() returns text language sql stable as $$select current_setting('test.access',true)$$;grant usage on schema auth,public to authenticated;`);
- for(const file of ['20261113145339_research_opportunities.sql','20261113151509_research_evidence_chunks.sql','20261113174628_research_validation_assignments.sql'])await db.exec(await readFile('supabase/migrations/'+file,'utf8'));
+ for(const file of ['20261113145339_research_opportunities.sql','20261113151509_research_evidence_chunks.sql','20261113174628_research_validation_assignments.sql','20261113182418_assignment_second_verification.sql'])await db.exec(await readFile('supabase/migrations/'+file,'utf8'));
  await db.exec("set role authenticated;set test.access='analyst'");
  const source='22222222-2222-4222-8222-222222222222',id='33333333-3333-4333-8333-333333333333',key='a'.repeat(24);
  await db.query("insert into research_runs(id,settings,payload) values ($1,'{}','{}')",[source]);
@@ -20,7 +20,11 @@ test('validation storage enforces team roles, immutable results, valid assignmen
  await assert.rejects(db.query("insert into research_assignment_reviews(validation_id,assignment_key,decision) values ($1,$2,'Keep')",[id,key]));
  await db.query("insert into research_assignment_reviews(validation_id,assignment_key,decision) values ($1,$2,'Defer')",[id,key]);
  await db.exec("update research_assignment_reviews set reason='Review source' where version=1");assert.equal((await db.exec("update research_assignment_reviews set reason='stale edit' where version=1 returning *"))[0].rows.length,0);
- await db.exec("set test.access='viewer'");assert.equal((await db.query('select * from research_validations')).rows.length,1);assert.equal((await db.exec("update research_assignment_reviews set decision='Reject' returning *"))[0].rows.length,0);
+ const verified='44444444-4444-4444-8444-444444444444';
+ await db.query("insert into research_validations(id,research_run_id,rules_version,payload,status) values ($1,$2,'validation-v2',$3,'complete')",[verified,source,JSON.stringify({assignments:[{key,result:{readiness:'Ready for review',verification:{status:'Passed'}}},{key:'b'.repeat(24),result:{readiness:'Ready for review'}}]})]);
+ await assert.rejects(db.query("insert into research_assignment_reviews(validation_id,assignment_key,decision) values ($1,$2,'Keep')",[verified,'b'.repeat(24)]));
+ await db.query("insert into research_assignment_reviews(validation_id,assignment_key,decision) values ($1,$2,'Keep')",[verified,key]);
+ await db.exec("set test.access='viewer'");assert.equal((await db.query('select * from research_validations')).rows.length,2);assert.equal((await db.exec("update research_assignment_reviews set decision='Reject' returning *"))[0].rows.length,0);
  await assert.rejects(db.query("insert into research_validations(research_run_id,rules_version,payload) values ($1,'v2','{}')",[source]));
  await db.exec("set test.access='outsider'");assert.equal((await db.query('select * from research_validations')).rows.length,0);
  await db.exec('reset role;set role anon');await assert.rejects(db.query('select * from research_validations'));

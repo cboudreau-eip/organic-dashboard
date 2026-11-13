@@ -58,3 +58,11 @@ test('page/search/model failures retain an explicit research-needed outcome',asy
  assert.equal(fail.readiness,'Needs research');assert.equal(called,0);assert.ok(!JSON.stringify(fail).includes('private'));
  const invalid=await validateAssignment(a,dates,{read:async()=>({url,html:'<main>'+source.text.repeat(10)+'</main>'}),search:async()=>({status:'available',sources:[]}),generate:async()=>({draft:'not allowed'})});assert.equal(invalid.retryable,true);assert.equal(invalid.findings.length,0);
 });
+test('live adapter requires the independent pass and preserves a failed-verification hold',async()=>{
+ const a=consolidateAssignments([item('a')])[0];
+ const adapters={read:async()=>({url,html:'<main>'+source.text.repeat(8)+'</main>'}),search:async()=>({status:'available',sources:[]}),generate:async evidence=>({summary:'Clarify comparison steps.',effort:'Small',checks:[],findings:[{topicKey:'a',judgement:'improve',observation:'The supplied passage discusses comparing options.',task:'Clarify the comparison steps.',sourceId:'own1',passageId:evidence.pages[0].passages[0].id}]})};
+ const without=await validateAssignment(a,dates,adapters);assert.equal(without.verification.status,'Unavailable');assert.equal(without.readiness,'Needs research');
+ const verify=async evidence=>({verdicts:[{topicKey:'a',support:'supported',qualifications:'preserved',overlap:'distinct',authority:'not applicable',reason:'The comparison task follows the passage.',sourceId:'own1',passageId:evidence.pages[0].passages[0].id}]});
+ const passed=await validateAssignment(a,dates,{...adapters,verify});assert.equal(passed.verification.status,'Passed');assert.equal(passed.readiness,'Ready for review');
+ const held=await validateAssignment(a,dates,{...adapters,verify:async()=>{throw Error('private');}});assert.equal(held.readiness,'Needs research');assert.equal(held.retryable,true);assert.ok(!JSON.stringify(held).includes('private'));
+});
