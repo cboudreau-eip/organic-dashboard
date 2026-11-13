@@ -17,10 +17,14 @@ test('research accepts planning inputs and rejects invalid dates and unsupported
 test('ranking uses observed evidence, retains long-tail gaps and preserves unknowns',()=>{
  for(const term of ['plan g vs plan n','aetna medigap reviews','medigap premiums','medigap costs','switching medigap policies'])assert.equal(intentFor(term).value,4,term);
  assert.equal(intentFor('medigap enrollment').value,5);
+ assert.match(intentFor('aetna medigap plan g',['transactional']).reason,/Semrush/);
  const r=rankOpportunities(source,[page],DEFAULTS,true);
  const existing=r.items.find(x=>x.title.startsWith('compare')),fresh=r.items.find(x=>x.title.startsWith('Get'));
  assert.equal(existing.type,'Update existing page');assert.equal(existing.evidence.posthog.quoteStarts,3);
  assert.equal(existing.components.competition.value,3);
+ const duplicate=rankOpportunities(source,[page,{...page,requested:'https://www.medicarefaq.com/old-plan-g'}],DEFAULTS,true);
+ assert.equal(duplicate.items.find(x=>x.title.startsWith('compare')).relatedPages.length,1);
+ assert.equal(duplicate.items.find(x=>x.title.startsWith('compare')).type,'Update existing page');
  assert.equal(fresh.intent,'Transactional');assert.equal(fresh.components.demand.value,null);
  assert.ok(fresh.scoreMax>fresh.score);assert.equal(fresh.evidence.otterly[0].mentions,0);
  assert.notEqual(topicKey('quote without underwriting'),topicKey('quote with underwriting'));
