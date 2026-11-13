@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {applyResolution,blockersFor,sourceAuthority} from '../lib/research/resolution.js';
+import {applyResolution,blockersFor,sourceAuthority,resolutionSchema} from '../lib/research/resolution.js';
 import {resolveAssignment,resolutionCandidates} from '../lib/research/resolution-sources.js';
 const url='https://www.medicarefaq.com/medicare-supplement-plans/plan-g';
 const a={targetUrl:null,topics:[{key:'one',title:'Compare Plan G costs',terms:[],evidence:{}}],candidateUrls:[url],coverage:{inventoryComplete:false},result:{readiness:'Needs research',checks:[],verification:{verdicts:[]}}};
@@ -18,6 +18,9 @@ test('independent reviewer can reject duplicate proposed work but cannot invent 
  const proposed={...finding,judgement:'improve',task:'Add a comparison checklist.'};
  const r=applyResolution(a,output(proposed),output(verdict(finding)),[page],{});assert.equal(r.readiness,'No change suggested');assert.deepEqual(r.resolution.changedTopics,['one']);
  assert.throws(()=>applyResolution(a,output(proposed),output(verdict({...proposed,task:'Invent a different assignment.'})),[page],{}),/replacement/);
+ const variants=resolutionSchema(a,[page],true,output(proposed)).properties.findings.items.anyOf;
+ assert.deepEqual(variants.find(v=>v.properties.judgement.enum.includes('improve')).properties.task.enum,[proposed.task]);
+ assert.ok(!resolutionSchema(a,[page],true,output(finding)).properties.findings.items.anyOf.some(v=>v.properties.judgement.enum.includes('improve')));
 });
 test('factual conflicts, unsupported changes and duplicate coverage remain blocked',()=>{
  for(const change of [{factualConcern:'conflict'},{support:'unsupported'},{qualifications:'changed'}]){const r=applyResolution(a,output(finding),output({...verdict(finding),...change}),[page],{});assert.equal(r.readiness,'Needs research');assert.ok(r.resolution.blockers.length);}
