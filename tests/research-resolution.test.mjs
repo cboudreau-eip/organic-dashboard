@@ -65,3 +65,16 @@ test('provider failures stay distinct from evidence holds and never expose priva
  const r=await resolveAssignment(a,{}, {read:async()=>({url,html:'<main>'+page.passages[0].text.repeat(6)+'</main>'}),search:async()=>({status:'available',sources:[]}),generate:async()=>output(finding),verify:async()=>{throw Error('secret key and raw provider data');}});
  assert.equal(r.retryable,true);assert.equal(blockersFor({...a,result:r})[0].code,'technical');assert.equal(r.resolution.failure.stage,'verification');assert.ok(!JSON.stringify(r).includes('secret key'));
 });
+test('verification repairs malformed output once without repeating source collection',async()=>{
+ let reads=0,attempts=0;
+ const r=await resolveAssignment(a,{}, {read:async()=>{reads++;return {url,html:'<main>'+page.passages[0].text.repeat(6)+'</main>'};},search:async()=>({status:'available',sources:[]}),generate:async()=>output(finding),verify:async context=>{if(++attempts===1)return {...output(verdict(finding)),optionalChecks:Array(4).fill('Extra check')};assert.ok(context.repair);return output(verdict(finding));}});
+ assert.equal(r.readiness,'No change suggested');assert.equal(reads,1);assert.equal(r.resolution.audit.verificationAttempts,2);
+});
+test('primary verification explains unread document holds even when the model approves',()=>{
+ const f={...finding,judgement:'improve',task:'Clarify the comparison criteria.'};
+ const authority={id:'official',kind:'search',url:'https://www.naic.org/example',documentStatus:'unavailable',passages:[{id:'officialp1',text:'Comparison evidence.'}]};
+ const v={...verdict(f),authorityType:'carrier',authorityPassageId:'officialp1'};
+ const held=applyResolution({...a,primaryVerification:true},output(f),output(v),[page,authority],{});
+ assert.equal(held.readiness,'Needs research');assert.match(held.resolution.blockers[0].question,/not verified primary evidence/);
+ assert.equal(applyResolution({...a,primaryVerification:true},output(f),output(v),[page,{...authority,documentStatus:'read'}],{}).readiness,'Ready for review');
+});
