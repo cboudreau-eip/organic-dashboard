@@ -8,9 +8,10 @@ import {createRequire} from 'node:module';
 import {resolve} from 'node:path';
 import {transform,loadBindings} from 'next/dist/build/swc/index.js';
 import * as contracts from '../lib/research/contracts.js';
+import * as assignmentDisplay from '../lib/research/assignment-display.js';
 import {failedValidation} from '../lib/research/validation.js';
 const require=createRequire(import.meta.url),mods={};await loadBindings();
-for(const name of ['AssignmentDetail','ContentAssignments']){const filename=resolve('components/dashboard/'+name+'.jsx');const {code}=await transform(await readFile(filename,'utf8'),{filename,jsc:{parser:{syntax:'ecmascript',jsx:true},transform:{react:{runtime:'automatic'}}},module:{type:'commonjs'}});const mod={exports:{}};new Function('require','module','exports',code)(path=>path.endsWith('.css')?{}:path.includes('research/contracts')?contracts:mods[path.replace('./','')]||require(path),mod,mod.exports);mods[name]=mod.exports;}
+for(const name of ['AssignmentDetail','ContentAssignments']){const filename=resolve('components/dashboard/'+name+'.jsx');const {code}=await transform(await readFile(filename,'utf8'),{filename,jsc:{parser:{syntax:'ecmascript',jsx:true},transform:{react:{runtime:'automatic'}}},module:{type:'commonjs'}});const mod={exports:{}};new Function('require','module','exports',code)(path=>path.endsWith('.css')?{}:path.includes('research/contracts')?contracts:path.includes('assignment-display')?assignmentDisplay:mods[path.replace('./','')]||require(path),mod,mod.exports);mods[name]=mod.exports;}
 test('assignment UI runs validation, exposes evidence and persists review without content generation',async()=>{
  const dom=new JSDOM('<div id="root"></div>',{url:'https://dashboard.example'}),old={window:globalThis.window,document:globalThis.document,fetch:globalThis.fetch,IS_REACT_ACT_ENVIRONMENT:globalThis.IS_REACT_ACT_ENVIRONMENT};
  const id='11111111-1111-4111-8111-111111111111',a={key:'a'.repeat(24),title:'Plan G comparison',topics:[{key:'b',title:'Compare Plan G',terms:[],evidence:{gsc:[],semrush:[],otterly:[]}}],state:'pending'};let run=null,reviews=[];const calls=[];
