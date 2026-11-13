@@ -1,4 +1,15 @@
 import test from 'node:test';
+import {verifiedQuote} from '../lib/research/validation.js';
+test('heading punctuation is recovered as verbatim source text without accepting rewritten facts',()=>{
+ assert.equal(verifiedQuote('4 Submit the enrollment request Keep the confirmation number.','Submit the enrollment request. Keep the confirmation number.'),'Submit the enrollment request Keep the confirmation number');
+ assert.equal(verifiedQuote('The premium is $150 per month.','The premium is $15 per month.'),null);
+ assert.equal(verifiedQuote('The premium is $150 per month.','The premium is 150 per month.'),null);
+ assert.equal(verifiedQuote('Submit only during a valid enrollment period.','Submit during a valid enrollment period.'),null);
+});
+test('SDK text citations are retained ahead of uncited search listings',()=>{
+ const r=searchEvidence({sources:Array.from({length:8},(_,i)=>({url:`https://listing${i}.example/`})),content:[{type:'text',citations:[{source:{url:'https://cited.example/',title:'Verified source'},citedText:'A provider supplied citation excerpt with enough detail.'}]}]},'query');
+ assert.equal(r.status,'available');assert.equal(r.sources[0].url,'https://cited.example/');
+});
 import assert from 'node:assert/strict';
 import {consolidateAssignments,assessValidation,validationPayload} from '../lib/research/validation.js';
 import {searchEvidence,validateAssignment,publicSearchUrl} from '../lib/research/validation-sources.js';
