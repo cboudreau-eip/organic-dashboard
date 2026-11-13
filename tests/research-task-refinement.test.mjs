@@ -21,3 +21,9 @@ test('BCBS supplement matching recognizes hyphenated URLs and rejects an Advanta
  const matches=matchPages({title:'blue cross blue shield medicare supplement plan g'},pages);
  assert.equal(matches[0].url,pages[1].url);assert.ok(!matches.some(p=>p.url===pages[0].url));
 });
+
+test('snapshot excerpts are bounded without altering verification quotes or source provenance',async()=>{
+ const {compactResearchSnapshot}=await import('../lib/research/task-refinement.js');
+ const p={assignments:[{result:{search:{sources:[{url:'https://example.org',text:'x'.repeat(18000),documentStatus:'read',retrievedAt:'today'}]},verification:{verdicts:[{authorityQuote:'Exact supporting evidence'}]}}}]};
+ compactResearchSnapshot(p);const s=p.assignments[0].result.search.sources[0];assert.equal(s.text.length,1000);assert.equal(s.originalTextLength,18000);assert.equal(s.savedExcerpt,true);assert.equal(s.documentStatus,'read');assert.equal(p.assignments[0].result.verification.verdicts[0].authorityQuote,'Exact supporting evidence');compactResearchSnapshot(p);assert.equal(s.originalTextLength,18000);
+});
