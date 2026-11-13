@@ -1,6 +1,6 @@
 # Research ranking review — 2026-11-13
 
-Baseline: `7830e02f-47ba-4ec0-8381-00152e9d1196` (`research-v2`). Comparison: `research-v3`. The same saved GSC, PostHog, Semrush, Otterly and website inventory are used. This is an evidence and rules audit, not fresh search-result validation or editorial approval.
+Baseline: `7830e02f-47ba-4ec0-8381-00152e9d1196` (`research-v2`). Comparison: `research-v3.1`. The same saved GSC, PostHog, Semrush, Otterly and website inventory are used. This is an evidence and rules audit, not fresh search-result validation or editorial approval.
 
 Reviewed all 20 original leaders. They now map to 17 distinct groups. The original 18 overlap warnings become 1 among those groups.
 
@@ -46,14 +46,14 @@ Reviewed all 20 original leaders. They now map to 17 distinct groups. The origin
   "inputGroups": 50206,
   "originalGroups": 50944,
   "mergedGroups": 606,
-  "highIntent": 10638,
+  "highIntent": 10636,
   "reviewed": 1000,
   "excludedOrInvalid": 1447,
-  "serviceExcluded": 228,
+  "serviceExcluded": 265,
   "historicalExcluded": 1343,
   "candidateLimit": 1000,
   "capped": true,
-  "trackedCandidates": 227
+  "trackedCandidates": 225
 }
 
 The 1,000-item cap still prioritizes monitored Semrush/Otterly candidates before filling remaining places with GSC discoveries. Unknown competition can disadvantage a new long-tail topic, so the queue is not an exhaustive best-content list. No keyword-to-conversion attribution is inferred.

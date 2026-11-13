@@ -12,6 +12,7 @@ test('buying intent distinguishes service, enrollment timing and explicit purcha
  assert.equal(intentFor('medicare supplement enrollment period',['transactional']).value,4);
  assert.equal(intentFor('aetna medigap',['transactional']).value,4);
  assert.equal(intentFor('get a medigap quote without underwriting').value,5);
+ assert.equal(intentFor('aetna insurance doctors list',['transactional']).value,1);
  for(const term of ['doctors that accept aetna near me','humana provider list','rx coupons','aetna customer service phone number'])assert.equal(intentFor(term,['transactional']).value,1,term);
  assert.equal(intentFor('best medicare supplements 2021',['transactional'],2027).value,1);
  assert.equal(intentFor('compare medicare plans 2027',[],2027).value,4);

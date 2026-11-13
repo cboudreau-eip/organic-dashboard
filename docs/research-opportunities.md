@@ -21,7 +21,7 @@ Completed runs are immutable. Settings and reviews use optimistic versions. Revi
 
 Source periods are displayed separately. A saved source ending more than 14 days ago is marked stale. Candidate sources can fail independently; the run must have some candidate evidence before completing. Start a new run to retry failed source collection. All network calls remain server-side; no external page instructions are executed or passed to a model.
 
-## Ranking v3
+## Ranking v3.1
 
 Observed GSC queries, Semrush keywords and Otterly prompts seed conservative normalized wording groups. Product/exclusion settings filter the pool. Rule-based transactional/commercial language or qualifying Semrush intent qualifies groups; service/navigation and clearly outdated-year queries are excluded; no minimum volume excludes a long tail. Up to 1,000 high-intent groups are evaluated. Monitored Semrush/Otterly groups are retained first (ordered by supported preliminary points if they alone exceed the cap), then broader GSC discoveries fill remaining places by supported intent/fit/competition/demand points before page matching. Final ordering uses all supported score components. Cap counts are visible. This avoids a large enrollment-query pool crowding out every commercial comparison or monitored long-tail prompt.
 

@@ -43,5 +43,5 @@ test('reranking creates a new run with original settings and evidence, without s
  const response=await h.POST(req({action:'rerank',runId:previousId,settings:{malicious:true}}));assert.equal(response.status,201);
  const {run}=await response.json();assert.equal(run.stage,'rank');assert.deepEqual(run.settings,original.settings);assert.equal(run.rerankedFrom,previousId);
  const finish=await h.POST(req({action:'step',runId:run.id,version:run.version}));assert.equal(finish.status,200);
- const {run:done}=await finish.json();assert.equal(done.status,'complete');assert.equal(done.results.version,'research-v3');assert.equal(done.sources.semrush.status,'stale');assert.equal(done.sources.gsc,undefined);assert.deepEqual(original,before);
+ const {run:done}=await finish.json();assert.equal(done.status,'complete');assert.equal(done.results.version,'research-v3.1');assert.equal(done.sources.semrush.status,'stale');assert.equal(done.sources.gsc,undefined);assert.deepEqual(original,before);
 });
