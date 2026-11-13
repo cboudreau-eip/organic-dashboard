@@ -78,3 +78,9 @@ test('primary verification explains unread document holds even when the model ap
  assert.equal(held.readiness,'Needs research');assert.match(held.resolution.blockers[0].question,/not verified primary evidence/);
  assert.equal(applyResolution({...a,primaryVerification:true},output(f),output(v),[page,{...authority,documentStatus:'read'}],{}).readiness,'Ready for review');
 });
+
+test('research tasks reject draft copy and numeric claims instead of passing them to review',()=>{
+ const f={...finding,judgement:'improve',task:"Add feedback: 'Members consistently praise the service and report lower costs than other carriers, according to reviews.'"};
+ assert.throws(()=>applyResolution(a,output(f),output(verdict(f)),[page],{}),/Invalid resolution finding/);
+ const numeric={...f,task:'State that complaints are 13 percent below expected.'};assert.throws(()=>applyResolution(a,output(numeric),output(verdict(numeric)),[page],{}),/Invalid resolution finding/);
+});
