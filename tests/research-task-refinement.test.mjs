@@ -15,3 +15,9 @@ test('splits preserve topic evidence and lineage but remove inherited result and
 test('unmatched topic stays unmatched instead of defaulting to generic navigation',()=>{
  assert.deepEqual(matchPages({title:'Lumico complaints'},[{url:url('faqs'),title:'Lumico complaints'},{url:url('medigap-plans'),title:'Medigap plans'}]),[]);
 });
+
+test('BCBS supplement matching recognizes hyphenated URLs and rejects an Advantage-only winner',()=>{
+ const pages=[{url:url('blog/bcbs-texas-ending-medicare-advantage-plans-steps-for-2027'),title:'BCBS Texas Medicare Advantage Plan Exit'},{url:url('medicare-supplement-plans/medigap-by-carrier/blue-cross-blue-shield-medigap-plans'),title:'Blue Cross Blue Shield Medicare Supplement Plans'}];
+ const matches=matchPages({title:'blue cross blue shield medicare supplement plan g'},pages);
+ assert.equal(matches[0].url,pages[1].url);assert.ok(!matches.some(p=>p.url===pages[0].url));
+});
