@@ -10,12 +10,17 @@ test('research permissions, immutable completed evidence and valid versioned dec
  create function public.growth_access() returns text language sql stable as $$select current_setting('test.access',true)$$;
  grant usage on schema auth,public to authenticated;`);
  await db.exec(await readFile('supabase/migrations/20261113145339_research_opportunities.sql','utf8'));
+ await db.exec(await readFile('supabase/migrations/20261113151509_research_evidence_chunks.sql','utf8'));
  await db.exec("set role authenticated;set test.access='analyst'");
  const id='22222222-2222-4222-8222-222222222222',key='abcdefabcdefabcdefabcdef';
  await db.query("insert into research_runs(id,settings,payload) values ($1,'{}','{}')",[id]);
+ const chunkKey='a'.repeat(64);
+ await db.query('insert into research_evidence_chunks(run_id,key,payload) values ($1,$2,$3)',[id,chunkKey,JSON.stringify([{key}])]);
+ await assert.rejects(db.exec("update research_evidence_chunks set payload='[]'"));
  await assert.rejects(db.exec("update research_runs set settings='{\"changed\":true}'"));
  await assert.rejects(db.query("insert into research_reviews(key,run_id,decision) values ($1,$2,'Keep')",[key,id]));
- await db.query("update research_runs set stage='complete',status='complete',payload=$1 where version=1",[JSON.stringify({results:{items:[{key}]}})]);
+ await db.query("update research_runs set stage='complete',status='complete',payload=$1 where version=1",[JSON.stringify({results:{items:{assetKeys:[chunkKey],count:1}}})]);
+ await assert.rejects(db.query('insert into research_evidence_chunks(run_id,key,payload) values ($1,$2,$3)',[id,'b'.repeat(64),'[]']));
  assert.equal((await db.query('select version from research_runs')).rows[0].version,2);
  await assert.rejects(db.exec("update research_runs set payload='{}'"));
  await db.query("insert into research_reviews(key,run_id,decision) values ($1,$2,'Keep')",[key,id]);

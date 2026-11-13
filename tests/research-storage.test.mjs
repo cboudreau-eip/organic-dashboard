@@ -1,0 +1,20 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {packPayload,hydratePayload,saveAssets} from '../lib/research/storage.js';
+import {publicRun} from '../lib/research/engine.js';
+test('large evidence is bounded, deduplicated, hydrated selectively and never sent with queue summaries',async()=>{
+ const rows=Array.from({length:50000},(_,i)=>({keys:['compare medigap plan g costs '+i,'https://www.medicarefaq.com/medicare-supplement-plans/plan-g/'],clicks:1,impressions:40,ctr:.025,position:12}));
+ const payload={evidence:{gsc:{rows,status:'available'}},inventory:{pages:[{url:'https://www.medicarefaq.com/',status:'read',text:'content'}],urls:['https://www.medicarefaq.com/']},results:{items:[{key:'abcdefabcdefabcdefabcdef',title:'Compare Plan G',terms:['plan g'],evidence:{gsc:rows.slice(0,20)},components:{},relatedPages:[],limitations:[]}]}};
+ assert.ok(Buffer.byteLength(JSON.stringify(payload))>5000000);
+ const packed=packPayload(payload);assert.ok(Buffer.byteLength(JSON.stringify(packed.payload))<16000);
+ assert.ok(packed.assets.every(a=>Buffer.byteLength(JSON.stringify(a.payload))<350000));
+ const saved=new Map();let inserts=0,read=0;
+ const client={from(){let keys,insert;const chain={select(){return chain;},eq(){return chain;},limit(){return chain;},in(_,value){keys=value;return chain;},insert(value){insert=value;return chain;},then(resolve){if(insert){inserts++;saved.set(insert.key,insert);return Promise.resolve(resolve({data:null}));}read+=keys?.length||0;return Promise.resolve(resolve({data:[...saved.values()].filter(v=>!keys||keys.includes(v.key))}));}};return chain;}};
+ await saveAssets(client,'run',packed.assets);assert.equal(inserts,packed.assets.length);
+ await saveAssets(client,'run',packed.assets);assert.equal(inserts,packed.assets.length);
+ const run={id:'run',payload:packed.payload};
+ const detail=await hydratePayload(client,run,['results']);assert.equal(read,1);assert.deepEqual(detail.results.items,payload.results.items);
+ const view=publicRun({...run,payload:detail});assert.equal(view.sources.gsc.count,50000);assert.equal(view.inventory.read,1);assert.equal(view.results.items[0].evidence,undefined);
+ const whole=await hydratePayload(client,run);assert.deepEqual(whole.evidence.gsc.rows,rows);
+ saved.clear();await assert.rejects(hydratePayload(client,run),/Missing saved evidence/);
+});

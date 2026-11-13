@@ -33,6 +33,8 @@ Limitations: this is an evidence-backed research queue, not an autonomous SEO ex
 
 Migration `20261113145339_research_opportunities.sql` adds `research_settings`, `research_runs`, and `research_reviews` with team RLS, actor stamping, optimistic versions, immutable completed runs and valid-candidate checks. Existing data tables are unchanged. `GET/POST /api/research` require verified team membership; mutations require analyst/admin and canonical dashboard origin.
 
+Migration `20261113151509_research_evidence_chunks.sql` stores large evidence arrays in immutable, content-addressed batches below 350 KB each. Run records hold references and progress, not a growing multi-megabyte document. Existing unchanged batches are reused during the run; interrupted writes can be retried. Queue responses omit detailed evidence, which loads on demand when an opportunity is opened. Legacy in-record runs remain resumable.
+
 Tests cover permissions, concurrent edits, immutability, invalid review references, source failures, resumability, missing-versus-zero evidence, long-tail candidates, UI collection/review flow and input bounds. Run `npm test` and `npm run build` before release.
 
 Future work deliberately excluded: calendar generation, content creation, scheduled source refresh, new Semrush API integration, automatic website changes and revenue forecasting. Run-history payloads are retained; establish an explicit retention policy before enabling scheduled runs.

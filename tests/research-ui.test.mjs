@@ -22,7 +22,7 @@ test('research UI runs collection, opens evidence and saves decisions without ge
  let run=null,reviews=[],saved=0;const calls=[];
  const view=()=>({settings:{settings:contracts.DEFAULTS,version:1},canEdit:true,run,reviews,runs:run?[run]:[]});
  Object.assign(globalThis,{window:dom.window,document:dom.window.document,IS_REACT_ACT_ENVIRONMENT:true,fetch:async(url,options)=>{
-  if(!options?.method)return Response.json(view());const body=JSON.parse(options.body);calls.push(body.action);
+  if(!options?.method)return Response.json(url.includes('opportunity=')?{item:results.items[0]}:view());const body=JSON.parse(options.body);calls.push(body.action);
   if(body.action==='start'){run={id:'11111111-1111-4111-8111-111111111111',settings:contracts.DEFAULTS,status:'running',stage:'rank',version:1,created_at:new Date().toISOString(),sources:{},inventory:{read:0,total:0,processed:0,errors:[]}};return Response.json({run});}
   if(body.action==='step'){run={...run,status:'complete',stage:'complete',version:2,results};return Response.json({run});}
   if(body.action==='review'){saved++;reviews=[{...body,run_id:body.runId,version:saved,updated_at:new Date().toISOString()}];return Response.json({review:reviews[0]});}
