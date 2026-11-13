@@ -75,3 +75,13 @@ test('decision audit snapshots holds and a bounded sample, retaining untouched r
  const {run}=await (await h.POST(req({action:'audit',runId:id,id,version:1}))).json();
  assert.equal(run.payload.decisionAudit.keys.length,6);assert.equal(run.payload.assignments.filter(a=>a.state==='pending').length,6);assert.equal(run.payload.assignments[0].result.summary,'Saved 0');assert.ok(old.payload.assignments.every(a=>a.state==='done'));assert.equal(old.payload.decisionAudit,undefined);
 });
+
+test('refine separates held topics, appends unused topics and preserves ready work',async()=>{
+ const {h,tables}=fixture();const old=tables.research_validations[0];old.status='complete';old.payload.selectedCount=3;
+ const topic=k=>({key:k,title:'Compare Plan G costs '+k,terms:['plan g costs'],intent:'Commercial',score:70,evidence:{gsc:[],semrush:[],otterly:[]}});
+ old.payload.assignments=[{key,state:'done',topics:[topic('one'),topic('two')],candidateUrls:[],result:{readiness:'Needs research'}},{key:'b'.repeat(24),state:'done',topics:[topic('kept')],result:{readiness:'Ready for review',summary:'Retain'}}];
+ const item={...topic('new'),type:'Add / improve section',relatedPages:[]};
+ tables.research_runs=[{id,status:'complete',payload:{results:{items:[{...item,key:'one'},item]},inventory:{pages:[]}}}];
+ const response=await h.POST(req({action:'refine',runId:id,id,version:1}));assert.equal(response.status,201);const {run}=await response.json();
+ assert.equal(run.payload.refinement.held,1);assert.equal(run.payload.refinement.addedTopics,1);assert.equal(run.payload.refinement.keys.length,3);assert.equal(run.payload.assignments[0].result.summary,'Retain');assert.equal(old.payload.assignments.length,2);assert.equal(run.payload.selectedCount,4);assert.equal(new Set(run.payload.assignments.map(a=>a.key)).size,4);
+});
