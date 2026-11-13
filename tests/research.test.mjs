@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {DEFAULTS,settingsInput} from '../lib/research/contracts.js';
 import {advance,initialPayload,publicRun} from '../lib/research/engine.js';
-import {topicKey,rankOpportunities} from '../lib/research/rank.js';
+import {topicKey,rankOpportunities,intentFor} from '../lib/research/rank.js';
 import {inventoryEntry,sitemapEntries} from '../lib/research/inventory.js';
 const url='https://www.medicarefaq.com/medigap/plan-g/';
 const html='<main><h1>Compare Medigap Plan G costs</h1><h2>Get a Plan G quote</h2><p>'+('Compare Plan G premiums and eligibility. '.repeat(15))+'</p></main>';
@@ -15,6 +15,8 @@ test('research accepts planning inputs and rejects invalid dates and unsupported
  assert.throws(()=>settingsInput({...DEFAULTS,unknown:true}));
 });
 test('ranking uses observed evidence, retains long-tail gaps and preserves unknowns',()=>{
+ for(const term of ['plan g vs plan n','aetna medigap reviews','medigap premiums','medigap costs','switching medigap policies'])assert.equal(intentFor(term).value,4,term);
+ assert.equal(intentFor('medigap enrollment').value,5);
  const r=rankOpportunities(source,[page],DEFAULTS,true);
  const existing=r.items.find(x=>x.title.startsWith('compare')),fresh=r.items.find(x=>x.title.startsWith('Get'));
  assert.equal(existing.type,'Update existing page');assert.equal(existing.evidence.posthog.quoteStarts,3);
