@@ -1,0 +1,10 @@
+import {serverAuth} from '../../../../lib/auth/server';
+import {authorizeGrowth,growthEnabled} from '../../../../lib/growth-hunter/access';
+import {siteUrl} from '../../../../lib/auth/config';
+import {validationHandlers} from '../../../../lib/research/validation-handlers';
+import {runValidation,validationConfigured} from '../../../../lib/research/validation-provider';
+export const dynamic='force-dynamic';
+export const maxDuration=120;
+const handlers=validationHandlers({access:async action=>authorizeGrowth(await serverAuth(),growthEnabled(),action),origin:siteUrl,configured:validationConfigured,validate:runValidation});
+export const GET=handlers.GET;
+export const POST=handlers.POST;
