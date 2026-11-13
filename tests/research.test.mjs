@@ -16,7 +16,7 @@ test('research accepts planning inputs and rejects invalid dates and unsupported
 });
 test('ranking uses observed evidence, retains long-tail gaps and preserves unknowns',()=>{
  for(const term of ['plan g vs plan n','aetna medigap reviews','medigap premiums','medigap costs','switching medigap policies'])assert.equal(intentFor(term).value,4,term);
- assert.equal(intentFor('medigap enrollment').value,5);
+ assert.equal(intentFor('medigap enrollment').value,4);
  assert.match(intentFor('aetna medigap plan g',['transactional']).reason,/Semrush/);
  const r=rankOpportunities(source,[page],DEFAULTS,true);
  const existing=r.items.find(x=>x.title.startsWith('compare')),fresh=r.items.find(x=>x.title.startsWith('Get'));

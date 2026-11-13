@@ -32,3 +32,16 @@ test('research writes require authorized role, same origin and bounded valid inp
  assert.equal((await h.POST(req({action:'settings',junk:'x'.repeat(17000)}))).status,413);
  assert.equal((await h.GET(new Request('https://dashboard.example/api/research?run=oops'))).status,400);
 });
+
+test('reranking creates a new run with original settings and evidence, without source collection',async()=>{
+ const {handlers:h,tables}=fixture();
+ const previousId='22222222-2222-4222-8222-222222222222';
+ const original={id:previousId,status:'complete',stage:'complete',version:3,settings:{...DEFAULTS,weeklyCapacity:4},payload:{evidence:{semrush:{status:'available',period:{end:'2020-01-01'},rows:[{keyword:'get medigap quotes',intents:'t',difficulty:25,volume:50}]}},inventory:{urls:[],pages:[],errors:[]},results:{version:'research-v2',items:[]}}};
+ tables.research_runs.push(original);const before=structuredClone(original);
+ assert.equal((await h.POST(req({action:'rerank',runId:'bad'}))).status,422);
+ assert.equal((await fixture('viewer').handlers.POST(req({action:'rerank',runId:previousId}))).status,403);
+ const response=await h.POST(req({action:'rerank',runId:previousId,settings:{malicious:true}}));assert.equal(response.status,201);
+ const {run}=await response.json();assert.equal(run.stage,'rank');assert.deepEqual(run.settings,original.settings);assert.equal(run.rerankedFrom,previousId);
+ const finish=await h.POST(req({action:'step',runId:run.id,version:run.version}));assert.equal(finish.status,200);
+ const {run:done}=await finish.json();assert.equal(done.status,'complete');assert.equal(done.results.version,'research-v3');assert.equal(done.sources.semrush.status,'stale');assert.equal(done.sources.gsc,undefined);assert.deepEqual(original,before);
+});
