@@ -1,5 +1,13 @@
 import test from 'node:test';
 import {verifiedQuote} from '../lib/research/validation.js';
+import {sourcePassages,attachVerifiedPassages} from '../lib/research/validation-sources.js';
+test('assessment citations select actual passages and cannot cross source identities',()=>{
+ const source={id:'own1',text:'This is the unchanged original evidence passage. '.repeat(15)};source.passages=sourcePassages(source);
+ assert.ok(source.passages.every(p=>p.text.length<=300&&source.text.includes(p.text)));
+ const output={findings:[{sourceId:'own1',passageId:'own1p2',judgement:'improve'}]};
+ assert.equal(attachVerifiedPassages(output,[source]).findings[0].quote,source.passages[1].text);
+ assert.throws(()=>attachVerifiedPassages({findings:[{sourceId:'own2',passageId:'own1p2'}]},[source]));
+});
 test('heading punctuation is recovered as verbatim source text without accepting rewritten facts',()=>{
  assert.equal(verifiedQuote('4 Submit the enrollment request Keep the confirmation number.','Submit the enrollment request. Keep the confirmation number.'),'Submit the enrollment request Keep the confirmation number');
  assert.equal(verifiedQuote('The premium is $150 per month.','The premium is $15 per month.'),null);
