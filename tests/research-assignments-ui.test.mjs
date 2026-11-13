@@ -33,3 +33,9 @@ test('resolution control saves a new snapshot, displays precise blockers and fil
  const filter=[...document.querySelectorAll('label')].find(l=>l.textContent.startsWith('Research blocker')).querySelector('select');await act(async()=>{filter.value='technical';filter.dispatchEvent(new dom.window.Event('change',{bubbles:true}));});assert.equal(document.querySelectorAll('.assignment-card').length,0);assert.equal(document.querySelector('[role=grid]'),null);
  }finally{await act(async()=>root.unmount());Object.assign(globalThis,old);dom.window.close();}
 });
+
+test('a failed new task without earlier findings renders safely and cannot be kept',async()=>{
+ const dom=new JSDOM('<div id="root"></div>'),old={window:globalThis.window,document:globalThis.document,IS_REACT_ACT_ENVIRONMENT:globalThis.IS_REACT_ACT_ENVIRONMENT};Object.assign(globalThis,{window:dom.window,document:dom.window.document,IS_REACT_ACT_ENVIRONMENT:true});
+ const root=createRoot(document.getElementById('root'));
+ try{await act(async()=>root.render(React.createElement(mods.AssignmentDetail.default,{assignment:{key:'a',topics:[],result:{readiness:'Needs research',resolution:{blockers:[]},verification:{status:'Unavailable',verdicts:[]}}},canEdit:true})));assert.match(document.body.textContent,/No verified editorial tasks yet/);assert.equal([...document.querySelectorAll('option')].find(o=>o.textContent==='Keep').disabled,true);}finally{await act(async()=>root.unmount());Object.assign(globalThis,old);dom.window.close();}
+});
