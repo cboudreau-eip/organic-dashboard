@@ -16,7 +16,7 @@ import CharlieLaunch from './CharlieLaunch';
 import Walkthrough from './Walkthrough';
 import GrowthHunter from '../growth-hunter/GrowthHunter';
 import AiVisibility from './AiVisibility';
-import ContentPlan from './ContentPlan';
+import ContentPlan from './ContentWorkspace';
 import '../growth-hunter/growth-hunter.css';
 
 // React owns this boundary; the preserved demo renderer owns its descendants.

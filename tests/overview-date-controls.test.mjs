@@ -38,6 +38,10 @@ test('Overview retains exactly one date form across repeated period changes',asy
    const Controls=await component('components/dashboard/OrganicDateControls.jsx');
    const Overview=await component('components/dashboard/OrganicOverview.jsx',{
      './OrganicDateControls':Controls,
+     './MetricHelp':({label})=>React.createElement('span',null,label),
+     './PagePerformance':()=>null,
+     './ExecutiveSummary':()=>null,
+     './CollapsibleSection':({children})=>React.createElement('div',null,children),
      './OrganicConversions':()=>React.createElement('div',{'data-testid':'conversions'}),
      './OrganicDetails':()=>React.createElement('div',{'data-testid':'traffic-details'})
    });
