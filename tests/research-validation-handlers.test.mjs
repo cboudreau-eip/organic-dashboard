@@ -7,7 +7,7 @@ function fixture(role='analyst',validate=async()=>({readiness:'Ready for review'
  const tables={research_validations:[{id,research_run_id:id,rules_version:'validation-v2',version:1,status:'running',payload:{sourceDates:{},assignments:[{key,state:'pending'},{key:'b'.repeat(24),state:'pending'},{key:'c'.repeat(24),state:'pending'}]}}],research_assignment_reviews:[],research_runs:[]};
  const client={from(table){let values,insert=false,filters=[],single=false;const chain={select(){return chain;},order(){return chain;},limit(){return chain;},eq(k,v){filters.push([k,v]);return chain;},insert(v){values=v;insert=true;return chain;},update(v){values=v;return chain;},single(){single=true;return finish();},maybeSingle(){single=true;return finish();},then(ok,bad){return Promise.resolve(finish()).then(ok,bad);}};
  function finish(){let found=tables[table].filter(r=>filters.every(([k,v])=>r[k]===v));if(values){if(insert){const row={id,version:1,status:'running',...values};tables[table].push(row);found=[row];}else for(const row of found)Object.assign(row,values,{version:row.version+1});}return {data:structuredClone(single?found[0]||null:found)};}return chain;}};
- const handlers=validationHandlers({client,origin:()=> 'https://dashboard.example',configured:()=>true,validate,access:async action=>{if(role==='viewer'&&action==='run')throw Object.assign(Error('No access'),{status:403});return {client,role};}});
+ const handlers=validationHandlers({client,origin:()=> 'https://dashboard.example',configured:()=>true,validate,resolve:validate,access:async action=>{if(role==='viewer'&&action==='run')throw Object.assign(Error('No access'),{status:403});return {client,role};}});
  return {tables,h:handlers};
 }
 test('validation batches save progress and reloads do not repeat completed AI work',async()=>{
@@ -33,4 +33,20 @@ test('leases prevent overlapping calls; failed checks are retained and retry onl
 test('validation writes require same origin and analyst access',async()=>{
  assert.equal((await fixture('viewer').h.POST(req({action:'start',runId:id}))).status,403);
  assert.equal((await fixture().h.POST(req({action:'start',runId:id},'https://attacker.example'))).status,403);
+});
+
+test('resolution snapshots only held assignments and preserves successful work and review records',async()=>{
+ const {h,tables}=fixture();const old=tables.research_validations[0];old.status='complete';
+ old.payload.assignments=[{key,state:'done',targetUrl:null,topics:[{title:'Compare Plan G'}],candidateUrls:[],result:{readiness:'Needs research'}},{key:'b'.repeat(24),state:'done',result:{readiness:'No change suggested',summary:'Retain this result'}}];
+ tables.research_runs=[{id,status:'complete',payload:{inventory:{pages:[{url:'https://www.medicarefaq.com/plan-g',title:'Compare Plan G'}]}}}];
+ tables.research_assignment_reviews=[{validation_id:id,assignment_key:key,decision:'Defer',reason:'Original note'}];
+ assert.equal((await h.POST(req({action:'resolve',runId:id,id,version:9}))).status,409);
+ const response=await h.POST(req({action:'resolve',runId:id,id,version:1}));assert.equal(response.status,201);const {run}=await response.json();
+ assert.equal(run.payload.resolution.selected,1);assert.equal(run.payload.assignments[0].state,'pending');assert.equal(run.payload.assignments[1].result.summary,'Retain this result');assert.equal(old.payload.assignments[0].state,'done');assert.equal(tables.research_assignment_reviews[0].reason,'Original note');assert.equal(run.payload.assignments[0].resolutionUrls.length,1);
+});
+
+test('completed resolution is idempotent and retry preserves the previous finding context',async()=>{
+ let calls=0;const {h,tables}=fixture('analyst',async()=>{calls++;});const old=tables.research_validations[0];old.status='complete';old.payload.resolution={version:'resolution-v1',selected:1};old.payload.assignments=[{key,state:'done',result:{readiness:'Needs research',retryable:true,summary:'Prior evidence',resolution:{failure:{stage:'verification'}}}}];
+ assert.equal((await h.POST(req({action:'resolve',runId:id,id,version:1}))).status,200);assert.equal(calls,0);assert.equal(tables.research_validations.length,1);
+ const {run}=await (await h.POST(req({action:'retry',runId:id}))).json();assert.equal(run.payload.assignments[0].result.summary,'Prior evidence');assert.equal(run.payload.assignments[0].state,'pending');assert.equal(calls,0);
 });

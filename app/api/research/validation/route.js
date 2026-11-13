@@ -3,8 +3,9 @@ import {authorizeGrowth,growthEnabled} from '../../../../lib/growth-hunter/acces
 import {siteUrl} from '../../../../lib/auth/config';
 import {validationHandlers} from '../../../../lib/research/validation-handlers';
 import {runValidation,validationConfigured} from '../../../../lib/research/validation-provider';
+import {runResolution} from '../../../../lib/research/resolution-provider';
 export const dynamic='force-dynamic';
 export const maxDuration=240;
-const handlers=validationHandlers({access:async action=>authorizeGrowth(await serverAuth(),growthEnabled(),action),origin:siteUrl,configured:validationConfigured,validate:runValidation});
+const handlers=validationHandlers({access:async action=>authorizeGrowth(await serverAuth(),growthEnabled(),action),origin:siteUrl,configured:validationConfigured,validate:runValidation,resolve:runResolution});
 export const GET=handlers.GET;
 export const POST=handlers.POST;
