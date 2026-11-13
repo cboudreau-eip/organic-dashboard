@@ -58,3 +58,10 @@ test('updated resolution retains valid coverage but reopens a falsely cleared br
  tables.research_runs=[{id,status:'complete',payload:{inventory:{pages:[]}}}];
  const {run}=await (await h.POST(req({action:'resolve',runId:id,id,version:1}))).json();assert.equal(run.payload.resolution.reused,1);assert.equal(run.payload.assignments[0].state,'pending');assert.match(run.payload.assignments[0].result.resolution.blockers[0].question,/named carrier/);assert.equal(run.payload.assignments[1].state,'done');assert.equal(run.payload.assignments[1].result.resolution.version,'resolution-v2');assert.equal(old.payload.assignments[0].result.readiness,'No change suggested');
 });
+test('primary verification preserves completed results and appends only unreviewed ranked topics',async()=>{
+ const {h,tables}=fixture();const old=tables.research_validations[0];old.status='complete';
+ old.payload.selectedCount=2;old.payload.assignments=[{key,topics:[{key:'seen'}],targetUrl:'https://www.medicarefaq.com/old',state:'done',result:{readiness:'No change suggested'}},{key:'b'.repeat(24),topics:[{key:'held',title:'Compare costs'}],candidateUrls:[],state:'done',result:{readiness:'Needs research'}}];
+ const item=(key,target)=>({key,title:'compare medicare plan g quotes',targetUrl:target,type:'Update existing page',intent:'Transactional',score:80,terms:[],evidence:{gsc:[],semrush:[],otterly:[]}});
+ tables.research_runs=[{id,status:'complete',payload:{results:{items:[item('seen','https://www.medicarefaq.com/old'),item('duplicate','https://www.medicarefaq.com/old'),item('fresh','https://www.medicarefaq.com/new')]},inventory:{pages:[]}}}];
+ const response=await h.POST(req({action:'advance',runId:id,id,version:1}));assert.equal(response.status,201);const {run}=await response.json();assert.equal(run.payload.addedTopics,1);assert.equal(run.payload.assignments.length,3);assert.equal(run.payload.assignments[0].state,'done');assert.equal(run.payload.assignments[1].primaryVerification,true);assert.equal(run.payload.assignments[2].topics[0].rank,3);assert.equal(old.payload.assignments.length,2);
+});
