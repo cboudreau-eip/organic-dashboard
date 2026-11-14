@@ -17,3 +17,7 @@ test('viewers and cross-origin callers cannot generate or edit plans',async()=>{
  assert.equal((await fixture('viewer').h.POST(req({action:'generate',runId:id}))).status,403);
  const request=new Request('https://dashboard.example/api/research/proposals',{method:'POST',headers:{origin:'https://evil.example'},body:'{}'});assert.equal((await fixture().h.POST(request)).status,403);
 });
+
+test('calendar generation preserves proposal edits and rejects stale changes',async()=>{
+ const {h}=fixture();const plan=await (await h.POST(req({action:'generate',runId:id}))).json();const item=plan.plan.payload.items[0];await h.POST(req({action:'edit',planId:id,version:1,itemId:item.id,fields:{title:'Preserve my title'}}));const generated=await h.POST(req({action:'calendar-generate',planId:id,version:2}));assert.equal(generated.status,200);const result=await generated.json();assert.equal(result.plan.payload.items[0].title,'Preserve my title');assert.equal(Object.keys(result.plan.calendar.dates).length,90);assert.equal((await h.POST(req({action:'calendar-generate',planId:id,version:2}))).status,409);
+});
