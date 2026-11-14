@@ -18,3 +18,8 @@ test('specificity bonus cannot overwhelm materially stronger supported priority'
  const result=discoveryQueue([item('long',{score:50}),item('strong',{score:80,terms:['medigap quotes']})]);
  assert.equal(result.items[0].key,'strong');
 });
+
+test('changed grouping keys and year variants do not recycle previously evaluated wording',()=>{
+ const result=discoveryQueue([item('changed',{terms:['compare medicare supplement plan g costs 2027']})],[],['compare medicare supplement plan g costs 2026']);
+ assert.equal(result.shortlist.length,0);assert.equal(result.counts.previouslyEvaluated,1);
+});
