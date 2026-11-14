@@ -2,6 +2,11 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {generateProposals,proposalEdit,publicProposalPlan,MIX} from '../lib/research/proposals.js';
 import {DEFAULTS} from '../lib/research/contracts.js';
+test('generic plan wording and benefits synonyms cannot inflate the assignment count',()=>{
+ const terms=['medicare advantage vs supplement','medicare advantage vs supplement plans','medicare supplement plan f benefits','medicare supplement plan f coverage'];
+ const p=generateProposals({results:{items:terms.map((title,i)=>({key:String(i),title,terms:[title],score:80,evidence:{gsc:[],semrush:[],otterly:[]}}))}},DEFAULTS);
+ assert.equal(p.items.filter(x=>terms.includes(x.title)).length,2);assert.equal(p.items.length,90);
+});
 test('demo reaches 90 distinct labeled proposals without inventing evidence or approvals',()=>{
  const p=generateProposals({},DEFAULTS);assert.equal(p.items.length,90);assert.equal(new Set(p.items.map(x=>x.id)).size,90);
  for(const [category,n] of Object.entries(MIX))assert.equal(p.items.filter(x=>x.category===category).length,n);
