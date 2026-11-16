@@ -1,13 +1,23 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {exportProposalCsv} from '../lib/research/proposal-export.js';
-test('exports the entire saved plan chronologically with edits, fixed dates, evidence and tentative status',()=>{
- const plan={id:'plan',version:3,calendar:{dates:{a:'2027-01-02',b:'2027-01-01'},locked:['a']},payload:{sourceDates:{gsc:{period:{start:'2026-10-01',end:'2026-10-31'},status:'partial'}},items:[{id:'a',title:'Edited, "title"',notes:'Line one\nLine two',whyAssignment:{summary:'Reason',facts:['Evidence'],sourceScope:'Saved source'},terms:['long tail question']},{id:'b',title:'First'}]}};
- const before=structuredClone(plan),csv=exportProposalCsv(plan);
- assert.ok(csv.startsWith('\uFEFF'));assert.ok(csv.indexOf('First')<csv.indexOf('Edited'));
- assert.match(csv,/"2027-01-02","Tentative","Yes"/);assert.ok(csv.includes('"Edited, ""title"""'));assert.ok(csv.includes('Line one\nLine two'));assert.ok(csv.includes('2026-10-01 to 2026-10-31; partial'));assert.match(csv,/Evidence/);assert.deepEqual(plan,before);
+import ExcelJS from 'exceljs';
+import {buildProposalWorkbook,exportProposalXlsx} from '../lib/research/proposal-export.js';
+import {generateProposals,publicProposalPlan} from '../lib/research/proposals.js';
+import {generateCalendar} from '../lib/research/demo-calendar.js';
+import {DEFAULTS} from '../lib/research/contracts.js';
+function fixture(){const payload=generateProposals({},DEFAULTS),calendar=generateCalendar(payload.items);const id=payload.items[0].id;calendar.locked=[id];return publicProposalPlan({id:'test-plan',version:5,payload,calendar,edits:{[id]:{title:'My edited title',notes:'A note, with quotes "kept"\nSecond line'}}});}
+test('Excel snapshot preserves all 90 assignments, edits, dates and fixed flags without mutations',async()=>{
+ const p=fixture(),before=structuredClone(p),bytes=await exportProposalXlsx(p),w=new ExcelJS.Workbook();await w.xlsx.load(bytes);
+ assert.deepEqual(p,before);assert.deepEqual(w.worksheets.map(s=>s.name),['Overview','January','February','March','Assignment details','Full details']);
+ const s=w.getWorksheet('Assignment details');assert.equal(s.rowCount,95);assert.equal(s.views[0].ySplit,5);assert.ok(s.getTable('Assignments'));
+ const sorted=[...p.payload.items].sort((a,b)=>p.calendar.dates[a.id].localeCompare(p.calendar.dates[b.id]));
+ sorted.forEach((i,n)=>{const r=s.getRow(n+6);assert.equal(r.getCell(4).value.text,i.title);assert.equal(r.getCell(2).value.toISOString().slice(0,10),p.calendar.dates[i.id]);assert.equal(r.getCell(5).value,'Tentative');assert.equal(r.getCell(6).value,p.calendar.locked.includes(i.id)?'Yes':'No');});
+ for(const [m,count] of [['January',31],['February',28],['March',31]]){let links=0;w.getWorksheet(m).eachRow(r=>r.eachCell(c=>{if(c.value?.hyperlink)links++;}));assert.equal(links,count);assert.equal(w.getWorksheet(m).pageSetup.fitToHeight,1);}
+ let notes='';w.getWorksheet('Full details').eachRow(r=>{notes+=r.getCell(2).text;});assert.ok(notes.includes('A note, with quotes "kept"\nSecond line'));
 });
-test('protects spreadsheet text from formula execution and supports unscheduled assignments',()=>{
- const csv=exportProposalCsv({payload:{items:[{id:'a',title:'=HYPERLINK("evil")',notes:'  +formula',action:'@SUM(A1)'}]}});
- assert.ok(csv.includes("'=HYPERLINK"));assert.ok(csv.includes("'  +formula"));assert.ok(csv.includes("'@SUM"));assert.match(csv,/Unscheduled/);assert.throws(()=>exportProposalCsv(null));
+test('untrusted text stays literal, long notes are retained, and missing dates remain unscheduled',async()=>{
+ const p={payload:{items:[{id:'x',title:'=HYPERLINK("evil")',category:'Long-tail',notes:'n'.repeat(3000),action:'@SUM(A1)'}]}};
+ const w=await buildProposalWorkbook(p);assert.equal(w.getWorksheet('Assignment details').getCell('B6').value,'Unscheduled');
+ let notes='';w.getWorksheet('Full details').eachRow(r=>{const c=r.getCell(2);assert.equal(c.type===6,false);if(/^n+$/.test(c.text))notes+=c.text;assert.ok((r.height||22)<=409);});assert.equal(notes.length,3000);
+ await assert.rejects(()=>buildProposalWorkbook(null));
 });
