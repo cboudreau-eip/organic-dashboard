@@ -42,3 +42,15 @@ test('target resolution processes bounded batches and never writes assignment ed
  assert.equal((await h.POST(req({action:'resolve-targets',planId:id,version:0}))).status,409);
  assert.equal((await fixture('viewer').h.POST(req({action:'resolve-targets',planId:id,version:1}))).status,403);
 });
+
+ test('overlap pass saves namespaced evidence, resumes, and never rewrites plan or accepts stale requests',async()=>{
+ let ref;const {h,tables}=fixture('analyst',{pageReader:async()=>{throw Error('unavailable');},resolutionStore:()=>({from:()=>({upsert:async rows=>{ref.proposal_target_resolutions.push(...rows);return {data:rows};}})})});ref=tables;
+ await h.POST(req({action:'generate',runId:id}));const p=tables.proposed_content_plans[0];
+ p.payload.items=p.payload.items.slice(0,3).map((i,n)=>({...i,title:['medicare plan g cost','medicare plan g benefits','medicare plan g eligibility'][n],terms:[['medicare plan g cost','medicare plan g benefits','medicare plan g eligibility'][n]],targetUrl:'https://www.medicarefaq.com/medicare-supplement-plans/plan-g'}));
+ p.edits={[p.payload.items[0].id]:{notes:'Preserve this note'}};p.calendar={dates:{[p.payload.items[0].id]:'2027-01-01'},locked:[p.payload.items[0].id]};
+ const before=structuredClone(p),input={action:'resolve-overlaps',planId:id,version:1};
+ let response=await h.POST(req(input));assert.equal(response.status,200);let d=await response.json();assert.equal(d.processed,2);assert.equal(d.plan.overlapResolutionSummary.remaining,1);assert.ok(ref.proposal_target_resolutions.every(r=>r.item_id.startsWith('overlap:')));
+ response=await h.POST(req(input));d=await response.json();assert.equal(d.processed,1);assert.equal(d.plan.overlapResolutionSummary.remaining,0);assert.equal(d.plan.overlapResolutionSummary.cleared,0);assert.deepEqual(p,before);
+ assert.equal((await h.POST(req({...input,version:0}))).status,409);assert.equal((await h.POST(req({...input,pairKey:'invalid'}))).status,422);
+ assert.equal((await fixture('viewer').h.POST(req(input))).status,403);
+ });
