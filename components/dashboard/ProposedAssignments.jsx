@@ -2,6 +2,7 @@
 import {useEffect,useState} from 'react';
 import './content-plan.css';
 import DemoCalendar from './DemoCalendar';
+import {exportProposalCsv} from '../../lib/research/proposal-export';
 import './proposed-assignments.css';
 const categories=['High intent','Long-tail','AI citations','Evergreen'];
 const count=v=>v==null?'Unavailable':Number(v).toLocaleString();
@@ -29,6 +30,17 @@ export default function ProposedAssignments({active}){
  async function load(id){const r=await fetch('/api/research/proposals'+(id?'?plan='+id:''),{cache:'no-store'});const d=await r.json();if(!r.ok)throw Error(d.error);setData(d);setRun(current=>current||d.runs[0]?.id||'');setSelected(null);setPage(0);}
  useEffect(()=>{if(!active)return;const controller=new AbortController();fetch('/api/research/proposals',{cache:'no-store',signal:controller.signal}).then(async r=>{const d=await r.json();if(!r.ok)throw Error(d.error);return d;}).then(d=>{setData(d);setRun(d.runs[0]?.id||'');}).catch(e=>{if(!controller.signal.aborted)setError(e.message);});return()=>controller.abort();},[active,retry]);
  async function mutate(input){setBusy(true);setError('');setNotice('');try{const d=await request(input);setData(current=>({...current,plan:d.plan,history:current.history.some(x=>x.id===d.plan.id)?current.history:[d.plan,...current.history]}));if(input.action==='generate'){setSelected(null);setPage(0);setCategory('All');setSearch('');}setNotice(input.action.startsWith('calendar-')?'Tentative calendar saved. Assignment edits preserved.':input.action==='generate'?`${d.plan.payload.items.length} proposed assignments saved. No individual approvals required.`:'Assignment saved. Original evidence preserved.');}catch(e){setError(e.message);}finally{setBusy(false);}}
+ async function exportCalendar(){
+  setBusy(true);setError('');setNotice('');
+  try{
+   const r=await fetch('/api/research/proposals?plan='+data.plan.id,{cache:'no-store'}),d=await r.json();
+   if(!r.ok)throw Error(d.error||'Unable to load the saved calendar.');
+   const url=URL.createObjectURL(new Blob([exportProposalCsv(d.plan)],{type:'text/csv;charset=utf-8'}));
+   const link=document.createElement('a');link.href=url;link.download='medicarefaq-content-calendar-'+d.plan.id.slice(0,8)+'.csv';
+   document.body.appendChild(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);
+   setNotice('Export downloaded with all saved assignments, dates and edits. Unsaved changes are not included.');
+  }catch(e){setError(e.message);}finally{setBusy(false);}
+ }
  if(!data)return <section className="content-plan"><h2>Proposed assignments</h2>{error?<p role="alert">{error} <button onClick={()=>setRetry(x=>x+1)}>Retry</button></p>:<p role="status">Loading proposed plans…</p>}</section>;
  const plan=data.plan,items=plan?.payload.items||[],filtered=items.filter(x=>(category==='All'||x.category===category)&&[x.title,...x.terms].join(' ').toLowerCase().includes(search.toLowerCase())),item=items.find(x=>x.id===selected);
  return <section className="content-plan proposals" aria-label="90 proposed assignments"><header className="plan-heading"><div><span className="plan-eyebrow">MEDICAREFAQ · DEMO PLAN</span><h2>90 proposed assignments</h2><p>Generate the plan in one step. Edit the proposals here. Approvals come later.</p></div><span className="plan-badge">Proposals · tentative planning only</span></header>
@@ -41,7 +53,7 @@ export default function ProposedAssignments({active}){
  <p><strong>{items.length} / 90 proposed assignments</strong> · {items.filter(x=>x.basis==='Observed opportunity').length} observed opportunities · {items.filter(x=>x.basis==='Research suggestion').length} research suggestions</p>
  {items.length<90&&<p role="alert">Your product/exclusion settings prevented a full 90-item mix. Adjust research settings and generate from a new research run; excluded topics are not silently added.</p>}
  <details><summary>Source dates and plan limits</summary>{Object.entries(plan.payload.sourceDates).map(([k,v])=><p key={k}>{k}: {v.period?`${v.period.start} – ${v.period.end}`:'Reporting dates unavailable'} · {v.status}</p>)}{plan.payload.limitations.map(x=><p key={x}>{x}</p>)}</details>
- <div className="plan-toolbar"><button aria-pressed={!showCalendar} onClick={()=>{setShowCalendar(false);setSelected(null);}}>Assignment list</button><button aria-pressed={showCalendar} onClick={()=>{setShowCalendar(true);setSelected(null);}}>Demo calendar</button></div>
+ <div className="plan-toolbar"><button aria-pressed={!showCalendar} onClick={()=>{setShowCalendar(false);setSelected(null);}}>Assignment list</button><div className="proposal-view-actions"><button aria-pressed={showCalendar} onClick={()=>{setShowCalendar(true);setSelected(null);}}>Demo calendar</button><button disabled={busy||!items.length} onClick={exportCalendar} title="Download all saved assignments as an Excel-compatible CSV, regardless of filters">Export calendar</button></div></div><p className="research-help">Export includes the full saved plan as CSV, including dates and notes. Save any assignment edits before exporting.</p>
  {item?<ProposalEditor key={item.id+':'+plan.version} item={item} canEdit={data.canEdit} busy={busy} onClose={()=>setSelected(null)} onSave={fields=>mutate({action:'edit',planId:plan.id,version:plan.version,itemId:item.id,fields})}/>:showCalendar?<DemoCalendar key={plan.id} plan={plan} canEdit={data.canEdit} busy={busy} onChange={mutate} onEdit={setSelected}/>:<><div className="plan-toolbar"><label>Category<select value={category} onChange={e=>{setCategory(e.target.value);setPage(0);}}>{['All',...categories].map(c=><option key={c}>{c}</option>)}</select></label><label>Find an assignment<input value={search} onChange={e=>{setSearch(e.target.value);setPage(0);}} placeholder="Costs, switching, Plan G…"/></label></div><p>{filtered.length} matching assignments</p><div className="plan-list">{filtered.slice(page*15,page*15+15).map(x=><article className="plan-card" key={x.id}><span className="plan-rank">{items.indexOf(x)+1}</span><div><span className="plan-eyebrow">{x.category} · {x.basis}{x.edited?' · Edited':''}</span><h3>{x.title}</h3><p>{x.action}</p>{x.whyAssignment&&<p><strong>Why this assignment? </strong>{x.whyAssignment.summary}</p>}<div className="plan-metrics"><span>{x.targetUrl?'Existing-page investigation':'Target unconfirmed'}</span><span>{x.terms.length} target queries/questions</span><span>Proposed</span></div></div><div className="plan-card-action"><button onClick={()=>setSelected(x.id)}>View / edit assignment</button></div></article>)}</div><div className="research-pagination"><button disabled={!page} onClick={()=>setPage(p=>p-1)}>Previous</button><span>Page {page+1} of {Math.max(1,Math.ceil(filtered.length/15))}</span><button disabled={(page+1)*15>=filtered.length} onClick={()=>setPage(p=>p+1)}>Next</button></div></>}
  </>}
  </section>;
