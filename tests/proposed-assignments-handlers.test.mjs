@@ -1,10 +1,10 @@
 import test from 'node:test';import assert from 'node:assert/strict';import {proposalHandlers} from '../lib/research/proposal-handlers.js';import {DEFAULTS} from '../lib/research/contracts.js';
 const id='11111111-1111-4111-8111-111111111111';
 const req=x=>new Request('https://dashboard.example/api/research/proposals',{method:'POST',headers:{origin:'https://dashboard.example'},body:JSON.stringify(x)});
-function fixture(role='analyst'){
- const tables={paid_search_research:[],research_runs:[{id,status:'complete',settings:DEFAULTS,payload:{}}],proposed_content_plans:[]};
+function fixture(role='analyst',options={}){
+ const tables={proposal_target_resolutions:[],paid_search_research:[],research_runs:[{id,status:'complete',settings:DEFAULTS,payload:{}}],proposed_content_plans:[]};
  const client={from(table){let values,insert=false,filters=[],single=false;const chain={select(){return chain;},order(){return chain;},limit(){return chain;},eq(k,v){filters.push([k,v]);return chain;},insert(v){values=v;insert=true;return chain;},update(v){values=v;return chain;},single(){single=true;return finish();},maybeSingle(){single=true;return finish();},then(ok,bad){return Promise.resolve(finish()).then(ok,bad);}};function finish(){const rows=tables[table];let found=rows.filter(r=>filters.every(([k,v])=>r[k]===v));if(values){if(insert){const row={id,version:1,edits:{},...values};rows.push(row);found=[row];}else for(const row of found)Object.assign(row,values,{version:row.version+1});}return {data:single?found[0]||null:found};}return chain;}};
- return {tables,client,h:proposalHandlers({origin:()=> 'https://dashboard.example',access:async action=>{if(role==='outsider'||role==='viewer'&&action==='run')throw Object.assign(Error('No access'),{status:403});return {client,role};}})};
+ return {tables,client,h:proposalHandlers({origin:()=> 'https://dashboard.example',access:async action=>{if(role==='outsider'||role==='viewer'&&action==='run')throw Object.assign(Error('No access'),{status:403});return {client,role};},...options})};
 }
 test('generate and edit persist without approval, preserving previous evidence and version conflicts',async()=>{
  const {h,tables}=fixture();const response=await h.POST(req({action:'generate',runId:id}));assert.equal(response.status,201);const {plan}=await response.json();assert.equal(plan.payload.items.length,90);
@@ -33,4 +33,12 @@ test('paid revision saves a new plan and returns its actual revised assignments'
  assert.equal((await h.POST(req({action:'revise-paid',planId:id,version:0}))).status,409);assert.equal(rpcCalls,1);
  client.rpc=()=>({single:async()=>({error:{code:'40001'}})});assert.equal((await h.POST(req({action:'revise-paid',planId:id,version:1}))).status,409);
  assert.equal((await fixture('viewer').h.POST(req({action:'revise-paid',planId:id,version:1}))).status,403);
+});
+
+test('target resolution processes bounded batches and never writes assignment edits or dates',async()=>{
+ let tablesRef;const {h,tables}=fixture('analyst',{pageReader:async()=>{throw Error('unavailable');},resolutionStore:()=>({from:()=>({upsert:async rows=>{tablesRef.proposal_target_resolutions.push(...rows);return {data:rows};}})})});tablesRef=tables;
+ await h.POST(req({action:'generate',runId:id}));const before=structuredClone(tables.proposed_content_plans[0]);
+ const response=await h.POST(req({action:'resolve-targets',planId:id,version:1}));assert.equal(response.status,200);const d=await response.json();assert.equal(d.processed,2);assert.equal(tables.proposal_target_resolutions.length,2);assert.deepEqual(tables.proposed_content_plans[0],before);assert.equal(d.plan.targetResolutionSummary.processed,2);
+ assert.equal((await h.POST(req({action:'resolve-targets',planId:id,version:0}))).status,409);
+ assert.equal((await fixture('viewer').h.POST(req({action:'resolve-targets',planId:id,version:1}))).status,403);
 });
