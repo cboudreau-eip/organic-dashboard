@@ -27,3 +27,10 @@ test('one supported pair cannot clear an unresolved relationship in a larger gro
  const p=plan(),r=await record(p);p.payload.items.push({...structuredClone(p.payload.items[1]),id:'2'});p.payload.items[0].quality.flags.push({code:'shared-page',related:['2']});
  const out=applyOverlapResolutions(p,[r],+now);assert.ok(out.payload.items[0].quality.flags.some(f=>f.related?.includes('2')));assert.equal(out.overlapResolutionSummary.remaining,1);
 });
+test('table-of-contents labels cannot supply section boundaries',async()=>{
+ const p=plan(),pair=overlapPairs(p)[0];
+ const toc='<nav>Medicare supplement plan g cost Medicare supplement plan g benefits '+('Medicare supplement plan g cost benefits '.repeat(20))+'</nav>';
+ const r=await resolveOverlap(pair,async()=>({url,html:html.replace('<main>','<main>'+toc)}),now);
+ assert.equal(r.clear,true);for(const c of r.checks){assert.ok(!c.evidence.excerpt.includes('cost benefits'));assert.ok(c.evidence.excerpt.startsWith('Medicare supplement plan g'));}
+ const noSections=await resolveOverlap(pair,async()=>({url,html:'<title>Medicare Supplement Plan G</title><main>'+toc+'<h2>Contact us</h2><p>Contact information</p></main>'}),now);assert.equal(noSections.clear,false);
+});
