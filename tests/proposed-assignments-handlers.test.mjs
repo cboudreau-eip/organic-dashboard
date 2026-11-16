@@ -2,7 +2,7 @@ import test from 'node:test';import assert from 'node:assert/strict';import {pro
 const id='11111111-1111-4111-8111-111111111111';
 const req=x=>new Request('https://dashboard.example/api/research/proposals',{method:'POST',headers:{origin:'https://dashboard.example'},body:JSON.stringify(x)});
 function fixture(role='analyst'){
- const tables={research_runs:[{id,status:'complete',settings:DEFAULTS,payload:{}}],proposed_content_plans:[]};
+ const tables={paid_search_research:[],research_runs:[{id,status:'complete',settings:DEFAULTS,payload:{}}],proposed_content_plans:[]};
  const client={from(table){let values,insert=false,filters=[],single=false;const chain={select(){return chain;},order(){return chain;},limit(){return chain;},eq(k,v){filters.push([k,v]);return chain;},insert(v){values=v;insert=true;return chain;},update(v){values=v;return chain;},single(){single=true;return finish();},maybeSingle(){single=true;return finish();},then(ok,bad){return Promise.resolve(finish()).then(ok,bad);}};function finish(){const rows=tables[table];let found=rows.filter(r=>filters.every(([k,v])=>r[k]===v));if(values){if(insert){const row={id,version:1,edits:{},...values};rows.push(row);found=[row];}else for(const row of found)Object.assign(row,values,{version:row.version+1});}return {data:single?found[0]||null:found};}return chain;}};
  return {tables,h:proposalHandlers({origin:()=> 'https://dashboard.example',access:async action=>{if(role==='outsider'||role==='viewer'&&action==='run')throw Object.assign(Error('No access'),{status:403});return {client,role};}})};
 }
