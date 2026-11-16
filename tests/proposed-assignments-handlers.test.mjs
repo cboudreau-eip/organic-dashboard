@@ -4,7 +4,7 @@ const req=x=>new Request('https://dashboard.example/api/research/proposals',{met
 function fixture(role='analyst'){
  const tables={paid_search_research:[],research_runs:[{id,status:'complete',settings:DEFAULTS,payload:{}}],proposed_content_plans:[]};
  const client={from(table){let values,insert=false,filters=[],single=false;const chain={select(){return chain;},order(){return chain;},limit(){return chain;},eq(k,v){filters.push([k,v]);return chain;},insert(v){values=v;insert=true;return chain;},update(v){values=v;return chain;},single(){single=true;return finish();},maybeSingle(){single=true;return finish();},then(ok,bad){return Promise.resolve(finish()).then(ok,bad);}};function finish(){const rows=tables[table];let found=rows.filter(r=>filters.every(([k,v])=>r[k]===v));if(values){if(insert){const row={id,version:1,edits:{},...values};rows.push(row);found=[row];}else for(const row of found)Object.assign(row,values,{version:row.version+1});}return {data:single?found[0]||null:found};}return chain;}};
- return {tables,h:proposalHandlers({origin:()=> 'https://dashboard.example',access:async action=>{if(role==='outsider'||role==='viewer'&&action==='run')throw Object.assign(Error('No access'),{status:403});return {client,role};}})};
+ return {tables,client,h:proposalHandlers({origin:()=> 'https://dashboard.example',access:async action=>{if(role==='outsider'||role==='viewer'&&action==='run')throw Object.assign(Error('No access'),{status:403});return {client,role};}})};
 }
 test('generate and edit persist without approval, preserving previous evidence and version conflicts',async()=>{
  const {h,tables}=fixture();const response=await h.POST(req({action:'generate',runId:id}));assert.equal(response.status,201);const {plan}=await response.json();assert.equal(plan.payload.items.length,90);
@@ -20,4 +20,17 @@ test('viewers and cross-origin callers cannot generate or edit plans',async()=>{
 
 test('calendar generation preserves proposal edits and rejects stale changes',async()=>{
  const {h}=fixture();const plan=await (await h.POST(req({action:'generate',runId:id}))).json();const item=plan.plan.payload.items[0];await h.POST(req({action:'edit',planId:id,version:1,itemId:item.id,fields:{title:'Preserve my title'}}));const generated=await h.POST(req({action:'calendar-generate',planId:id,version:2}));assert.equal(generated.status,200);const result=await generated.json();assert.equal(result.plan.payload.items[0].title,'Preserve my title');assert.equal(Object.keys(result.plan.calendar.dates).length,90);assert.equal((await h.POST(req({action:'calendar-generate',planId:id,version:2}))).status,409);
+});
+
+
+test('paid revision saves a new plan and returns its actual revised assignments',async()=>{
+ const {h,tables,client}=fixture();await h.POST(req({action:'generate',runId:id}));
+ const original=tables.proposed_content_plans[0];original.research_run_id=id;
+ Object.assign(original.payload.items[0],{title:'medicare supplement plan j',terms:['medicare supplement plan j'],category:'High intent'});
+ tables.paid_search_research.push({id:'paid',payload:{rows:[{term:'aarp medicare supplement plans',account:'MC+MFAQ',clicks:100,leads:15,sales:5}],period:{start:'2025-11-16',end:'2026-11-15'}}});
+ let rpcCalls=0;client.rpc=(name,input)=>({single:async()=>{rpcCalls++;assert.equal(name,'revise_paid_proposal_plan');assert.equal(input.expected_version,1);return {data:{...original,id:'new',payload:input.revised_payload}};}});
+ const response=await h.POST(req({action:'revise-paid',planId:id,version:1}));assert.equal(response.status,201);const body=await response.json();assert.equal(body.plan.id,'new');assert.match(body.plan.payload.items[0].title,/AARP/);assert.equal(original.payload.items[0].title,'medicare supplement plan j');assert.equal(rpcCalls,1);
+ assert.equal((await h.POST(req({action:'revise-paid',planId:id,version:0}))).status,409);assert.equal(rpcCalls,1);
+ client.rpc=()=>({single:async()=>({error:{code:'40001'}})});assert.equal((await h.POST(req({action:'revise-paid',planId:id,version:1}))).status,409);
+ assert.equal((await fixture('viewer').h.POST(req({action:'revise-paid',planId:id,version:1}))).status,403);
 });
