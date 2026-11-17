@@ -13,6 +13,9 @@ test('pilot creation and work edits preserve calendar and snapshots, enforce rol
  const saved=(await save(q.version)).rows[0];assert.equal(saved.version,2);assert.equal(saved.entries[4].owner,'Editor');assert.deepEqual(saved.entries[4].snapshot,q.entries[4].snapshot);assert.deepEqual(saved.entries.map(e=>e.planned_date),q.entries.map(e=>e.planned_date));
  assert.deepEqual((await start(1)).rows[0],saved);await assert.rejects(save(1),/changed/);await assert.rejects(save(2,' '),/Invalid work fields/);
  const bad=structuredClone(saved.entries);bad[0].planned_date='2027-02-01';await assert.rejects(db.query('update content_work_pilots set entries=$2 where id=$1',[q.id,JSON.stringify(bad)]),/immutable/);
+ await db.exec('reset role');await db.exec(await readFile('supabase/migrations/20261117153000_full_content_work_queue.sql','utf8'));await db.exec(await readFile('supabase/migrations/20261117153500_lock_work_queue_expansion.sql','utf8'));await db.exec("set role authenticated;set test.access='analyst'");
+ const expanded=(await start(1)).rows[0];assert.equal(expanded.entries.length,90);assert.deepEqual(expanded.entries.slice(0,5),saved.entries);assert.equal(expanded.entries[89].planned_date,'2027-03-31');assert.deepEqual((await start(1)).rows[0],expanded);
+ await assert.rejects(db.query('update content_work_pilots set entries=$2 where id=$1',[q.id,JSON.stringify(expanded.entries.slice(0,5))]),/Cannot remove/);
  const unchanged=(await db.query('select * from proposed_content_plans where id=$1',[p.id])).rows[0];assert.deepEqual(unchanged,p);
  await db.exec("set test.access='viewer'");assert.equal((await db.query('select count(*) from content_work_pilots')).rows[0].count,1);await assert.rejects(save(2),/Editor access/);
  await db.exec('reset role;set role anon');await assert.rejects(start(1),/permission denied/);
