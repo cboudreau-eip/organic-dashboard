@@ -31,7 +31,7 @@ function ProposalEditor({item,canEdit,busy,onSave,onClose,onResolve,onResolveOve
  </section>;
 }
 export default function ProposedAssignments({active}){
- const [data,setData]=useState(null),[error,setError]=useState(''),[busy,setBusy]=useState(false),[notice,setNotice]=useState(''),[runId,setRun]=useState(''),[category,setCategory]=useState('All'),[search,setSearch]=useState(''),[page,setPage]=useState(0),[selected,setSelected]=useState(null),[retry,setRetry]=useState(0),[showCalendar,setShowCalendar]=useState(false),[exporting,setExporting]=useState(false),[paidOrder,setPaidOrder]=useState(false),[resolving,setResolving]=useState(false);
+ const [data,setData]=useState(null),[error,setError]=useState(''),[busy,setBusy]=useState(false),[notice,setNotice]=useState(''),[runId,setRun]=useState(''),[category,setCategory]=useState('All'),[search,setSearch]=useState(''),[page,setPage]=useState(0),[selected,setSelected]=useState(null),[retry,setRetry]=useState(0),[showCalendar,setShowCalendar]=useState(true),[exporting,setExporting]=useState(false),[paidOrder,setPaidOrder]=useState(false),[resolving,setResolving]=useState(false);
  const resolutionStop=useRef(false);useEffect(()=>()=>{resolutionStop.current=true;},[active]);
  async function resolvePass(itemId,kind='targets'){
   const overlaps=kind==='overlaps';
