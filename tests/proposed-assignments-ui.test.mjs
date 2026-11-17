@@ -18,3 +18,14 @@ test('focused targeting resumes in saved batches and stops when all eligible ass
  const root=createRoot(document.getElementById('root'));
  try{await act(async()=>root.render(React.createElement(mod.exports.default,{active:true})));await act(async()=>[...document.querySelectorAll('button')].find(b=>b.textContent==='Resolve remaining page targets').click());assert.equal(calls.length,2);assert.deepEqual(calls.map(x=>x.planId),['before','saved1']);assert.ok(calls.every(x=>x.action==='focused-targets'));assert.match(document.body.textContent,/Focused targeting complete/);assert.match(document.body.textContent,/4 decisions saved/);assert.equal([...document.querySelectorAll('button')].find(b=>b.textContent==='Resolve remaining page targets').disabled,true);}finally{await act(async()=>root.unmount());Object.assign(globalThis,old);dom.window.close();}
 });
+
+test('final scope batches follow the newly saved plan and stop after all decisions',async()=>{
+ const dom=new JSDOM('<div id="root"></div>',{url:'https://dashboard.example'}),old={window:globalThis.window,document:globalThis.document,fetch:globalThis.fetch,IS_REACT_ACT_ENVIRONMENT:globalThis.IS_REACT_ACT_ENVIRONMENT};
+ let plan={id:'before',version:1,created_at:'2026-11-17',payload:generateProposals({},DEFAULTS),qualityAudit:{checked:90,flagged:4,noIssueDetected:86,overlap:0,sharedPage:0,targeting:4},finalScopeSummary:{pending:4,reviewed:0,protected:0}};const calls=[];
+ Object.assign(globalThis,{window:dom.window,document:dom.window.document,IS_REACT_ACT_ENVIRONMENT:true,fetch:async(url,options)=>{
+  if(!options?.method)return Response.json({plan,history:[plan],runs:[{id:'run',created_at:'2026-11-17'}],canEdit:true});
+  const input=JSON.parse(options.body);calls.push(input);const left=plan.finalScopeSummary.pending-2;plan={...plan,id:'saved'+calls.length,finalScopeSummary:{pending:left,reviewed:4-left,protected:0},qualityAudit:{...plan.qualityAudit,flagged:left}};return Response.json({plan,repairSummary:{changed:2,remaining:left}});
+ }});
+ const root=createRoot(document.getElementById('root'));
+ try{await act(async()=>root.render(React.createElement(mod.exports.default,{active:true})));await act(async()=>[...document.querySelectorAll('button')].find(b=>b.textContent==='Run final scope and replacement').click());assert.equal(calls.length,2);assert.deepEqual(calls.map(x=>x.planId),['before','saved1']);assert.ok(calls.every(x=>x.action==='final-scope'));assert.match(document.body.textContent,/Final scope pass complete/);assert.match(document.body.textContent,/4 reviewed/);assert.equal([...document.querySelectorAll('button')].find(b=>b.textContent==='Run final scope and replacement').disabled,true);}finally{await act(async()=>root.unmount());Object.assign(globalThis,old);dom.window.close();}
+});
