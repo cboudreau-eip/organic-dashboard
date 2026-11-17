@@ -17,6 +17,7 @@ import Walkthrough from './Walkthrough';
 import GrowthHunter from '../growth-hunter/GrowthHunter';
 import AiVisibility from './AiVisibility';
 import ContentPlan from './ContentWorkspace';
+import PaidSearchSource from './PaidSearchSource';
 import '../growth-hunter/growth-hunter.css';
 
 // React owns this boundary; the preserved demo renderer owns its descendants.
@@ -34,6 +35,7 @@ export default function Dashboard({ owner = false, userEmail, userId, growthAllo
   const [growthActive, setGrowthActive] = useState(false);
   const [aiHost,setAiHost] = useState(null);
   const [planHost,setPlanHost]=useState(null);
+  const [paidHost,setPaidHost]=useState(null),[sourcesActive,setSourcesActive]=useState(false);
   const [planActive,setPlanActive]=useState(false);
   const [aiActive,setAiActive] = useState(false);
   useEffect(() => {
@@ -49,15 +51,17 @@ export default function Dashboard({ owner = false, userEmail, userId, growthAllo
       const aiNode=document.createElement('div');aiNode.id='ai-visibility-host';aiNode.hidden=true;
       root.querySelector('#app').before(aiNode);setAiHost(aiNode);
       const planNode=document.createElement('div');planNode.id='content-plan-host';planNode.hidden=true;root.querySelector('#app').before(planNode);setPlanHost(planNode);
+      const paidNode=document.createElement('div');paidNode.id='paid-search-host';paidNode.hidden=true;root.querySelector('#app').after(paidNode);setPaidHost(paidNode);
     } else setGrowthHost(null);
     const visibility = event => setGrowthActive(event.detail);
     root.addEventListener('growth-visibility', visibility);
     const aiVisibility=event=>setAiActive(event.detail);root.addEventListener('ai-visibility',aiVisibility);
+    const sourcesVisibility=event=>setSourcesActive(event.detail);root.addEventListener('sources-visibility',sourcesVisibility);
     const planVisibility=event=>setPlanActive(event.detail);root.addEventListener('plan-visibility',planVisibility);
     const dispose = initializeDashboard(root, userId, { growthAllowed });
-    return () => { root.removeEventListener('plan-visibility',planVisibility); root.removeEventListener('growth-visibility', visibility);root.removeEventListener('ai-visibility',aiVisibility); dispose(); root.replaceChildren(); };
+    return () => { root.removeEventListener('sources-visibility',sourcesVisibility); root.removeEventListener('plan-visibility',planVisibility); root.removeEventListener('growth-visibility', visibility);root.removeEventListener('ai-visibility',aiVisibility); dispose(); root.replaceChildren(); };
   }, [userId, growthAllowed]);
-  return <>{planHost && createPortal(<ContentPlan active={planActive}/>,planHost)}{aiHost && createPortal(<AiVisibility active={aiActive} />,aiHost)}{growthHost && createPortal(<GrowthHunter active={growthActive} />, growthHost)}{launching && <CharlieLaunch onComplete={finishLaunch} />}<div className="dashboard-page" ref={host} inert={launching} aria-hidden={launching || undefined}>
+  return <>{paidHost && createPortal(<PaidSearchSource active={sourcesActive}/>,paidHost)}{planHost && createPortal(<ContentPlan active={planActive}/>,planHost)}{aiHost && createPortal(<AiVisibility active={aiActive} />,aiHost)}{growthHost && createPortal(<GrowthHunter active={growthActive} />, growthHost)}{launching && <CharlieLaunch onComplete={finishLaunch} />}<div className="dashboard-page" ref={host} inert={launching} aria-hidden={launching || undefined}>
     <p role="status">Loading dashboard…</p>
     <noscript>Enable JavaScript to explore the interactive dashboard.</noscript>
   </div>{searchHost && createPortal(<><SearchPerformance onData={setSearchData} />{growthAllowed && <TrackedKeywords searchData={searchData} />}</>, searchHost)}{analyticsHost && createPortal(<OrganicOverview days={days} setDays={setDays} />, analyticsHost)}{leadsHost && createPortal(<section className="organic-live"><DatoramaPeriods /><details className="organic-definitions"><summary>Archived July–September 2026 landing-page report</summary><DatoramaSnapshot /></details><div className="organic-heading"><span className="organic-badge">POSTHOG · ORGANIC SEARCH</span><OrganicDateControls key={periodParams(days)} selection={normalizePeriod(days)} onApply={setDays} /></div><OrganicConversions key={periodParams(days)} days={days} detailed /></section>, leadsHost)}{accountHost && createPortal(<>{owner&&<a className="button" href="/admin">Manage users</a>}<Walkthrough key={userId} allowed={growthAllowed}/><form action={signOut} className="account-form"><span className="account-email" title={userEmail}>{userEmail}</span><button type="submit" className="button">Sign out</button></form></>, accountHost)}</>;

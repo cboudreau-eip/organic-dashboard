@@ -22,6 +22,8 @@ function render(){
  $('organic-leads-host').hidden=state.view!=='leads';
  if ($('growth-hunter-host')) $('growth-hunter-host').hidden=state.view!=='growth';
  if ($('ai-visibility-host')) $('ai-visibility-host').hidden=state.view!=='ai';
+ if ($('paid-search-host')) $('paid-search-host').hidden=state.view!=='connections';
+ root.dispatchEvent(new root.ownerDocument.defaultView.CustomEvent('sources-visibility', {detail:state.view==='connections'}));
  if ($('content-plan-host')) $('content-plan-host').hidden=state.view!=='plan';
  root.dispatchEvent(new root.ownerDocument.defaultView.CustomEvent('plan-visibility', {detail:state.view==='plan'}));
  root.dispatchEvent(new root.ownerDocument.defaultView.CustomEvent('ai-visibility', {detail:state.view==='ai'}));
