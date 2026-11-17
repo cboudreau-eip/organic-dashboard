@@ -1,5 +1,5 @@
 import test from 'node:test';import assert from 'node:assert/strict';
-import {finalScopePass,finalScopeSummary,directionSupported,finalScopeOverlap} from '../lib/research/final-scope.js';
+import {finalScopePass,finalScopeSummary,directionSupported,finalScopeOverlap,widerScopePass,widerScopeSummary,eligibleWiderQuery} from '../lib/research/final-scope.js';
 import {publicProposalPlan} from '../lib/research/proposals.js';
 const url='https://www.medicarefaq.com/faqs/medigap-pricing',term='Medicare supplement rates by age';
 const text='Medigap pricing methods include attained age and issue age. Your Medigap rates and premiums depend on age and location. '.repeat(8);
@@ -33,3 +33,16 @@ test('directional switches cannot use evidence for the reverse direction',()=>{
 });
 
 test('replacement overlap guard recognizes conversational comparison questions',()=>{assert.equal(finalScopeOverlap({terms:['How can I compare Medicare Advantage versus Medigap coverage?']},{terms:['medicare advantage vs supplement']}),true);});
+
+test('wider pass uses observed GSC queries without fabricating Otterly monitoring',async()=>{
+ const p={payload:{items:[base]},edits:{},calendar:{dates:{one:'2027-01-01'}}},before=structuredClone(p);
+ const source={inventory:{pages:[page]},evidence:{gsc:{rows:[{keys:[term,url],impressions:100,clicks:10}]}}};
+ const r=await widerScopePass(p,review(p),source,null,{},read);const next=r.changes[0].item;
+ assert.equal(next.scopePass.kind,'Wider-source replacement');assert.equal(next.evidence.otterly.length,0);assert.equal(next.evidence.gsc.length,1);assert.deepEqual(next.repairBasis.sources,['gsc']);assert.match(next.verification,/not a monitored citation gap/);assert.deepEqual(p,before);
+ assert.equal(widerScopeSummary(review({...p,payload:{items:[next]}})).pending,0);
+});
+test('wider candidates exclude misleading non-Medicare insurance and navigation queries',()=>{
+ assert.equal(eligibleWiderQuery('aarp-lifeinsurance quotes medicare supplement insurance coverage'),false);
+ assert.equal(eligibleWiderQuery('medicare login'),false);
+ assert.equal(eligibleWiderQuery('medicare supplement plan g cost'),true);
+});

@@ -76,3 +76,15 @@ test('focused targeting commits evidence through undo-capable RPC and enforces v
  assert.equal((await fixture('viewer').h.POST(req({action:'focused-targets',planId:id,version:1}))).status,403);
  assert.equal((await h.POST(new Request('https://dashboard.example/api/research/proposals',{method:'POST',headers:{origin:'https://evil.example'},body:JSON.stringify({action:'focused-targets',planId:id,version:1})}))).status,403);
 });
+
+test('wider resolution saves calendar review evidence and enforces version role and origin',async()=>{
+ const url='https://www.medicarefaq.com/faqs/medigap-pricing',term='medicare supplement rates by age';
+ const {h,tables,client}=fixture('analyst',{pageReader:async()=>({url,html:'<title>Medigap pricing by age</title><main>'+('Medigap pricing by age depends on age and rating methods. '.repeat(15))+'</main>'})});
+ await h.POST(req({action:'generate',runId:id}));const original=tables.proposed_content_plans[0];original.payload.items=[{...original.payload.items[0],title:term,terms:[term],category:'AI citations',targetUrl:''}];original.calendar={dates:{[original.payload.items[0].id]:'2027-01-01'}};
+ tables.research_runs[0].payload={inventory:{pages:[{url,title:'Medigap pricing by age',headings:[],status:'read'}]}};
+ const before=structuredClone(original);let calls=0;client.rpc=(name,input)=>({single:async()=>{calls++;assert.equal(name,'repair_calendar_plan');assert.equal(input.changes[0].item.targetDecision.kind,'Existing-page update');assert.ok(input.changes[0].evidence.page.excerpt);assert.equal(input.changes[0].evidence.finalCalendarReview.assignments,1);const saved={...original,id:'22222222-2222-4222-8222-222222222222',payload:{...original.payload,items:[input.changes[0].item]}};tables.proposed_content_plans.push(saved);return {data:saved};}});
+ const response=await h.POST(req({action:'wider-scope',planId:id,version:1}));assert.equal(response.status,201);const body=await response.json();assert.equal(body.plan.qualityAudit.flagged,0);assert.equal(body.plan.widerScopeSummary.pending,0);assert.deepEqual(original,before);assert.equal(calls,1);
+ assert.equal((await h.POST(req({action:'wider-scope',planId:id,version:0}))).status,409);assert.equal(calls,1);
+ assert.equal((await fixture('viewer').h.POST(req({action:'wider-scope',planId:id,version:1}))).status,403);
+ assert.equal((await h.POST(new Request('https://dashboard.example/api/research/proposals',{method:'POST',headers:{origin:'https://evil.example'},body:JSON.stringify({action:'wider-scope',planId:id,version:1})}))).status,403);
+});
