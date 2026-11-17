@@ -46,3 +46,10 @@ test('wider candidates exclude misleading non-Medicare insurance and navigation 
  assert.equal(eligibleWiderQuery('medicare login'),false);
  assert.equal(eligibleWiderQuery('medicare supplement plan g cost'),true);
 });
+
+test('wider pass corrects its historical-year title without changing observed terms or manual edits',async()=>{
+ const i={...base,title:'Compare best companies 2026',terms:['best companies 2026'],scopePass:{sourcePool:'wider',role:'slot',kind:'Wider-source replacement',checkedAt:new Date().toISOString()}},p={payload:{items:[i]},edits:{}};
+ const r=await widerScopePass(p,review(p),{},null,{},read);
+ assert.match(r.changes[0].item.title,/2027/);assert.deepEqual(r.changes[0].item.terms,i.terms);assert.match(r.changes[0].item.action,/historical observed query/);
+ assert.equal((await widerScopePass({...p,edits:{one:{title:'Mine'}}},review(p),{},null,{},read)).changes.length,0);
+});
