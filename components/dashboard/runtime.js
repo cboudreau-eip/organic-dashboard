@@ -31,7 +31,9 @@ function render(){
  const label=views.find(v=>v[0]===state.view)[1];
  $('view-title').textContent=label;$('crumb').textContent=label;
  root.querySelectorAll('[data-nav]').forEach(b=>{b.classList.toggle('active',b.dataset.nav===state.view);if(b.dataset.nav===state.view)b.setAttribute('aria-current','page');else b.removeAttribute('aria-current')});
+ const paidHost=$('paid-search-host');if(paidHost)$('app').before(paidHost);
  $('app').innerHTML=state.view==='connections'?connectionsView():'';
+ if(state.view==='connections'&&paidHost)$('app').querySelector('.source-grid').append(paidHost);
 }
 const connectors=[
 {id:'posthog',name:'PostHog',mark:'P',color:'#df9842',kind:'Organic traffic & tracked events'},
@@ -41,20 +43,20 @@ const connectors=[
 {id:'otterly',name:'Otterly',mark:'O',color:'#286547',kind:'MedicareFAQ AI visibility · daily saved reports'},
 {id:'crm',name:'CRM / Salesforce',mark:'SF',color:'#209dcc',kind:'Lead and sales records'},
 {id:'calls',name:'Call tracking',mark:'☎',color:'#7363b4',kind:'Phone lead attribution'}];
-const sourceChecks={};let sourceBusy=false,sourceStarted=false;const sourceActivity=[];
+const sourceChecks={};let sourceBusy=false,sourceStarted=false;
 function sourceTime(value){return value?new Date(value).toLocaleString(): 'Not checked yet'}
 function connectionsView(){
  if(!sourceStarted){sourceStarted=true;queueMicrotask(()=>refreshSources('all',false))}
  return '<div class="panel-head"><div><h2>Source overview</h2><p class="mock-note">Live PostHog/GSC checks and historical imports · See each source for coverage.</p></div><button class="button primary" data-refresh="all" '+(sourceBusy?'disabled':'')+'>'+(sourceBusy?'Checking…':'Refresh all')+'</button></div><div class="source-grid">'+connectors.map(c=>{
  const live=['posthog','gsc'].includes(c.id),imported=c.id==='datorama',check=sourceChecks[c.id],status=check?.status||((live||imported)?'Not checked yet':'Not connected');
  return '<details class="card connection-card dashboard-source-section" open><summary class="connection-top"><span class="source-logo" style="--source-color:'+c.color+'">'+c.mark+'</span><span><strong>'+c.name+'</strong><small style="display:block">'+c.kind+'</small></span><span class="connection-state" style="color:'+(status==='Connected'?'#168455':'#68736c')+'">'+safe(status)+'</span><span class="dashboard-source-toggle"><span class="when-open">Collapse ▴</span><span class="when-closed">Expand ▾</span></span></summary><dl><dt>Workspace</dt><dd>'+ (c.id==='otterly'?'MedicareFAQ · United States':imported?'SEO: Landing Page · workspace 72141':live?(c.id==='posthog'?'MedicareFAQ · Project 452683':'https://www.medicarefaq.com/'):'Not configured')+'</dd><dt>Report retrieved</dt><dd>'+safe(sourceTime(check?.fetchedAt))+'</dd><dt>Last checked</dt><dd>'+safe(sourceTime(check?.checkedAt))+'</dd><dt>Refresh behavior</dt><dd>'+(c.id==='otterly'?'Daily at 14:00 UTC · saved report history':imported?'Manual import · no automatic sync':live?'On demand · '+(c.id==='posthog'?'5':'15')+' minute report cache':'Not connected')+'</dd><dt>Report coverage</dt><dd>'+(check?.period?safe(check.period.start+' – '+check.period.end+' · '+check.timezone):'—')+'</dd></dl><footer><span>'+(check?.error?safe(check.error):c.id==='otterly'?'Open AI visibility for mentions, citations and report dates.':imported?'Historical export in Leads & funnel. Source definitions require confirmation.':live?(c.id==='posthog'?'Organic traffic; tracked submissions and phone clicks available in Leads & funnel.':'Finalized Google Web search data; availability lags today.'):'No live data is connected to this dashboard.')+'</span>'+(live?'<button class="refresh-btn" data-refresh="'+c.id+'" '+(sourceBusy?'disabled':'')+'>Refresh</button>':'')+'</footer></details>'
- }).join('')+'</div><details class="card panel dashboard-source-section" open><summary><strong>Refresh activity</strong><span class="dashboard-source-toggle"><span class="when-open">Collapse ▴</span><span class="when-closed">Expand ▾</span></span></summary><p>Checks from this page session · Refresh retrieves a report, not new events from your website.</p><div aria-live="polite">'+(sourceActivity.length?sourceActivity.map(x=>'<div class="activity-row"><span>'+safe(sourceTime(x.time))+'</span><b>'+safe(x.name)+'</b><span>'+safe(x.status)+'</span></div>').join(''):'No checks completed yet.')+'</div></details>';
+ }).join('')+'</div>';
 }
 async function refreshSources(id,refresh=true){
  if(sourceBusy||controller.signal.aborted)return;sourceBusy=true;if(state.view==='connections')render();
- try{const response=await fetch('/api/analytics/sources?source='+encodeURIComponent(id)+'&refresh='+(refresh?'1':'0'),{cache:'no-store',signal:controller.signal});if(!response.ok)throw new Error('Source check failed');const result=await response.json();for(const check of result.sources){sourceChecks[check.id]=check;sourceActivity.unshift({time:check.checkedAt,name:connectors.find(c=>c.id===check.id).name,status:check.status})}}
- catch{if(!controller.signal.aborted)for(const key of id==='all'?['posthog','gsc']:[id]){sourceChecks[key]={status:'Unavailable',checkedAt:new Date().toISOString(),error:'Unable to check this source. Please retry.'};sourceActivity.unshift({time:new Date().toISOString(),name:connectors.find(c=>c.id===key).name,status:'Check failed'})}}
- finally{sourceBusy=false;sourceActivity.splice(10);if(!controller.signal.aborted&&state.view==='connections')render()}
+ try{const response=await fetch('/api/analytics/sources?source='+encodeURIComponent(id)+'&refresh='+(refresh?'1':'0'),{cache:'no-store',signal:controller.signal});if(!response.ok)throw new Error('Source check failed');const result=await response.json();for(const check of result.sources){sourceChecks[check.id]=check}}
+ catch{if(!controller.signal.aborted)for(const key of id==='all'?['posthog','gsc']:[id]){sourceChecks[key]={status:'Unavailable',checkedAt:new Date().toISOString(),error:'Unable to check this source. Please retry.'}}}
+ finally{sourceBusy=false;if(!controller.signal.aborted&&state.view==='connections')render()}
 }
 function updateChatScope(){if($('chat-scope'))$('chat-scope').textContent='MedicareFAQ · Live PostHog + GSC · Historical Datorama import · Chat period below.'}
 function welcomeChat(){$('chat-log').innerHTML=`<div class="chat-message assistant"><p><b>What would you like to know?</b></p><p>Ask me about your real organic traffic and Google search performance. Your question and relevant analytics summaries are sent to Anthropic (Claude).</p><div class="chat-prompts">${['Summarize performance','Which pages need attention?','What are our top Google queries?','Show keyword opportunities'].map(q=>`<button type="button" data-chat-prompt="${q}">${q}</button>`).join('')}</div></div>`}
