@@ -16,7 +16,7 @@ export default function DemoCalendar({plan,items,canEdit,busy,onChange,onEdit}){
  const visible=DEMO_DATES.filter(d=>Number(d.slice(5,7))===month+1),offset=new Date(visible[0]+'T12:00:00Z').getUTCDay();
  const select=x=>{setSelected(x.id);setMoveDate(calendar.dates[x.id]);};
  const mutate=input=>onChange({...input,planId:plan.id,version:plan.version});
- return <section className="demo-calendar" aria-label="Tentative demo calendar"><header><h3>January–March 2027 demo calendar</h3><p>One tentative assignment every day, including weekends. Dates are planning placeholders, not publishing commitments.</p></header>
+ return <section className="demo-calendar" aria-label="Tentative content calendar"><header><h3>January–March 2027 content calendar</h3><p>One tentative assignment every day, including weekends. Dates are planning placeholders, not publishing commitments.</p></header>
  <div className="plan-toolbar"><button disabled={!canEdit||busy||all.length!==90} onClick={()=>mutate({action:'calendar-generate'})}>{calendar?'Rebalance unfixed dates':'Generate tentative calendar'}</button>{calendar&&<><button aria-pressed={view==='month'} onClick={()=>setView('month')}>Month view</button><button aria-pressed={view==='agenda'} onClick={()=>setView('agenda')}>Agenda view</button></>}</div>
  <p className="research-help">Moving an assignment swaps it with the assignment on the chosen date, keeping one per day. Both dates become fixed and survive rebalancing. Assignment text, notes and evidence are preserved.</p>
  {calendar&&<><p><strong>90 scheduled · 0 unscheduled · All tentative</strong> · {calendar.locked.length} fixed dates · January 1–March 31, 2027</p>
