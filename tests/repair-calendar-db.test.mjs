@@ -3,7 +3,7 @@ import test from 'node:test';import assert from 'node:assert/strict';import {rea
 test('repair and undo atomically preserve slots, manual edits, dates, history and later changes',async()=>{
  const db=new PGlite();try{
  await db.exec(`create role anon;create role authenticated;create schema auth;create table auth.users(id uuid primary key);insert into auth.users values ('11111111-1111-4111-8111-111111111111');create function auth.uid() returns uuid language sql stable as $$select '11111111-1111-4111-8111-111111111111'::uuid$$;create function public.growth_access() returns text language sql stable as $$select current_setting('test.access',true)$$;grant usage on schema auth,public to authenticated;create table research_runs(id uuid primary key,status text);insert into research_runs values ('22222222-2222-4222-8222-222222222222','complete');grant select on research_runs to authenticated;`);
- for(const n of ['20261114122708_proposed_content_plans','20261114124401_tentative_demo_calendar','20261117122622_repair_calendar_history','20261117134821_linked_calendar_undo'])await db.exec(await readFile('supabase/migrations/'+n+'.sql','utf8'));
+ for(const n of ['20261114122708_proposed_content_plans','20261114124401_tentative_demo_calendar','20261117122622_repair_calendar_history','20261117134821_linked_calendar_undo','20261117143540_calendar_evidence_history_capacity'])await db.exec(await readFile('supabase/migrations/'+n+'.sql','utf8'));
  await db.exec("set role authenticated;set test.access='analyst'");
  const items=Array.from({length:90},(_,n)=>({id:'slot'+n,title:'Before '+n,action:'Original task',category:'Evergreen'}));const calendar=generateCalendar(items);calendar.locked=['slot1'];const p=(await db.query("insert into proposed_content_plans(research_run_id,payload,edits,calendar) values ('22222222-2222-4222-8222-222222222222',$1,$2,$3) returning *",[JSON.stringify({items}),JSON.stringify({slot0:{title:'Manual'}}),JSON.stringify(calendar)])).rows[0];
  const changes=[1,2].map(n=>({id:'slot'+n,item:{...items[n],title:'After '+n,targetDecision:{kind:'Existing-page update',checks:[{url:'https://www.medicarefaq.com/example',status:'read'}]}},reason:'Verified evidence'}));
@@ -20,6 +20,9 @@ test('repair and undo atomically preserve slots, manual edits, dates, history an
  const protectedLinked=(await db.query('update proposed_content_plans set edits=$2 where id=$1 returning *',[linked.id,JSON.stringify({...p.edits,slot1:{title:'Later edit'}})])).rows[0];
  const groupedUndo=(await call(protectedLinked,[],linked.payload.repairHistory[0].id)).rows[0];
  assert.equal(groupedUndo.payload.items[1].title,'Linked 1');assert.equal(groupedUndo.payload.items[2].title,'Linked 2');assert.equal(groupedUndo.payload.items[3].title,'Before 3');assert.deepEqual(groupedUndo.payload.repairHistory[0].protected,['slot1','slot2']);
+ const retained=(await db.query("insert into proposed_content_plans(research_run_id,payload) values ('22222222-2222-4222-8222-222222222222',$1) returning id",[JSON.stringify({items,evidence:'x'.repeat(1600000)})])).rows[0];assert.ok(retained.id);
+ await assert.rejects(db.query("insert into proposed_content_plans(research_run_id,payload) values ('22222222-2222-4222-8222-222222222222',$1)",[JSON.stringify({items,evidence:'x'.repeat(3000000)})]),/check constraint/);
+ await assert.rejects(db.query("insert into proposed_content_plans(research_run_id,payload) values ('22222222-2222-4222-8222-222222222222',$1)",[JSON.stringify({items:[...items,{id:'extra'}]})]),/check constraint/);
  await db.exec("set test.access='viewer'");await assert.rejects(call(p),/Editor access/);await db.exec('reset role;set role anon');await assert.rejects(call(p),/permission denied/);
  }finally{await db.close();}
 });
