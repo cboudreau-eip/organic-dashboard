@@ -1,0 +1,11 @@
+export default function CalendarRepair({plan,canEdit,busy,onChange}){
+ const history=plan.payload.repairHistory||[];
+ return <section className="plan-notice" aria-label="Repair calendar"><h3>Repair calendar</h3><p>Apply verified page targets and replace conflicting or unverified topics with unused, source-backed opportunities. Keeps all 90 slots, categories and dates. Manually edited assignments are protected. Everything remains tentative.</p>
+ <p>Each pass can repair up to 16 assignments using at most 16 live page checks. Unsupported changes remain open. This does not write or publish articles.</p>
+ {canEdit&&<button disabled={busy} onClick={()=>onChange({action:'repair-calendar',planId:plan.id,version:plan.version})}>Repair calendar</button>}
+ <h4>Before-and-after history</h4>{!history.length&&<p>No repairs have been applied to this plan.</p>}
+ {[...history].reverse().map(h=><details key={h.id}><summary>{h.changes.length} assignment changes · {new Date(h.createdAt).toLocaleString()}{h.undoneAt?' · Undone':''}</summary><p>Original plan remains saved. Undo creates a restored plan, preserves current dates, and skips assignments with later manual edits or subsequent changes.</p>{h.undoneAt?<p>{h.restored} restored · {h.protected?.length||0} protected from undo.</p>:canEdit&&<button disabled={busy} onClick={()=>onChange({action:'undo-repair',planId:plan.id,version:plan.version,repairId:h.id})}>Undo this repair</button>}
+ {h.changes.map(c=><section key={c.id} className="proposal-editor"><h5>{c.after.title}</h5><p><strong>Reason: </strong>{c.reason}</p><div className="research-table"><table><thead><tr><th>Field</th><th>Before</th><th>After</th></tr></thead><tbody>{[['Title','title'],['Proposed work','action'],['Target page','targetUrl']].map(([label,key])=><tr key={key}><th>{label}</th><td>{c.before[key]||'Unconfirmed'}</td><td>{c.after[key]||'Unconfirmed'}</td></tr>)}</tbody></table></div>{c.evidence?.page&&<details><summary>Supporting page evidence</summary><a href={c.evidence.page.url} target="_blank" rel="noreferrer">{c.evidence.page.title||c.evidence.page.url}</a><p>Checked {new Date(c.evidence.page.fetchedAt).toLocaleString()}</p><blockquote>{c.evidence.page.excerpt}</blockquote><p>Supports relevance, not a proven content gap or publishing approval.</p></details>}</section>)}
+ </details>)}
+ </section>;
+}

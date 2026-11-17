@@ -54,3 +54,13 @@ test('target resolution processes bounded batches and never writes assignment ed
  assert.equal((await h.POST(req({...input,version:0}))).status,409);assert.equal((await h.POST(req({...input,pairKey:'invalid'}))).status,422);
  assert.equal((await fixture('viewer').h.POST(req(input))).status,403);
  });
+test('repair action commits supported improvements through atomic RPC and keeps original plan intact',async()=>{
+ const url='https://www.medicarefaq.com/medicare-supplement-plans/plan-n',term='medicare plan n cost';let ref;
+ const {h,tables,client}=fixture('analyst',{pageReader:async()=>({url,html:'<title>Medicare Plan N cost</title><main>'+('Medicare Plan N cost depends on age and location. '.repeat(15))+'</main>'}),resolutionStore:()=>({from:()=>({upsert:async rows=>{ref.proposal_target_resolutions.push(...rows);return {data:rows};}})})});ref=tables;
+ await h.POST(req({action:'generate',runId:id}));const original=tables.proposed_content_plans[0];original.payload.items=[{...original.payload.items[0],title:'Unknown old topic',terms:['unknown old topic'],category:'High intent',targetUrl:''}];
+ tables.research_runs[0].payload={inventory:{pages:[{url,title:'Medicare Plan N cost',headings:[],status:'read'}]},evidence:{gsc:{rows:[{keys:[term,url],impressions:100}]}}};
+ const before=structuredClone(original);let calls=0;client.rpc=(name,input)=>({single:async()=>{calls++;assert.equal(name,'repair_calendar_plan');assert.equal(input.changes.length,1);const saved={...original,id:'22222222-2222-4222-8222-222222222222',payload:{...original.payload,items:[input.changes[0].item]}};tables.proposed_content_plans.push(saved);return {data:saved};}});
+ const response=await h.POST(req({action:'repair-calendar',planId:id,version:1}));assert.equal(response.status,201);const body=await response.json();assert.equal(body.repairSummary.changed,1);assert.equal(body.plan.payload.items[0].terms[0],term);assert.deepEqual(original,before);assert.equal(calls,1);
+ assert.equal((await fixture('viewer').h.POST(req({action:'repair-calendar',planId:id,version:1}))).status,403);
+ assert.equal((await h.POST(req({action:'undo-repair',planId:id,version:1,repairId:'missing'}))).status,422);
+});
