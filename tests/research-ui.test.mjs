@@ -24,7 +24,7 @@ test('research UI runs collection, opens evidence and saves decisions without ge
  const view=()=>({settings:{settings:contracts.DEFAULTS,version:1},canEdit:true,run,reviews,runs:run?[run]:[]});
  Object.assign(globalThis,{window:dom.window,document:dom.window.document,IS_REACT_ACT_ENVIRONMENT:true,fetch:async(url,options)=>{
   if(!options?.method)return Response.json(url.includes('opportunity=')?{item:results.items[0]}:view());const body=JSON.parse(options.body);calls.push(body.action);
-  if(body.action==='start'){run={id:'11111111-1111-4111-8111-111111111111',settings:contracts.DEFAULTS,status:'running',stage:'rank',version:1,created_at:new Date().toISOString(),sources:{},inventory:{read:0,total:0,processed:0,errors:[]}};return Response.json({run});}
+  if(body.action==='start'){run={id:'11111111-1111-4111-8111-111111111111',settings:contracts.DEFAULTS,status:'running',stage:'rank',version:1,created_at:new Date().toISOString(),sources:{gsc:{status:'partial',count:12,period:{start:'2020-01-01',end:'2020-01-31'},fetchedAt:'2020-02-01'},semrush:{status:'unavailable',count:0}},inventory:{read:0,total:0,processed:0,errors:[]}};return Response.json({run});}
   if(body.action==='step'){run={...run,status:'complete',stage:'complete',version:2,results};return Response.json({run});}
   if(body.action==='rerank'){run={...run,id:'22222222-2222-4222-8222-222222222222',rerankedFrom:run.id,status:'running',stage:'rank',version:1,results:null};return Response.json({run});}
   if(body.action==='review'){saved++;reviews=[{...body,run_id:body.runId,version:saved,updated_at:new Date().toISOString()}];return Response.json({review:reviews[0]});}
@@ -35,6 +35,7 @@ test('research UI runs collection, opens evidence and saves decisions without ge
  try{
   await act(async()=>root.render(React.createElement(mods.ResearchOpportunities.default,{active:true})));
   await click('Start new research');assert.equal(document.querySelectorAll('.plan-card').length,1);
+  const coverage=document.querySelector('.research-coverage');assert.match(coverage.textContent,/1 of 4 sources have records/);assert.match(coverage.textContent,/Only part of the source data was collected/);assert.match(coverage.textContent,/more than 14 days old/);assert.match(coverage.textContent,/Collection failed/);assert.match(coverage.textContent,/Retrieval date is missing/);
   await click('Review evidence');assert.match(document.body.textContent,/Unknown/);assert.match(document.body.textContent,/No matched page-level evidence/);
   const select=document.querySelector('.research-review select');
   assert.match(document.body.textContent,/Original carrier-page review note/);assert.equal(select.value,'Needs review');
