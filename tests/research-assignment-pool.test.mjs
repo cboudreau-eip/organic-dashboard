@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {selectPool,enrichCandidates,assignmentFingerprint,priorDecision} from '../lib/research/assignment-pool.js';
+import {selectPool,enrichCandidates,assignmentFingerprint,priorDecision,decisionChanges} from '../lib/research/assignment-pool.js';
 import {applyVerification} from '../lib/research/assignment-verification.js';
 import {previousDecisions} from '../lib/research/assignment-history.js';
 const item=(i,type='Update existing page')=>({key:String(i),title:'compare medicare plan g '+i,type});
@@ -29,4 +29,11 @@ test('saved review history retains the original note across research runs withou
  const rows={research_assignment_reviews:[{validation_id:'old',assignment_key:'same',decision:'Keep',reason:'Original reviewer note',updated_at:'2026-11-02'}],research_validations:[old]};
  const client={from(table){const chain={select(){return chain;},in(){return chain;},order(){return chain;},limit(){return chain;},then(ok,bad){return Promise.resolve({data:rows[table]}).then(ok,bad);}};return chain;}};
  const history=await previousDecisions(client,run);assert.equal(history.previousReviews[0].reason,'Original reviewer note');assert.equal(history.previousReviews[0].decision,'Keep');assert.equal(history.previousReviews[0].changed,true);assert.equal(rows.research_assignment_reviews[0].decision,'Keep');
+});
+
+test('earlier review change summary matches meaningful fingerprint fields',()=>{
+ const before={targetUrl:'https://example.com/a',topics:[{title:'Plan G',rank:1}],result:{readiness:'Ready for review',findings:[{task:'Compare costs'}],verification:{status:'Passed',checkedAt:'old'}}};
+ assert.deepEqual(decisionChanges(before,{...before,topics:[{title:'Plan G',rank:2}],result:{...before.result,verification:{status:'Passed',checkedAt:'new'}}}),[]);
+ assert.deepEqual(decisionChanges(before,{...before,targetUrl:'https://example.com/b',result:{...before.result,readiness:'Needs research'}},{gsc:'old'},{gsc:'new'}),['Target page','Assessment status','Source reporting dates']);
+ assert.deepEqual(decisionChanges(before,{...before,result:{...before.result,findings:[{task:'Update costs'}],verification:{status:'Needs research'}}}),['Suggested changes and evidence','Verification results']);
 });
