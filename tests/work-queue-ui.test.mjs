@@ -15,8 +15,8 @@ test('pilot UI starts five tasks, changes workflow status, protects unsaved edit
  await act(async()=>root.render(React.createElement(mod.exports.default,{active:true,onOpenCalendar:target=>calendarLinks.push(target)})));await click('Start 90-assignment queue');assert.equal(document.querySelectorAll('.work-tasks button').length,5);assert.equal(document.querySelector('.plan-notice'),null);await click('View in calendar');assert.deepEqual(calendarLinks,[{planId:'plan',assignmentId:'a0'}]);
  await act(async()=>{const select=document.querySelector('.work-editor select');select.value='In progress';select.dispatchEvent(new dom.window.Event('change',{bubbles:true}));});
  assert.match(document.body.textContent,/Unsaved changes/);assert.equal(button('Export all work Markdown').disabled,true);assert.equal(button('View in calendar').disabled,true);await click('View in calendar');assert.equal(calendarLinks.length,1);assert.ok([...document.querySelectorAll('.work-tasks button')].every(b=>b.disabled));
- await click('Save task');assert.equal(calls[1].status,'In progress');assert.equal(calls[1].brief,'Saved task instructions 0');assert.match(document.body.textContent,/Task saved/);
- await click('Export task Markdown');assert.equal(downloaded,'medicarefaq-task-a0.md');assert.equal(calls.length,2);
+ await click('Save changes');assert.equal(calls[1].status,'In progress');assert.equal(calls[1].brief,'Saved task instructions 0');assert.match(document.body.textContent,/Task saved/);
+ await click('Export Markdown');assert.equal(downloaded,'medicarefaq-task-a0.md');assert.equal(calls.length,2);
  await click('Export all work Markdown');assert.equal(downloaded,'medicarefaq-work-queue-2027-01-01.md');
  }finally{dom.window.HTMLAnchorElement.prototype.click=originalClick;await act(async()=>root.unmount());Object.assign(globalThis,old);dom.window.close();}
 });
