@@ -18,7 +18,7 @@ export default function ContentWorkspace({active}){
   <nav className="content-plan workspace-navigation" aria-label="Content planning views">
    <div className="workspace-primary">
     <button aria-label="Calendar" disabled={workDirty} aria-pressed={tab==='proposals'} onClick={()=>setTab('proposals')}><strong>Calendar</strong><span>Plan and schedule assignments</span></button>
-    <button aria-label="Work queue" disabled={workDirty} aria-pressed={tab==='work'} onClick={()=>setTab('work')}><strong>Work queue</strong><span>Manage owners, progress and briefs</span></button>
+    <button aria-label="Work queue" disabled={workDirty} aria-pressed={tab==='work'} onClick={()=>setTab('work')}><strong>Work queue</strong><span>Manage progress and briefs</span></button>
    </div>
    <button className="workspace-research-entry" aria-label="Research" disabled={workDirty} aria-pressed={inResearch} onClick={()=>setTab(researchTab)}><strong>Research</strong><span>Find and review opportunities</span></button>
    {workDirty&&<p className="workspace-navigation-note" role="status">Save or discard your work queue edits before switching sections.</p>}

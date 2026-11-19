@@ -4,9 +4,10 @@ import {workTitle,exportWorkMarkdown} from '../lib/work-queue/model.js';
 const id='11111111-1111-4111-8111-111111111111';
 const entry={assignment_id:'a',planned_date:'2027-01-01',title_edited:true,owner:'Editor',status:'Ready',brief:'## My brief\nPreserve this text and ```markers```.',snapshot:{title:'My edited title',action:'Original action',terms:['plan g'],evidence:{gsc:[{keys:['plan g','https://www.medicarefaq.com/plan-g'],impressions:23}]}}};
 const queue={id,version:2,source_plan_id:id,week_start:'2027-01-01',entries:[entry],sourceDates:{gsc:{period:{start:'2026-10-01',end:'2026-10-31'}}}};
-test('Markdown uses saved brief, owner, status, edited title, dates and source evidence without mutation',()=>{
+test('Markdown uses saved brief, status, edited title, dates and source evidence without mutation',()=>{
  const before=structuredClone(queue),md=exportWorkMarkdown(queue);assert.equal(workTitle(entry),'My edited title');
- for(const text of ['My edited title','Owner: Editor','Work status: Ready','2027-01-01',entry.brief,'23','2026-10-01','no newly drafted article'])assert.ok(md.includes(text),text);
+ assert.ok(!md.includes('- Owner:'));
+ for(const text of ['My edited title','Work status: Ready','2027-01-01',entry.brief,'23','2026-10-01','no newly drafted article'])assert.ok(md.includes(text),text);
  assert.deepEqual(queue,before);assert.throws(()=>exportWorkMarkdown(queue,'missing'),/Choose/);
 });
 function fixture(role='analyst',rpcError=null){
