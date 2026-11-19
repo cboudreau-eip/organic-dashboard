@@ -43,8 +43,8 @@ test('research UI runs collection, opens evidence and saves decisions without ge
   await click('Save review decision');assert.equal(reviews[0].decision,'Keep');assert.equal(saved,1);
   await click('Back to review queue');assert.match(document.querySelector('.plan-card').textContent,/Keep/);
   const chooseStatus=label=>act(async()=>[...document.querySelectorAll('.research-decision-switch button')].find(b=>b.querySelector('span').textContent===label).click());
-  await chooseStatus('Kept');assert.equal(document.querySelectorAll('.plan-card').length,1);
-  await chooseStatus('Deferred');assert.equal(document.querySelectorAll('.plan-card').length,0);assert.match(document.body.textContent,/No matching opportunities/);
+  await chooseStatus('Keep');assert.equal(document.querySelectorAll('.plan-card').length,1);
+  await chooseStatus('Defer');assert.equal(document.querySelectorAll('.plan-card').length,0);assert.match(document.body.textContent,/No matching opportunities/);
   await click('Show all opportunities');assert.equal(document.querySelectorAll('.plan-card').length,1);assert.equal(reviews[0].decision,'Keep');
   await click('Re-rank saved evidence');assert.match(document.body.textContent,/Re-ranked from saved evidence/);
   assert.deepEqual(calls,['start','step','review','rerank','step']);assert.equal(document.querySelector('[role=grid]'),null);
