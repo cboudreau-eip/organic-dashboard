@@ -20,3 +20,13 @@ test('pilot UI starts five tasks, changes workflow status, protects unsaved edit
  await click('Export all work Markdown');assert.equal(downloaded,'medicarefaq-work-queue-2027-01-01.md');
  }finally{dom.window.HTMLAnchorElement.prototype.click=originalClick;await act(async()=>root.unmount());Object.assign(globalThis,old);dom.window.close();}
 });
+
+test('calendar link selects the exact task and week without writes, and rejects a different plan',async()=>{
+ const dom=new JSDOM('<div id="root"></div>'),old={window:globalThis.window,document:globalThis.document,fetch:globalThis.fetch,IS_REACT_ACT_ENVIRONMENT:globalThis.IS_REACT_ACT_ENVIRONMENT};
+ const entries=['2027-01-01','2027-02-18'].map((date,i)=>({assignment_id:'a'+i,planned_date:date,owner:i?'Chris':'',status:'Tentative',brief:'Brief '+i,title_edited:true,snapshot:{title:'Task '+i,category:'High intent',terms:[]}}));let writes=0;
+ Object.assign(globalThis,{window:dom.window,document:dom.window.document,IS_REACT_ACT_ENVIRONMENT:true,fetch:async(url,opts)=>{if(opts?.method)writes++;return Response.json({queue:{id:'q',version:1,source_plan_id:'plan',entries},canEdit:true});}});
+ const root=createRoot(document.getElementById('root'));
+ try{await act(async()=>root.render(React.createElement(mod.exports.default,{active:true,openTask:{planId:'plan',assignmentId:'a1'}})));assert.equal(document.querySelector('.work-editor input').value,'Chris');assert.equal(document.querySelector('.work-editor textarea').value,'Brief 1');assert.equal(document.querySelector('.work-week-nav select').value,'2027-02-12');assert.equal(document.activeElement,document.querySelector('.work-direct-task'));assert.equal(writes,0);
+ await act(async()=>root.render(React.createElement(mod.exports.default,{active:true,openTask:{planId:'other',assignmentId:'a1'}})));assert.equal(document.querySelector('.work-editor'),null);assert.match(document.querySelector('[role=alert]').textContent,/not in the saved work queue/);assert.equal(writes,0);
+ }finally{await act(async()=>root.unmount());Object.assign(globalThis,old);dom.window.close();}
+});

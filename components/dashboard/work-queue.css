@@ -12,3 +12,5 @@
 @media(max-width:1000px){.work-pilot .work-layout{grid-template-columns:minmax(240px,1fr) minmax(0,1.6fr)}.work-editor{padding:20px}}
 @media(max-width:850px){.work-pilot .work-layout{grid-template-columns:1fr}.work-list-panel .work-tasks{max-height:380px}.work-fields{grid-template-columns:1fr 1fr}}
 @media(max-width:520px){.work-fields{grid-template-columns:1fr}.work-editor{padding:16px}.work-editor h3{font-size:21px}.work-save-bar button{width:100%}}
+
+.work-direct-task{min-width:0;scroll-margin-top:90px}.work-direct-task:focus-visible{outline:2px solid #17664d;outline-offset:4px}.work-target-missing{padding:16px;border:1px solid #d5e1d8;border-radius:10px;margin:16px 0}.work-target-missing p{font-size:13px}
