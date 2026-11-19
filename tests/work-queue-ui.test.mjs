@@ -33,3 +33,22 @@ test('calendar link selects the exact task and week without writes, and rejects 
  await act(async()=>[...document.querySelectorAll('button')].find(b=>b.textContent==='Show all work').click());assert.equal(document.querySelectorAll('.work-tasks button').length,2);assert.equal(writes,0);
  }finally{await act(async()=>root.unmount());Object.assign(globalThis,old);dom.window.close();}
 });
+
+test('task navigation follows filters, restores list position and protects unsaved work',async()=>{
+ const dom=new JSDOM('<div id="root"></div>',{url:'https://dashboard.example'}),old={window:globalThis.window,document:globalThis.document,fetch:globalThis.fetch,IS_REACT_ACT_ENVIRONMENT:globalThis.IS_REACT_ACT_ENVIRONMENT};
+ const entries=Array.from({length:4},(_,i)=>({assignment_id:'a'+i,planned_date:'2027-01-0'+(i+1),owner:'',status:'Tentative',brief:'Saved brief '+i,title_edited:true,snapshot:{title:'Task '+i,category:i===1?'Evergreen':'High intent',terms:[]}})),original=JSON.stringify(entries);let writes=0,restored=null;
+ Object.assign(globalThis,{window:dom.window,document:dom.window.document,IS_REACT_ACT_ENVIRONMENT:true,fetch:async(url,opts)=>{if(opts?.method)writes++;return Response.json({queue:{id:'q',version:1,source_plan_id:'plan',entries},canEdit:true});}});Object.defineProperty(window,'scrollY',{value:420});window.scrollTo=options=>{restored=options.top;};
+ const root=createRoot(document.getElementById('root')),button=t=>[...document.querySelectorAll('button')].find(b=>b.textContent===t),click=t=>act(async()=>button(t).click()),select=async(selector,value)=>act(async()=>{const el=document.querySelector(selector);el.value=value;el.dispatchEvent(new dom.window.Event('change',{bubbles:true}));});
+ try{
+ await act(async()=>root.render(React.createElement(mod.exports.default,{active:true})));
+ assert.equal(document.querySelector('.work-pilot').dataset.taskView,'list');
+ await select('.work-filter-grid label:nth-child(2) select','High intent');assert.equal(document.querySelectorAll('.work-tasks button').length,3);
+ const list=document.querySelector('.work-tasks');list.scrollTop=125;
+ await act(async()=>list.querySelector('[data-task-id="a0"]').click());assert.equal(document.querySelector('.work-pilot').dataset.taskView,'detail');assert.equal(button('Previous task').disabled,true);assert.match(document.querySelector('.work-step-controls').textContent,/Task 1 of 3/);
+ await click('Next task');assert.equal(document.querySelector('.work-editor h3').textContent,'Task 2');assert.equal(document.querySelector('.work-tasks [aria-pressed=true]').dataset.taskId,'a2');
+ await select('.work-editor select','In progress');for(const name of ['Previous task','Next task','Back to tasks']){assert.equal(button(name).disabled,true);await click(name);}assert.equal(document.querySelector('.work-editor h3').textContent,'Task 2');
+ await click('Discard unsaved changes');await click('Next task');assert.equal(document.querySelector('.work-editor h3').textContent,'Task 3');assert.equal(button('Next task').disabled,true);
+ await click('Previous task');assert.equal(document.querySelector('.work-editor textarea').value,'Saved brief 2');await click('Back to tasks');assert.equal(document.querySelector('.work-pilot').dataset.taskView,'list');assert.equal(restored,420);assert.equal(list.scrollTop,125);assert.equal(document.activeElement.dataset.taskId,'a0');assert.equal(document.querySelector('.work-filter-grid label:nth-child(2) select').value,'High intent');
+ await act(async()=>list.querySelector('[data-task-id="a2"]').click());assert.equal(document.querySelector('.work-editor textarea').value,'Saved brief 2');assert.equal(writes,0);assert.equal(JSON.stringify(entries),original);
+ }finally{await act(async()=>root.unmount());Object.assign(globalThis,old);dom.window.close();}
+});
