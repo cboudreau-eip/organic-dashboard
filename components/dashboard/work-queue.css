@@ -21,3 +21,17 @@
 /* Task navigation preserves the mounted list and editor while changing the mobile view. */
 .work-task-navigation{display:flex;flex-wrap:wrap;align-items:center;gap:12px;margin-bottom:14px}.work-step-controls{display:flex;flex:1;align-items:center;justify-content:space-between;gap:10px}.work-step-controls>span{font-size:12px;text-align:center;color:#526c60}.work-task-navigation p{flex-basis:100%;margin:0;font-size:12px}.work-pilot .work-back-to-tasks{display:none}.work-pilot .work-tasks button[aria-pressed=true]{box-shadow:inset 0 0 0 1px #426842}.work-list-panel{scroll-margin-top:90px}.work-list-panel:focus-visible{outline:2px solid #17664d;outline-offset:4px}
 @media(max-width:850px){.work-pilot[data-task-view="list"] .work-direct-task{display:none}.work-pilot[data-task-view="detail"]>.plan-heading,.work-pilot[data-task-view="detail"]>.work-filters,.work-pilot[data-task-view="detail"]>.work-results,.work-pilot[data-task-view="detail"] .work-list-panel{display:none}.work-pilot .work-back-to-tasks{display:inline-flex}.work-task-navigation{display:grid;grid-template-columns:1fr}.work-back-to-tasks{justify-self:start}.work-step-controls{width:100%}.work-step-controls button{padding:10px 12px}.work-step-controls>span{min-width:55px}}
+
+/* Compact rows with explicit workflow and selection. */
+.work-pilot .work-tasks button{padding:14px;gap:7px;border-color:#e0e8e2;border-left-width:4px}
+.work-pilot .work-tasks button[aria-pressed=true]{background:#eef5ed;border-color:#17664f;border-left:4px solid #17664f;box-shadow:inset 0 0 0 1px #17664f}
+.work-pilot .work-tasks button:focus-visible{outline:3px solid #17664f;outline-offset:2px}
+.work-task-top time{color:#526c60;font-weight:500;white-space:nowrap}
+.work-tasks button .work-task-target{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0;color:#526c60;font-size:12px;line-height:1.6}
+.work-task-bottom{min-height:20px}.work-task-bottom small{flex:1;min-width:0;overflow-wrap:anywhere}
+.work-tasks button .work-task-selected{font-size:11px;font-weight:700;color:#17664f;white-space:nowrap}
+.work-status[data-stage="To do"]{background:#edf0ed;color:#405447}
+.work-status[data-stage="In progress"]{background:#e5f0f8;color:#245976}
+.work-status[data-stage="Completed"]{background:#dceee5;color:#1c6247}
+.work-counts>span[data-stage="In progress"]{background:#e5f0f8;color:#245976}.work-counts>span[data-stage="Completed"]{background:#dceee5;color:#1c6247}
+.work-pilot .work-tasks button:disabled{opacity:1;cursor:not-allowed}
