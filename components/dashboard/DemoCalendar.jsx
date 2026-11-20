@@ -1,5 +1,6 @@
 'use client';
 import {useState,useEffect,useRef} from 'react';
+import {workStage} from '../../lib/work-queue/model';
 import {DEMO_DATES} from '../../lib/research/demo-calendar';
 import './demo-calendar.css';
 import AssignmentQuality from './AssignmentQuality';
@@ -9,7 +10,7 @@ export default function DemoCalendar({plan,items,canEdit,busy,onChange,onEdit,on
  const [view,setView]=useState('month'),[month,setMonth]=useState(0),[category,setCategory]=useState('All'),[selected,setSelected]=useState(null),[moveDate,setMoveDate]=useState('');
  const [work,setWork]=useState(null),[workError,setWorkError]=useState(false);
  useEffect(()=>{if(!active)return;let live=true;fetch('/api/content-work',{cache:'no-store'}).then(r=>{if(!r.ok)throw Error();return r.json();}).then(d=>{if(live){setWorkError(false);setWork(d.queue?.source_plan_id===plan.id?d.queue:null);}}).catch(()=>{if(live)setWorkError(true);});return()=>{live=false;};},[plan.id,active]);
- const badge=id=>{const task=work?.entries.find(e=>e.assignment_id===id);return <small className="calendar-work-badge">{task?'Work status: '+task.status:workError?'Work status unavailable':'Not in work queue'}</small>;};
+ const badge=id=>{const task=work?.entries.find(e=>e.assignment_id===id);return <small className="calendar-work-badge">{task?'Work status: '+workStage(task.status):workError?'Work status unavailable':'Not in work queue'}</small>;};
  const trigger=useRef(null),editor=useRef(null);useEffect(()=>{if(active&&selected){editor.current?.scrollIntoView?.({block:'start'});editor.current?.focus();}},[selected,active]);
  const calendar=plan.calendar,all=plan.payload.items,chosen=all.find(x=>x.id===selected);
  const openedAssignment=useRef(null);
