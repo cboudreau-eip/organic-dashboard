@@ -1,0 +1,32 @@
+# Work queue page assessments
+
+Opening a task explicitly (calendar link, task row, Previous/Next, or suggested task)
+loads its saved assessments and prepares one when no current result exists. Merely
+visiting Work queue does not generate assessments for every task. Readers can view
+results; analysts/admins can generate. Failed attempts require an explicit retry.
+
+The server reads the task and current source-plan edits, not client-supplied page
+content. It reads the target MedicareFAQ page, discovers up to three related pages,
+searches Medicare.gov/CMS.gov and directly retrieves up to three supported official
+documents. Missing sources are explicit. Every proposed change references supplied
+passages; suggested links must be retrieved related pages. Recommendations remain
+AI-assisted editorial proposals, not verified medical advice or publication approval.
+
+Results are stored separately in `content_work_assessments`, with RLS reads matching
+the existing team roles and server-only writes. Each attempt retains its timestamp,
+input fingerprint, status and generated evidence. A unique running-task index prevents
+concurrent generation for one task. Abandoned jobs expire after five minutes; generation
+is limited to 12 attempts per user per hour. Successful results are reused for seven
+days when the saved instructions, current assignment and source-date metadata match.
+Live page changes within that window require **Reassess page**. This is not a scheduled
+crawler or an automatic refresh of analytics integrations.
+
+No generation path writes `content_work_pilots` or `proposed_content_plans`. **Add proposal
+to my instructions** appends text to the unsaved editor only. The user can edit, discard,
+or save through the existing optimistic-version save flow. It never replaces existing
+instructions automatically. The complete source queue and calendar are checked before
+and after the live workflow test. Refreshing an assessment retains older versions.
+
+Deployment requires applying `20261123162754_work_page_assessments.sql` first. Uses the
+existing server-side Anthropic and Supabase service-role configuration; no browser
+credentials or new public access are introduced. Endpoint: `/api/content-work/assessment`.

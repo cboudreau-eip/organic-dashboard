@@ -1,0 +1,50 @@
+'use client';
+import {useEffect,useRef,useState} from 'react';
+async function api(queueId,assignmentId,input){
+ const r=await fetch(input?'/api/content-work/assessment':`/api/content-work/assessment?queueId=${encodeURIComponent(queueId)}&assignmentId=${encodeURIComponent(assignmentId)}`,input?{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({queueId,assignmentId,...input})}:{cache:'no-store'});
+ const d=await r.json();if(!r.ok)throw Error(d.error||'Unable to prepare the assessment. Please retry.');return d;
+}
+export default function WorkAssessment({queueId,entry,enabled,canEdit,dirty,busy,brief,onUse}){
+ const [data,setData]=useState(null),[selected,setSelected]=useState(null),[loading,setLoading]=useState(false),[error,setError]=useState(''),[revision,setRevision]=useState(0);
+ const alive=useRef(true),started=useRef(false);
+ useEffect(()=>{alive.current=true;return()=>{alive.current=false;};},[]);
+ useEffect(()=>{
+  if(!enabled||started.current)return;started.current=true;let canceled=false;
+  async function load(){setLoading(true);setError('');try{
+   const d=await api(queueId,entry.assignment_id);if(canceled)return;setData(d);setSelected(d.current?.id||d.history.find(r=>r.status==='complete')?.id||null);
+   const running=d.history.some(r=>r.status==='running'&&Date.now()-Date.parse(r.created_at)<5*60000);
+   if(!d.current&&d.hasTarget&&canEdit&&!dirty&&!busy&&!running&&d.history[0]?.status!=='failed'){
+    const result=await api(queueId,entry.assignment_id,{fingerprint:d.fingerprint});if(canceled)return;
+    setData({...d,current:result.assessment,history:[result.assessment,...d.history]});setSelected(result.assessment.id);
+   }else if(running)setError('An assessment is running. Use Check saved assessment in a moment.');
+   else if(!d.current&&d.history[0]?.status==='failed')setError(d.history[0].error||'The last assessment failed. Please retry.');
+  }catch(e){if(!canceled)setError(e.message);}finally{if(!canceled)setLoading(false);}}
+  load();return()=>{canceled=true;started.current=false;};
+ },[enabled,queueId,entry.assignment_id,revision]);
+ async function refresh(){if(dirty||busy||loading)return;setLoading(true);setError('');try{
+  const d=await api(queueId,entry.assignment_id);if(!alive.current)return;setData(d);
+  const r=await api(queueId,entry.assignment_id,{fingerprint:d.fingerprint,refresh:true});if(!alive.current)return;
+  setData({...d,current:r.assessment,history:[r.assessment,...d.history]});setSelected(r.assessment.id);
+ }catch(e){if(alive.current)setError(e.message);}finally{if(alive.current)setLoading(false);}}
+ const row=data?.history.find(r=>r.id===selected),p=row?.payload,result=p?.result,current=!!row&&row.id===data?.current?.id;
+ const appended=p?.brief&&brief.includes(p.brief),tooLong=p?.brief&&brief.length+p.brief.length+2>20000;
+ return <section className="work-assessment" aria-label="Page assessment and brief">
+  <header><div><h4>Page assessment & brief</h4><p>Live page review and specific editing recommendations, saved separately from your instructions.</p></div></header>
+  {!enabled&&<p>Open this task to prepare its page assessment.</p>}
+  {loading&&<p role="status">Reading the page, checking sources and preparing your brief… This can take up to three minutes. Your instructions stay unchanged.</p>}
+  {error&&<p role="alert">{error}</p>}
+  {enabled&&data&&!data.hasTarget&&<p>Choose a MedicareFAQ target page in Calendar → Edit assignment details first.</p>}
+  {enabled&&!loading&&<div className="work-assessment-actions"><button type="button" disabled={!canEdit||dirty||busy||data?.hasTarget===false} onClick={refresh}>{row?'Reassess page':'Prepare assessment'}</button><button type="button" disabled={dirty||busy} onClick={()=>{started.current=false;setRevision(n=>n+1);}}>Check saved assessment</button></div>}
+  {result&&<>
+   <p className="work-assessment-meta">{current?'Current saved assessment':'Earlier assessment — reassess before using'} · {new Date(row.created_at).toLocaleString()} · AI-assisted proposal</p>
+   <p>{result.summary}</p>
+   <h5>Recommended changes</h5><ol className="work-assessment-changes">{result.changes.map((c,i)=><li key={i}><strong>{c.section}</strong><p>{c.change}</p><details><summary>Why and supporting sources{c.needsVerification?' · verification needed':''}</summary><p>{c.why}</p>{c.evidence.map((e,n)=><blockquote key={n}><p>{e.text}</p><a href={e.url} target="_blank" rel="noreferrer">{e.kind==='official'?'Official source':e.kind==='target'?'Current target page':'Related page'} ↗</a></blockquote>)}</details></li>)}</ol>
+   <details><summary>Suggested outline, what to preserve and internal links</summary><h5>Suggested outline</h5><ol>{result.outline.map((x,i)=><li key={i}>{x}</li>)}</ol><h5>Preserve</h5><ul>{result.preserve.map((x,i)=><li key={i}>{x}</li>)}</ul><h5>Internal links</h5>{result.links.map((x,i)=><p key={i}><a href={x.url} target="_blank" rel="noreferrer">{x.url.replace('https://www.medicarefaq.com','')}</a> — {x.reason}</p>)}</details>
+   <details><summary>Checks before publication and source dates</summary><ul>{[...result.checks,...p.warnings].map((x,i)=><li key={i}>{x}</li>)}</ul><p>Source references support review; they do not guarantee factual accuracy or ranking improvements.</p><ul>{p.sources.map(s=><li key={s.id}><a href={s.url} target="_blank" rel="noreferrer">{s.kind}: {s.url}</a> · Read {new Date(s.fetchedAt).toLocaleDateString()}{s.truncated?' · excerpt limited':''}</li>)}</ul><pre>{JSON.stringify(p.sourceDates,null,2)}</pre></details>
+   <details><summary>Generated implementation brief</summary><pre>{p.brief}</pre></details>
+   <button type="button" disabled={!canEdit||!current||loading||busy||dirty||appended||tooLong} onClick={()=>onUse(brief+'\n\n'+p.brief)}>{appended?'Proposal already in instructions':'Add proposal to my instructions'}</button>
+   <p className="work-assessment-meta">{tooLong?'This proposal would exceed the instruction limit. Shorten your instructions first.':'Adds below your existing text for editing. Save changes when ready, or discard to undo.'}</p>
+  </>}
+  {data?.history.filter(r=>r.status==='complete').length>1&&<details><summary>Previous assessments</summary><ul>{data.history.filter(r=>r.status==='complete').map(r=><li key={r.id}><button type="button" onClick={()=>setSelected(r.id)}>{new Date(r.created_at).toLocaleString()}{r.id===data.current?.id?' · current':''}</button></li>)}</ul></details>}
+ </section>;
+}
