@@ -1,7 +1,7 @@
 # Work queue page assessments
 
 Opening a task explicitly (calendar link, task row, Previous/Next, or suggested task)
-loads its saved assessments and prepares one when no current result exists. Merely
+loads its saved assessments and prepares its first result automatically. Merely
 visiting Work queue does not generate assessments for every task. Readers can view
 results; analysts/admins can generate. Failed attempts require an explicit retry.
 
@@ -31,6 +31,8 @@ is limited to 12 attempts per user per hour. Successful results are reused for s
 days when the saved instructions, current assignment and source-date metadata match.
 Live page changes within that window require **Reassess page**. This is not a scheduled
 crawler or an automatic refresh of analytics integrations.
+Existing results that become stale ask for **Reassess page** rather than automatically
+spending again when the editor saves an adopted brief or changes instructions.
 
 No generation path writes `content_work_pilots` or `proposed_content_plans`. **Add proposal
 to my instructions** appends text to the unsaved editor only. The user can edit, discard,

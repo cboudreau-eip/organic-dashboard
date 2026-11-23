@@ -13,7 +13,7 @@ export default function WorkAssessment({queueId,entry,enabled,canEdit,dirty,busy
   async function load(){setLoading(true);setError('');try{
    const d=await api(queueId,entry.assignment_id);if(canceled)return;setData(d);setSelected(d.current?.id||null);
    const running=d.history.some(r=>r.status==='running'&&Date.now()-Date.parse(r.created_at)<5*60000);
-   if(!d.current&&d.hasTarget&&canEdit&&!dirty&&!busy&&!running&&d.history[0]?.status!=='failed'){
+   if(!d.current&&!d.history.some(r=>r.status==='complete')&&d.hasTarget&&canEdit&&!dirty&&!busy&&!running&&d.history[0]?.status!=='failed'){
     const result=await api(queueId,entry.assignment_id,{fingerprint:d.fingerprint});if(canceled)return;
     setData({...d,current:result.assessment,history:[result.assessment,...d.history]});setSelected(result.assessment.id);
    }else if(running)setError('An assessment is running. Use Check saved assessment in a moment.');
@@ -34,7 +34,8 @@ export default function WorkAssessment({queueId,entry,enabled,canEdit,dirty,busy
   {loading&&<p role="status">Reading the page, checking sources and reviewing your brief… This can take a few minutes. Your instructions stay unchanged.</p>}
   {error&&<p role="alert">{error}</p>}
   {enabled&&data&&!data.hasTarget&&<p>Choose a MedicareFAQ target page in Calendar → Edit assignment details first.</p>}
-  {enabled&&!loading&&<div className="work-assessment-actions"><button type="button" disabled={!canEdit||dirty||busy||data?.hasTarget===false} onClick={refresh}>{row?'Reassess page':'Prepare assessment'}</button><button type="button" disabled={dirty||busy} onClick={()=>{started.current=false;setRevision(n=>n+1);}}>Check saved assessment</button></div>}
+  {enabled&&!loading&&data&&!data.current&&data.history.some(r=>r.status==='complete')&&<p>Your saved assessment needs refreshing. Select Reassess page to update it.</p>}
+  {enabled&&!loading&&<div className="work-assessment-actions"><button type="button" disabled={!canEdit||dirty||busy||data?.hasTarget===false} onClick={refresh}>{row||data?.history.some(r=>r.status==='complete')?'Reassess page':'Prepare assessment'}</button><button type="button" disabled={dirty||busy} onClick={()=>{started.current=false;setRevision(n=>n+1);}}>Check saved assessment</button></div>}
   {result&&<>
    <p className="work-assessment-meta">{current?'Current saved assessment':'Earlier assessment — reassess before using'} · {new Date(row.created_at).toLocaleString()} · AI-assisted proposal</p>
    <p>{result.summary}</p>

@@ -8,5 +8,7 @@ test('opening a task generates once, displays persisted sources, and appends onl
  try{await act(async()=>root.render(React.createElement(m.exports.default,props)));assert.equal(posts,0);await act(async()=>root.render(React.createElement(m.exports.default,{...props,enabled:true})));assert.equal(posts,1);assert.match(document.body.textContent,/Clarify windows/);assert.equal(used,null);
  const button=()=>[...document.querySelectorAll('button')].find(b=>b.textContent==='Add proposal to my instructions');await act(async()=>root.render(React.createElement(m.exports.default,{...props,enabled:true,dirty:true})));assert.equal(button().disabled,true);
  await act(async()=>root.render(React.createElement(m.exports.default,{...props,enabled:true})));await act(async()=>button().click());assert.equal(used,'My edits\n\nProposed brief');assert.equal(posts,1);
+ globalThis.fetch=async()=>Response.json({history:[row],fingerprint:'changed',hasTarget:true,current:null});
+ await act(async()=>root.render(React.createElement(m.exports.default,{...props,key:'saved-version',enabled:true})));assert.equal(posts,1);assert.match(document.body.textContent,/saved assessment needs refreshing/);assert.equal(button(),undefined);
  }finally{await act(async()=>root.unmount());Object.assign(globalThis,old);dom.window.close();}
 });
