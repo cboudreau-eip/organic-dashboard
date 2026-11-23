@@ -15,6 +15,8 @@ A separate model review corrects the initial proposal before it is saved or offe
 for use. Conditional questionnaire branches cannot establish general eligibility.
 Failure of either generation or review leaves no usable new proposal. A versioned
 fingerprint invalidates results made before these review rules were introduced.
+One bounded formatting repair can correct invalid references or oversized fields
+after review; it cannot bypass the final validation or substitute the raw draft.
 
 Results are stored separately in `content_work_assessments`, with RLS reads matching
 the existing team roles and server-only writes. Each attempt retains its timestamp,

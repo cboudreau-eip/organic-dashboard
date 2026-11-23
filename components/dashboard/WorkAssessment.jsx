@@ -11,7 +11,7 @@ export default function WorkAssessment({queueId,entry,enabled,canEdit,dirty,busy
  useEffect(()=>{
   if(!enabled||started.current)return;started.current=true;let canceled=false;
   async function load(){setLoading(true);setError('');try{
-   const d=await api(queueId,entry.assignment_id);if(canceled)return;setData(d);setSelected(d.current?.id||d.history.find(r=>r.status==='complete')?.id||null);
+   const d=await api(queueId,entry.assignment_id);if(canceled)return;setData(d);setSelected(d.current?.id||null);
    const running=d.history.some(r=>r.status==='running'&&Date.now()-Date.parse(r.created_at)<5*60000);
    if(!d.current&&d.hasTarget&&canEdit&&!dirty&&!busy&&!running&&d.history[0]?.status!=='failed'){
     const result=await api(queueId,entry.assignment_id,{fingerprint:d.fingerprint});if(canceled)return;
@@ -31,7 +31,7 @@ export default function WorkAssessment({queueId,entry,enabled,canEdit,dirty,busy
  return <section className="work-assessment" aria-label="Page assessment and brief">
   <header><div><h4>Page assessment & brief</h4><p>Live page review and specific editing recommendations, saved separately from your instructions.</p></div></header>
   {!enabled&&<p>Open this task to prepare its page assessment.</p>}
-  {loading&&<p role="status">Reading the page, checking sources and reviewing your brief… This can take up to four minutes. Your instructions stay unchanged.</p>}
+  {loading&&<p role="status">Reading the page, checking sources and reviewing your brief… This can take a few minutes. Your instructions stay unchanged.</p>}
   {error&&<p role="alert">{error}</p>}
   {enabled&&data&&!data.hasTarget&&<p>Choose a MedicareFAQ target page in Calendar → Edit assignment details first.</p>}
   {enabled&&!loading&&<div className="work-assessment-actions"><button type="button" disabled={!canEdit||dirty||busy||data?.hasTarget===false} onClick={refresh}>{row?'Reassess page':'Prepare assessment'}</button><button type="button" disabled={dirty||busy} onClick={()=>{started.current=false;setRevision(n=>n+1);}}>Check saved assessment</button></div>}
@@ -45,6 +45,6 @@ export default function WorkAssessment({queueId,entry,enabled,canEdit,dirty,busy
    <button type="button" disabled={!canEdit||!current||loading||busy||dirty||appended||tooLong} onClick={()=>onUse(brief+'\n\n'+p.brief)}>{appended?'Proposal already in instructions':'Add proposal to my instructions'}</button>
    <p className="work-assessment-meta">{tooLong?'This proposal would exceed the instruction limit. Shorten your instructions first.':'Adds below your existing text for editing. Save changes when ready, or discard to undo.'}</p>
   </>}
-  {data?.history.filter(r=>r.status==='complete').length>1&&<details><summary>Previous assessments</summary><ul>{data.history.filter(r=>r.status==='complete').map(r=><li key={r.id}><button type="button" onClick={()=>setSelected(r.id)}>{new Date(r.created_at).toLocaleString()}{r.id===data.current?.id?' · current':''}</button></li>)}</ul></details>}
+  {data?.history.some(r=>r.status==='complete'&&r.id!==data.current?.id)&&<details><summary>Previous assessments</summary><ul>{data.history.filter(r=>r.status==='complete').map(r=><li key={r.id}><button type="button" onClick={()=>setSelected(r.id)}>{new Date(r.created_at).toLocaleString()}{r.id===data.current?.id?' · current':''}</button></li>)}</ul></details>}
  </section>;
 }

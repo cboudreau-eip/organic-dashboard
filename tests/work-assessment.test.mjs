@@ -11,6 +11,7 @@ test('independent review replaces unsafe draft wording and never falls back when
  assert.equal(calls,2);assert.equal(result.summary,corrected.summary);
  calls=0;await assert.rejects(reviewedAssessment({},pages,async()=>{if(++calls===1)return draft;throw Error('Reviewer unavailable');}),/Reviewer unavailable/);
  calls=0;await assert.rejects(reviewedAssessment({},pages,async()=>++calls===1?draft:{...corrected,changes:[{...corrected.changes[0],evidenceIds:['invented']}]}),/Unknown source/);
+ calls=0;const repaired=await reviewedAssessment({},pages,async(system,input)=>{calls++;if(calls===1)return {...draft,summary:'x'.repeat(1600)};if(calls===2)return {...corrected,changes:[{...corrected.changes[0],evidenceIds:['invented']}]};assert.match(input.validationFeedback,/structural validation/);return corrected;});assert.equal(calls,3);assert.equal(repaired.summary,corrected.summary);
 });
 test('assessment references are traceable, unknown links rejected, and fingerprints preserve dates/status independence',()=>{
  const r=checkedAssessment(output,pages);assert.equal(r.changes[0].needsVerification,true);assert.equal(r.changes[0].evidence[0].text,pages[0].passages[0].text);assert.match(assessmentBrief(r,entry.snapshot.targetUrl),/Verify state rules/);
