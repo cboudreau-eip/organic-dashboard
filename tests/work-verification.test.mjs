@@ -10,6 +10,10 @@ test('malformed verification gets one bounded repair without weakening evidence 
  calls=0;await assert.rejects(()=>validatedVerification(async()=>{calls++;return {items:[]};},items,[page]),e=>e.assessmentStage==='verification decisions format repair');assert.equal(calls,2);
 });
 test('annotation check uses a complete page read and never clears a missing or truncated read',()=>{const item={id:'check:4',question:'Are internal passage IDs visible in user-facing prose?'};assert.equal(isAnnotationCheck(item),true);assert.equal(annotationVerdict(item,{text:'Clean article',url:page.url},'now').status,'Supported');assert.equal(annotationVerdict(item,{text:'See targetp15',url:page.url},'now').status,'Correction needed');assert.equal(annotationVerdict(item,{text:'x'.repeat(18000)},'now').status,'Unresolved');assert.equal(annotationVerdict(item,null,'now').status,'Unresolved');});
+test('corrected brief avoids repeating long original questions and fits the editor',()=>{
+ const verdicts=Array.from({length:9},(_,i)=>({id:'check:'+i,section:'Publication check',question:'Original long question '.repeat(50),status:'Unresolved',reason:'Unverified detail '.repeat(60),instruction:'Verify first',evidence:[]}));
+ const saved=correctedAssessment(parent,verdicts,[],[],[]);assert.ok(saved.brief.length+640<20000);assert.ok(!saved.brief.includes('Original long question'));assert.equal(saved.verification.items[0].question,verdicts[0].question);
+});
 test('verification requires complete item coverage and exact official evidence; independent rejection keeps a flag',()=>{
  const items=outstandingItems(parent.payload);assert.equal(items.length,2);
  const proposed={items:items.map(i=>({...i,status:'Correction needed',instruction:'Explain qualifying conditions.',reason:'Source supplies conditions.',evidenceIds:['op1']}))};
