@@ -26,8 +26,13 @@ export default function WorkAssessment({queueId,entry,enabled,canEdit,dirty,busy
   const r=await api(queueId,entry.assignment_id,{fingerprint:d.fingerprint,refresh:true});if(!alive.current)return;
   setData({...d,current:r.assessment,history:[r.assessment,...d.history]});setSelected(r.assessment.id);
  }catch(e){if(alive.current)setError(e.message);}finally{if(alive.current)setLoading(false);}}
+ async function verifyOutstanding(){if(dirty||busy||loading||!data?.current)return;setLoading(true);setError('');try{
+  const r=await api(queueId,entry.assignment_id,{action:'verify',assessmentId:data.current.id,fingerprint:data.fingerprint});if(!alive.current)return;
+  setData({...data,current:r.assessment,history:[r.assessment,...data.history.filter(h=>h.id!==r.assessment.id)]});setSelected(r.assessment.id);
+ }catch(e){if(alive.current)setError(e.message);}finally{if(alive.current)setLoading(false);}}
  const row=data?.history.find(r=>r.id===selected),p=row?.payload,result=p?.result,current=!!row&&row.id===data?.current?.id;
  const appended=p?.brief&&brief.includes(p.brief),tooLong=p?.brief&&brief.length+p.brief.length+2>20000;
+ const outstanding=p?.verification?p.verification.items.filter(i=>i.status==='Unresolved').length:(result?.changes.filter(c=>c.needsVerification).length||0)+(result?.checks.length||0);
  return <section className="work-assessment" aria-label="Page assessment and brief">
   <header><div><h4>Page assessment & brief</h4><p>Live page review and specific editing recommendations, saved separately from your instructions.</p></div></header>
   {!enabled&&<p>Open this task to prepare its page assessment.</p>}
@@ -39,10 +44,12 @@ export default function WorkAssessment({queueId,entry,enabled,canEdit,dirty,busy
   {result&&<>
    <p className="work-assessment-meta">{current?'Current saved assessment':'Earlier assessment — reassess before using'} · {new Date(row.created_at).toLocaleString()} · AI-assisted proposal</p>
    <p>{result.summary}</p>
+   <div className="work-assessment-actions"><button type="button" disabled={!current||!canEdit||dirty||busy||loading||!outstanding} onClick={verifyOutstanding}>Verify outstanding items</button><span>{outstanding} outstanding {outstanding===1?'item':'items'}</span></div>
+   {p.verification&&<section aria-label="Verification results"><h5>Verification results</h5><p>Saved {new Date(p.verification.checkedAt).toLocaleString()} · The corrected brief is saved separately from your instructions.</p>{p.verification.items.map(v=><details key={v.id}><summary><strong>{v.status}</strong> · {v.section}</summary><p><strong>Question:</strong> {v.question}</p><p><strong>{v.status==='Unresolved'?'Still needs an answer':'Corrected instruction'}:</strong> {v.status==='Unresolved'?v.reason:v.instruction}</p><p>{v.reviewReason}</p>{[...(v.evidence||[]),...(v.reviewEvidence||[])].map((e,i)=><blockquote key={i}><p>{e.text}</p><a href={e.url} target="_blank" rel="noreferrer">Source ↗</a><small> · Read {new Date(e.fetchedAt).toLocaleDateString()}</small></blockquote>)}</details>)}<details><summary>Research attempts</summary>{p.verification.attempts.map((a,i)=><p key={i}>{a.status} · {a.url||a.query}{a.urls?.length?' · '+a.urls.join(', '):''}</p>)}</details></section>}
    <h5>Recommended changes</h5><ol className="work-assessment-changes">{result.changes.map((c,i)=><li key={i}><strong>{c.section}</strong><p>{c.change}</p><details><summary>Why and supporting sources{c.needsVerification?' · verification needed':''}</summary><p>{c.why}</p>{!c.evidence.length&&<p>No supporting passage retrieved. Verify this task before implementation.</p>}{c.evidence.map((e,n)=><blockquote key={n}><p>{e.text}</p><a href={e.url} target="_blank" rel="noreferrer">{e.kind==='official'?'Official source':e.kind==='target'?'Current target page':'Related page'} ↗</a></blockquote>)}</details></li>)}</ol>
    <details><summary>Suggested outline, what to preserve and internal links</summary><h5>Suggested outline</h5><ol>{result.outline.map((x,i)=><li key={i}>{x}</li>)}</ol><h5>Preserve</h5><ul>{result.preserve.map((x,i)=><li key={i}>{x}</li>)}</ul><h5>Internal links</h5>{result.links.map((x,i)=><p key={i}><a href={x.url} target="_blank" rel="noreferrer">{x.url.replace('https://www.medicarefaq.com','')}</a> — {x.reason}</p>)}</details>
    <details><summary>Checks before publication and source dates</summary><ul>{[...result.checks,...p.warnings].map((x,i)=><li key={i}>{x}</li>)}</ul><p>Source references support review; they do not guarantee factual accuracy or ranking improvements.</p><ul>{p.sources.map(s=><li key={s.id}><a href={s.url} target="_blank" rel="noreferrer">{s.kind}: {s.url}</a> · Read {new Date(s.fetchedAt).toLocaleDateString()}{s.truncated?' · excerpt limited':''}</li>)}</ul><pre>{JSON.stringify(p.sourceDates,null,2)}</pre></details>
-   <details><summary>Generated implementation brief</summary><pre>{p.brief}</pre></details>
+   <details><summary>{p.verification?'Corrected implementation brief':'Generated implementation brief'}</summary><pre>{p.brief}</pre></details>
    <button type="button" disabled={!canEdit||!current||loading||busy||dirty||appended||tooLong} onClick={()=>onUse(brief+'\n\n'+p.brief)}>{appended?'Proposal already in instructions':'Add proposal to my instructions'}</button>
    <p className="work-assessment-meta">{tooLong?'This proposal would exceed the instruction limit. Shorten your instructions first.':'Adds below your existing text for editing. Save changes when ready, or discard to undo.'}</p>
   </>}

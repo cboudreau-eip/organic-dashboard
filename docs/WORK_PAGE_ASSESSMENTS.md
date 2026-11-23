@@ -43,3 +43,21 @@ and after the live workflow test. Refreshing an assessment retains older version
 Deployment requires applying `20261123162754_work_page_assessments.sql` first. Uses the
 existing server-side Anthropic and Supabase service-role configuration; no browser
 credentials or new public access are introduced. Endpoint: `/api/content-work/assessment`.
+
+## Outstanding-item verification
+
+**Verify outstanding items** processes flagged recommendations and the publication
+checklist. Two bounded searches discover official sources; up to six allowlisted
+government HTML pages are read directly. Search excerpts, unreadable PDFs and flattened
+eligibility questionnaires cannot establish support. Retrieval attempts and failures
+are retained. A separate model review must agree that the exact official passages
+support every material qualification before an item becomes Supported or Correction
+needed; otherwise it remains Unresolved. This does not certify publication readiness.
+
+Each run creates a new assessment with a parent ID, per-item evidence and decisions,
+and a corrected Markdown brief. The old outline is replaced to avoid retaining its
+unverified claims. Previously resolved decisions survive a retry of remaining items.
+The server binds verification to the current saved assessment and checks the task
+fingerprint again before saving. Existing role/origin checks, rate limits and the
+single-running-job lock apply. Neither calendar rows nor saved editor instructions
+are written. Adding a corrected proposal is still a separate unsaved editor action.

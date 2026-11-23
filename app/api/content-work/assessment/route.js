@@ -5,9 +5,10 @@ import {authorizeGrowth,growthEnabled} from '../../../../lib/growth-hunter/acces
 import {targetResolutionStore} from '../../../../lib/research/target-resolution-store';
 import {assessmentHandlers} from '../../../../lib/work-queue/assessment-handler';
 import {prepareAssessment} from '../../../../lib/work-queue/assessment-provider';
+import {verifyAssessment} from '../../../../lib/work-queue/verification-provider';
 export const runtime='nodejs';
 export const dynamic='force-dynamic';
 export const maxDuration=300;
-const handlers=assessmentHandlers({access:async action=>authorizeGrowth(await serverAuth(),growthEnabled(),action),origin:siteUrl,store:targetResolutionStore,generate:prepareAssessment,configured:()=>!!process.env.ANTHROPIC_API_KEY});
+const handlers=assessmentHandlers({access:async action=>authorizeGrowth(await serverAuth(),growthEnabled(),action),origin:siteUrl,store:targetResolutionStore,generate:prepareAssessment,verify:verifyAssessment,configured:()=>!!process.env.ANTHROPIC_API_KEY});
 export const GET=handlers.GET;
 export const POST=handlers.POST;

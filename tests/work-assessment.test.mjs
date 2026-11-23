@@ -22,14 +22,14 @@ test('assessment references are traceable, unknown links rejected, and fingerpri
  const f=assessmentFingerprint(entry,{});assert.equal(f,assessmentFingerprint({...entry,status:'Completed',planned_date:'2027-02-01'},{}));assert.notEqual(f,assessmentFingerprint({...entry,brief:'Changed'},{}));assert.notEqual(f,assessmentFingerprint(entry,{gsc:{fetchedAt:'new'}}));
  assert.equal(assessmentCurrent({status:'complete',fingerprint:f,created_at:new Date().toISOString()},f),true);assert.equal(assessmentCurrent({status:'complete',fingerprint:f,created_at:'2020-01-01'},f),false);
 });
-function fixture({role='analyst',generate,existing=[]}={}){
+function fixture({role='analyst',generate,verify,existing=[]}={}){
  const state={queue:{id,source_plan_id:id,entries:[structuredClone(entry)]},plan:{payload:{items:[structuredClone(entry.snapshot)],sourceDates:{}},edits:{}},rows:existing,writes:[],generations:0};
  const client={from(table){let op='select',values,filters=[];const rows=()=>table==='content_work_pilots'?[state.queue]:table==='proposed_content_plans'?[state.plan]:state.rows;
   const chain={select(){return chain;},eq(k,v){filters.push(r=>r[k]===v);return chain;},lt(k,v){filters.push(r=>r[k]<v);return chain;},gte(k,v){filters.push(r=>r[k]>=v);return chain;},order(){return chain;},limit(){return chain;},insert(v){op='insert';values=v;return chain;},update(v){op='update';values=v;return chain;},maybeSingle:()=>exec(true),single:()=>exec(true),then:(a,b)=>exec(false).then(a,b)};
   async function exec(single){let result;if(op==='insert'){state.writes.push(table);result={...values,id:'job',created_at:new Date().toISOString()};state.rows.unshift(result);return {data:result};}
    result=rows().filter(r=>table!=='content_work_assessments'||filters.every(f=>f(r)));if(op==='update'){state.writes.push(table);result.forEach(r=>Object.assign(r,values));}return {data:single?result[0]||null:result};}return chain;
  }};
- const h=assessmentHandlers({access:async action=>{if(action==='run'&&role==='viewer')throw Object.assign(Error('Forbidden'),{status:403});return {client,user:{id},role};},origin:()=> 'https://test.example',configured:()=>true,store:()=>client,generate:async(...args)=>{state.generations++;return generate?generate(state,...args):{brief:'Generated',result:output};}});
+ const h=assessmentHandlers({access:async action=>{if(action==='run'&&role==='viewer')throw Object.assign(Error('Forbidden'),{status:403});return {client,user:{id},role};},origin:()=> 'https://test.example',configured:()=>true,store:()=>client,verify,generate:async(...args)=>{state.generations++;return generate?generate(state,...args):{brief:'Generated',result:output};}});
  const post=(extra={},origin='https://test.example')=>h.POST(new Request('https://test.example/api/content-work/assessment',{method:'POST',headers:{origin,'Content-Type':'application/json'},body:JSON.stringify({queueId:id,assignmentId:'a',fingerprint:assessmentFingerprint(state.queue.entries[0],{}),...extra})}));return {state,h,post};
 }
 test('generation saves only separate assessment rows, caches success and denies forged inputs/viewers',async()=>{
@@ -39,4 +39,11 @@ test('generation saves only separate assessment rows, caches success and denies 
 test('failed generation and edits during assessment never replace saved instructions',async()=>{
  const f=fixture({generate:async()=>{throw Error('Source down');}});assert.equal((await f.post()).status,503);assert.equal(f.state.rows[0].status,'failed');assert.equal(f.state.queue.entries[0].brief,'Keep my edits');
  const g=fixture({generate:async state=>{state.queue.entries[0].brief='New user edits';return {};}});assert.equal((await g.post()).status,409);assert.equal(g.state.rows[0].status,'failed');assert.equal(g.state.queue.entries[0].brief,'New user edits');
+});
+test('verification binds to the current saved assessment and never writes briefs or dates',async()=>{
+ const prior={id:'prior',queue_id:id,assignment_id:'a',fingerprint:assessmentFingerprint(entry,{}),status:'complete',created_at:new Date().toISOString(),payload:{result:output}};let verified=0;
+ const f=fixture({existing:[prior],verify:async(e,dates,parent)=>{assert.equal(parent.id,'prior');verified++;return {result:output,verification:{parentAssessmentId:parent.id}};}}),before=JSON.stringify(f.state.queue);
+ assert.equal((await f.post({action:'verify',assessmentId:'wrong'})).status,409);assert.equal(verified,0);
+ assert.equal((await f.post({action:'verify',assessmentId:'prior'})).status,201);assert.equal(verified,1);assert.equal(f.state.generations,0);assert.equal(JSON.stringify(f.state.queue),before);assert.ok(f.state.writes.every(t=>t==='content_work_assessments'));
+ assert.equal((await fixture({role:'viewer',existing:[prior],verify:async()=>({})}).post({action:'verify',assessmentId:'prior'})).status,403);
 });
