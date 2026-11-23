@@ -11,6 +11,10 @@ searches Medicare.gov/CMS.gov and directly retrieves up to three supported offic
 documents. Missing sources are explicit. Every proposed change references supplied
 passages; suggested links must be retrieved related pages. Recommendations remain
 AI-assisted editorial proposals, not verified medical advice or publication approval.
+A separate model review corrects the initial proposal before it is saved or offered
+for use. Conditional questionnaire branches cannot establish general eligibility.
+Failure of either generation or review leaves no usable new proposal. A versioned
+fingerprint invalidates results made before these review rules were introduced.
 
 Results are stored separately in `content_work_assessments`, with RLS reads matching
 the existing team roles and server-only writes. Each attempt retains its timestamp,

@@ -1,10 +1,17 @@
 import test from 'node:test';import assert from 'node:assert/strict';
-import {assessmentFingerprint,assessmentCurrent,checkedAssessment,assessmentBrief} from '../lib/work-queue/assessment.js';
+import {assessmentFingerprint,assessmentCurrent,checkedAssessment,assessmentBrief,reviewedAssessment,assessmentReviewSystem} from '../lib/work-queue/assessment.js';
 import {assessmentHandlers} from '../lib/work-queue/assessment-handler.js';
 const id='11111111-1111-4111-8111-111111111111';
 const entry={assignment_id:'a',planned_date:'2027-01-05',status:'In progress',brief:'Keep my edits',snapshot:{id:'a',title:'Switch plans',targetUrl:'https://www.medicarefaq.com/faqs/switch',terms:['without underwriting']}};
 const pages=[{id:'target',url:entry.snapshot.targetUrl,kind:'target',passages:[{id:'targetp1',text:'Enrollment periods and underwriting are distinct.'}]},{id:'official',url:'https://www.medicare.gov/medigap',kind:'official',passages:[{id:'officialp1',text:'Official protection conditions.'}]}];
 const output={summary:'Clarify eligibility.',changes:[{section:'Enrollment',change:'Separate enrollment from protections.',why:'The distinction is unclear.',evidenceIds:['targetp1'],needsVerification:false}],preserve:['Keep the comparison'],outline:['Direct answer'],checks:['Verify state rules'],links:[]};
+test('independent review replaces unsafe draft wording and never falls back when review fails',async()=>{
+ const draft={...output,summary:'Initial draft'},corrected={...output,summary:'Separate plan changes from guaranteed issue eligibility.'};let calls=0;
+ const result=await reviewedAssessment({assignment:entry.snapshot},pages,async(system,input)=>{calls++;if(calls===1)return draft;assert.equal(system,assessmentReviewSystem);assert.equal(input.proposal,draft);return corrected;});
+ assert.equal(calls,2);assert.equal(result.summary,corrected.summary);
+ calls=0;await assert.rejects(reviewedAssessment({},pages,async()=>{if(++calls===1)return draft;throw Error('Reviewer unavailable');}),/Reviewer unavailable/);
+ calls=0;await assert.rejects(reviewedAssessment({},pages,async()=>++calls===1?draft:{...corrected,changes:[{...corrected.changes[0],evidenceIds:['invented']}]}),/Unknown source/);
+});
 test('assessment references are traceable, unknown links rejected, and fingerprints preserve dates/status independence',()=>{
  const r=checkedAssessment(output,pages);assert.equal(r.changes[0].needsVerification,true);assert.equal(r.changes[0].evidence[0].text,pages[0].passages[0].text);assert.match(assessmentBrief(r,entry.snapshot.targetUrl),/Verify state rules/);
  assert.throws(()=>checkedAssessment({...output,links:[{sourceId:'invented',reason:'Link'}]},pages));assert.throws(()=>checkedAssessment({...output,changes:[{...output.changes[0],evidenceIds:['fake']}]},pages));

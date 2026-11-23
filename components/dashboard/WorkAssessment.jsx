@@ -31,7 +31,7 @@ export default function WorkAssessment({queueId,entry,enabled,canEdit,dirty,busy
  return <section className="work-assessment" aria-label="Page assessment and brief">
   <header><div><h4>Page assessment & brief</h4><p>Live page review and specific editing recommendations, saved separately from your instructions.</p></div></header>
   {!enabled&&<p>Open this task to prepare its page assessment.</p>}
-  {loading&&<p role="status">Reading the page, checking sources and preparing your brief… This can take up to three minutes. Your instructions stay unchanged.</p>}
+  {loading&&<p role="status">Reading the page, checking sources and reviewing your brief… This can take up to four minutes. Your instructions stay unchanged.</p>}
   {error&&<p role="alert">{error}</p>}
   {enabled&&data&&!data.hasTarget&&<p>Choose a MedicareFAQ target page in Calendar → Edit assignment details first.</p>}
   {enabled&&!loading&&<div className="work-assessment-actions"><button type="button" disabled={!canEdit||dirty||busy||data?.hasTarget===false} onClick={refresh}>{row?'Reassess page':'Prepare assessment'}</button><button type="button" disabled={dirty||busy} onClick={()=>{started.current=false;setRevision(n=>n+1);}}>Check saved assessment</button></div>}

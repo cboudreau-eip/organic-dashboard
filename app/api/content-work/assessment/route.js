@@ -7,7 +7,7 @@ import {assessmentHandlers} from '../../../../lib/work-queue/assessment-handler'
 import {prepareAssessment} from '../../../../lib/work-queue/assessment-provider';
 export const runtime='nodejs';
 export const dynamic='force-dynamic';
-export const maxDuration=180;
+export const maxDuration=240;
 const handlers=assessmentHandlers({access:async action=>authorizeGrowth(await serverAuth(),growthEnabled(),action),origin:siteUrl,store:targetResolutionStore,generate:prepareAssessment,configured:()=>!!process.env.ANTHROPIC_API_KEY});
 export const GET=handlers.GET;
 export const POST=handlers.POST;
