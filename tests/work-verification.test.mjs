@@ -2,6 +2,11 @@ import test from 'node:test';import assert from 'node:assert/strict';
 import {outstandingItems,verifyVerdicts,validatedVerification,correctedAssessment,annotationVerdict,isAnnotationCheck} from '../lib/work-queue/verification.js';
 const page={id:'o',kind:'official',url:'https://www.medicare.gov/example',fetchedAt:'2026-11-23',passages:[{id:'op1',text:'Qualifying conditions apply.'}]};
 const parent={id:'parent',payload:{target:'https://www.medicarefaq.com/faqs/example',sources:[],warnings:[],sourceDates:{},result:{summary:'Old',changes:[{section:'Eligibility',change:'Original uncertain instruction',why:'Check facts',needsVerification:true,evidence:[]}],checks:['Check trial rights'],outline:['Old unverified claim'],preserve:['Page structure'],links:[]}}};
+test('agreement between models cannot clear an underqualified trial-right instruction',()=>{
+ const v={id:'change:0',status:'Correction needed',section:'Eligibility',instruction:'Add that first MA plan within 12 months qualifies for trial rights.',reason:'Model agreed.',evidence:[]};
+ const saved=correctedAssessment(parent,[v],[{id:v.id,supported:true,reason:'Agreed.',evidence:[]}],[],[]);
+ assert.equal(saved.verification.items[0].status,'Unresolved');assert.match(saved.verification.items[0].remainingQuestion,/age or previous/);assert.ok(!saved.brief.split('### Unresolved')[0].includes(v.instruction));
+});
 test('partial resolutions separate usable instructions and preserve unanswered questions across retries',()=>{
  const items=outstandingItems(parent.payload),proposed={items:items.map(i=>({id:i.id,status:'Partially resolved',evidenceType:'Factual rule',instruction:'Separate timing from eligibility.',remainingQuestion:'Which state protection applies?',reason:'Federal guidance supports the narrower change.',evidenceIds:['op1']}))};
  const v=verifyVerdicts(proposed,items,[page]),reviews=verifyVerdicts({items:items.map(i=>({id:i.id,supported:true,reason:'Narrow instruction supported.',evidenceIds:['op1']}))},v,[page],true);
