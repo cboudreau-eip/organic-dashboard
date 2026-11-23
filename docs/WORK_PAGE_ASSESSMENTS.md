@@ -8,8 +8,9 @@ results; analysts/admins can generate. Failed attempts require an explicit retry
 The server reads the task and current source-plan edits, not client-supplied page
 content. It reads the target MedicareFAQ page, discovers up to three related pages,
 searches Medicare.gov/CMS.gov and directly retrieves up to three supported official
-documents. Missing sources are explicit. Every proposed change references supplied
-passages; suggested links must be retrieved related pages. Recommendations remain
+documents. Missing sources are explicit. Proposed changes reference supplied
+passages where available; uncited tasks are always marked for verification and
+cannot claim official support. Suggested links must be retrieved related pages. Recommendations remain
 AI-assisted editorial proposals, not verified medical advice or publication approval.
 A separate model review corrects the initial proposal before it is saved or offered
 for use. Conditional questionnaire branches cannot establish general eligibility.

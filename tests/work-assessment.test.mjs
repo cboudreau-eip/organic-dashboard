@@ -16,6 +16,8 @@ test('independent review replaces unsafe draft wording and never falls back when
 test('assessment references are traceable, unknown links rejected, and fingerprints preserve dates/status independence',()=>{
  const r=checkedAssessment(output,pages);assert.equal(r.changes[0].needsVerification,true);assert.equal(r.changes[0].evidence[0].text,pages[0].passages[0].text);assert.match(assessmentBrief(r,entry.snapshot.targetUrl),/Verify state rules/);
  assert.throws(()=>checkedAssessment({...output,links:[{sourceId:'invented',reason:'Link'}]},pages));assert.throws(()=>checkedAssessment({...output,changes:[{...output.changes[0],evidenceIds:['fake']}]},pages));
+ const unresolved=checkedAssessment({...output,changes:[{...output.changes[0],evidenceIds:[]}]},pages);assert.equal(unresolved.changes[0].needsVerification,true);assert.match(assessmentBrief(unresolved,entry.snapshot.targetUrl),/No supporting passage retrieved/);
+ const qualified=checkedAssessment({...output,changes:[{...output.changes[0],evidenceIds:Array(6).fill('targetp1')}]},pages);assert.equal(qualified.changes[0].evidence.length,1);
  const f=assessmentFingerprint(entry,{});assert.equal(f,assessmentFingerprint({...entry,status:'Completed',planned_date:'2027-02-01'},{}));assert.notEqual(f,assessmentFingerprint({...entry,brief:'Changed'},{}));assert.notEqual(f,assessmentFingerprint(entry,{gsc:{fetchedAt:'new'}}));
  assert.equal(assessmentCurrent({status:'complete',fingerprint:f,created_at:new Date().toISOString()},f),true);assert.equal(assessmentCurrent({status:'complete',fingerprint:f,created_at:'2020-01-01'},f),false);
 });
