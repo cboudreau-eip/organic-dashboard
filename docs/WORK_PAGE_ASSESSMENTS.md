@@ -48,11 +48,18 @@ credentials or new public access are introduced. Endpoint: `/api/content-work/as
 
 **Verify outstanding items** processes flagged recommendations and the publication
 checklist. Two bounded searches discover official sources; up to six allowlisted
-government HTML pages are read directly. Search excerpts, unreadable PDFs and flattened
-eligibility questionnaires cannot establish support. Retrieval attempts and failures
+government HTML or PDF documents are read directly. PDF.js extracts bounded documents
+(8 MB, 100 pages, 20-second parsing budget); up to 14 relevant complete pages include
+neighboring pages for table conditions. Saved references include PDF page numbers and
+document page labels. Search excerpts, unreadable documents and flattened eligibility
+questionnaires cannot establish support. Retrieval attempts and failures
 are retained. A separate model review must agree that the exact official passages
-support every material qualification before an item becomes Supported or Correction
-needed; otherwise it remains Unresolved. This does not certify publication readiness.
+support every material qualification in a ready instruction. Page-observation checks
+can cite actual target text, while factual rules require government evidence. A
+Partially resolved result saves a narrow supported instruction and a separate unanswered
+question; it remains eligible for verification. Unsupported instructions stay out of
+the Ready to implement brief. Existing results do not anchor reruns: only the original
+questions are supplied with fresh evidence. This does not certify publication readiness.
 
 Each run creates a new assessment with a parent ID, per-item evidence and decisions,
 and a corrected Markdown brief. The old outline is replaced to avoid retaining its
