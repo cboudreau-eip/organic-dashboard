@@ -35,3 +35,10 @@
 .work-status[data-stage="Completed"]{background:#dceee5;color:#1c6247}
 .work-counts>span[data-stage="In progress"]{background:#e5f0f8;color:#245976}.work-counts>span[data-stage="Completed"]{background:#dceee5;color:#1c6247}
 .work-pilot .work-tasks button:disabled{opacity:1;cursor:not-allowed}
+
+/* A clear next action without changing the saved plan or task order. */
+.work-next{display:flex;align-items:center;justify-content:space-between;gap:20px;padding:18px 22px;border:1px solid #c7d7ce;border-radius:12px;background:#fff;margin:16px 0}
+.work-next>div{min-width:0}.work-next h3{margin:6px 0;font-size:17px;line-height:1.5;overflow-wrap:anywhere}.work-next p{margin:0;font-size:12px;color:#526c60}.work-next button{flex-shrink:0}
+.work-action-summary{border-left:3px solid #17664f;padding:0 0 0 14px;margin-bottom:22px}.work-action-summary h4{margin:0 0 8px;font-size:16px}.work-action-summary p{margin:0 0 8px;white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.6}.work-action-summary small{color:#526c60;font-size:12px}
+@media(max-width:850px){.work-pilot[data-task-view="detail"]>.work-next{display:none}}
+@media(max-width:520px){.work-next{align-items:stretch;flex-direction:column;padding:16px}}

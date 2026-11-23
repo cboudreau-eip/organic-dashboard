@@ -52,3 +52,16 @@ test('task navigation follows filters, restores list position and protects unsav
  await act(async()=>list.querySelector('[data-task-id="a2"]').click());assert.equal(document.querySelector('.work-editor textarea').value,'Saved brief 2');assert.equal(writes,0);assert.equal(JSON.stringify(entries),original);
  }finally{await act(async()=>root.unmount());Object.assign(globalThis,old);dom.window.close();}
 });
+test('next-task shortcut favors in-progress work, respects filters and never writes data',async()=>{
+ const dom=new JSDOM('<div id="root"></div>',{url:'https://dashboard.example'}),old={window:globalThis.window,document:globalThis.document,fetch:globalThis.fetch,IS_REACT_ACT_ENVIRONMENT:globalThis.IS_REACT_ACT_ENVIRONMENT};let writes=0;
+ const entries=['Published','Tentative','In progress'].map((status,i)=>({assignment_id:'a'+i,planned_date:'2027-01-0'+(i+1),status,brief:'Saved instructions',snapshot:{title:'Task '+i,category:'High intent',action:'Update the comparison',terms:[]}}));
+ Object.assign(globalThis,{window:dom.window,document:dom.window.document,IS_REACT_ACT_ENVIRONMENT:true,fetch:async(u,o)=>{if(o?.method)writes++;return Response.json({queue:{id:'q',version:1,entries},canEdit:true});}});
+ const root=createRoot(document.getElementById('root'));
+ try{await act(async()=>root.render(React.createElement(mod.exports.default,{active:true})));
+ assert.match(document.querySelector('.work-next').textContent,/CONTINUE WORKING/);
+ await act(async()=>document.querySelector('.work-next button').click());assert.equal(document.querySelector('.work-editor textarea').value,'Saved instructions');assert.equal(document.querySelector('.work-tasks [aria-pressed=true]').dataset.taskId,'a2');
+ assert.match(document.querySelector('.work-action-summary').textContent,/Update the comparison/);
+ await act(async()=>{const el=document.querySelector('.work-filter-grid select');el.value='To do';el.dispatchEvent(new dom.window.Event('change',{bubbles:true}));});assert.match(document.querySelector('.work-next').textContent,/NEXT TO DO/);
+ await act(async()=>document.querySelector('.work-next button').click());assert.equal(document.querySelector('.work-tasks [aria-pressed=true]').dataset.taskId,'a1');assert.equal(writes,0);
+ }finally{await act(async()=>root.unmount());Object.assign(globalThis,old);dom.window.close();}
+});
