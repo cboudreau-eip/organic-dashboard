@@ -7,6 +7,11 @@ test('agreement between models cannot clear an underqualified trial-right instru
  const saved=correctedAssessment(parent,[v],[{id:v.id,supported:true,reason:'Agreed.',evidence:[]}],[],[]);
  assert.equal(saved.verification.items[0].status,'Unresolved');assert.match(saved.verification.items[0].remainingQuestion,/age or previous/);assert.ok(!saved.brief.split('### Unresolved')[0].includes(v.instruction));
 });
+test('remaining questions stay open even when model labels a correction complete',()=>{
+ const v={id:'change:0',status:'Correction needed',section:'Eligibility',instruction:'Remove the misleading timing guarantee.',remainingQuestion:'Which state rule applies?',reason:'Supported narrow removal.',evidence:[]};
+ const saved=correctedAssessment(parent,[v],[{id:v.id,supported:true,reason:'Supported.',evidence:[]}],[],[]);
+ assert.equal(saved.verification.items[0].status,'Partially resolved');assert.match(saved.brief,/Which state rule applies/);assert.equal(outstandingItems(saved).length,1);
+});
 test('partial resolutions separate usable instructions and preserve unanswered questions across retries',()=>{
  const items=outstandingItems(parent.payload),proposed={items:items.map(i=>({id:i.id,status:'Partially resolved',evidenceType:'Factual rule',instruction:'Separate timing from eligibility.',remainingQuestion:'Which state protection applies?',reason:'Federal guidance supports the narrower change.',evidenceIds:['op1']}))};
  const v=verifyVerdicts(proposed,items,[page]),reviews=verifyVerdicts({items:items.map(i=>({id:i.id,supported:true,reason:'Narrow instruction supported.',evidenceIds:['op1']}))},v,[page],true);
