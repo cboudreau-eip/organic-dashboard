@@ -1,10 +1,11 @@
 import test from 'node:test';import assert from 'node:assert/strict';
-import {assessmentFingerprint,assessmentCurrent,checkedAssessment,assessmentBrief,reviewedAssessment,assessmentReviewSystem} from '../lib/work-queue/assessment.js';
+import {assessmentFingerprint,assessmentCurrent,checkedAssessment,assessmentBrief,reviewedAssessment,assessmentReviewSystem,usableAssessmentAuthority} from '../lib/work-queue/assessment.js';
 import {assessmentHandlers} from '../lib/work-queue/assessment-handler.js';
 const id='11111111-1111-4111-8111-111111111111';
 const entry={assignment_id:'a',planned_date:'2027-01-05',status:'In progress',brief:'Keep my edits',snapshot:{id:'a',title:'Switch plans',targetUrl:'https://www.medicarefaq.com/faqs/switch',terms:['without underwriting']}};
 const pages=[{id:'target',url:entry.snapshot.targetUrl,kind:'target',passages:[{id:'targetp1',text:'Enrollment periods and underwriting are distinct.'}]},{id:'official',url:'https://www.medicare.gov/medigap',kind:'official',passages:[{id:'officialp1',text:'Official protection conditions.'}]}];
 const output={summary:'Clarify eligibility.',changes:[{section:'Enrollment',change:'Separate enrollment from protections.',why:'The distinction is unclear.',evidenceIds:['targetp1'],needsVerification:false}],preserve:['Keep the comparison'],outline:['Direct answer'],checks:['Verify state rules'],links:[]};
+test('flattened eligibility questionnaire branches cannot establish official support',()=>{assert.equal(usableAssessmentAuthority({text:'Your answer: You qualify. Your answer: You do not qualify.'}),false);assert.equal(usableAssessmentAuthority({text:'Outside this enrollment period an insurer may deny an application.'}),true);});
 test('independent review replaces unsafe draft wording and never falls back when review fails',async()=>{
  const draft={...output,summary:'Initial draft'},corrected={...output,summary:'Separate plan changes from guaranteed issue eligibility.'};let calls=0;
  const result=await reviewedAssessment({assignment:entry.snapshot},pages,async(system,input)=>{calls++;if(calls===1)return draft;assert.equal(system,assessmentReviewSystem);assert.equal(input.proposal,draft);return corrected;});

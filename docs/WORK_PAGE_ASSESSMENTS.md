@@ -13,7 +13,11 @@ passages where available; uncited tasks are always marked for verification and
 cannot claim official support. Suggested links must be retrieved related pages. Recommendations remain
 AI-assisted editorial proposals, not verified medical advice or publication approval.
 A separate model review corrects the initial proposal before it is saved or offered
-for use. Conditional questionnaire branches cannot establish general eligibility.
+for use. The review uses Sonnet 4.5 by default (`WORK_ASSESSMENT_REVIEW_MODEL`
+can override it); source search and drafting retain the existing model setting.
+Conditional questionnaire branches cannot establish general eligibility.
+Combined questionnaire answers are excluded from citation evidence. The independent
+reviewer receives candidate section names rather than the draft's replacement prose.
 Failure of either generation or review leaves no usable new proposal. A versioned
 fingerprint invalidates results made before these review rules were introduced.
 One bounded formatting repair can correct invalid references or oversized fields
