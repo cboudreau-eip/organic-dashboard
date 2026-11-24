@@ -13,3 +13,8 @@ test('plan benefit instructions cannot pass with unrelated official evidence and
  const saved=correctedAssessment(parent,[{...item,section:'Benefits'}],[{id:item.id,supported:true,reason:'Model agrees.',evidence:[]}],[],[]);
  assert.equal(saved.verification.items[0].status,'Unresolved');assert.ok(!saved.brief.split('### Unresolved')[0].includes(item.instruction));
 });
+import {officialTableRows,verificationPassages} from '../lib/work-queue/verification-sources.js';
+test('official table reader preserves named columns and accessible Yes/No values',()=>{
+ const html='<table><thead><tr><th>Benefit</th><th>Plan G</th><th>Plan N</th></tr></thead><tbody><tr><th>Part A deductible</th><td><span aria-label="Yes">​</span></td><td><span aria-label="Yes">​</span></td></tr><tr><th>Part B deductible</th><td><span aria-label="No">​</span></td><td></td></tr></tbody></table>';
+ const rows=officialTableRows(html);assert.match(rows[0],/Part A deductible \| Plan N: Yes/);assert.match(rows[1],/Plan G: No/);assert.match(rows[1],/Plan N: No readable value/);assert.equal(verificationPassages({id:'s',text:'Body',tableRows:rows})[0].text,rows[0]);assert.deepEqual(officialTableRows(html.replace('<th>Benefit','<th colspan="2">Benefit')),[]);
+});
