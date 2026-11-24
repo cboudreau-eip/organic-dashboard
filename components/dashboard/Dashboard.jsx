@@ -18,11 +18,13 @@ import GrowthHunter from '../growth-hunter/GrowthHunter';
 import AiVisibility from './AiVisibility';
 import ContentPlan from './ContentWorkspace';
 import PaidSearchSource from './PaidSearchSource';
+import DatoramaImport from './DatoramaImport';
 import '../growth-hunter/growth-hunter.css';
 
 // React owns this boundary; the preserved demo renderer owns its descendants.
 export default function Dashboard({ owner = false, userEmail, userId, growthAllowed = false }) {
   const host = useRef(null);
+  const [importOpen,setImportOpen]=useState(false),[datoramaRevision,setDatoramaRevision]=useState(0);
   const [launching, setLaunching] = useState(true);
   const finishLaunch = useCallback(() => setLaunching(false), []);
   const [accountHost, setAccountHost] = useState(null);
@@ -58,12 +60,13 @@ export default function Dashboard({ owner = false, userEmail, userId, growthAllo
     const aiVisibility=event=>setAiActive(event.detail);root.addEventListener('ai-visibility',aiVisibility);
     const sourcesVisibility=event=>setSourcesActive(event.detail);root.addEventListener('sources-visibility',sourcesVisibility);
     const planVisibility=event=>setPlanActive(event.detail);root.addEventListener('plan-visibility',planVisibility);
-    const dispose = initializeDashboard(root, userId, { growthAllowed });
-    return () => { root.removeEventListener('sources-visibility',sourcesVisibility); root.removeEventListener('plan-visibility',planVisibility); root.removeEventListener('growth-visibility', visibility);root.removeEventListener('ai-visibility',aiVisibility); dispose(); root.replaceChildren(); };
-  }, [userId, growthAllowed]);
-  return <>{paidHost && createPortal(<PaidSearchSource active={sourcesActive}/>,paidHost)}{planHost && createPortal(<ContentPlan active={planActive}/>,planHost)}{aiHost && createPortal(<AiVisibility active={aiActive} />,aiHost)}{growthHost && createPortal(<GrowthHunter active={growthActive} />, growthHost)}{launching && <CharlieLaunch onComplete={finishLaunch} />}<div className="dashboard-page" ref={host} inert={launching} aria-hidden={launching || undefined}>
+    const openImport=()=>setImportOpen(true);root.addEventListener('datorama-import-request',openImport);
+    const dispose = initializeDashboard(root, userId, { growthAllowed, owner });
+    return () => { root.removeEventListener('datorama-import-request',openImport); root.removeEventListener('sources-visibility',sourcesVisibility); root.removeEventListener('plan-visibility',planVisibility); root.removeEventListener('growth-visibility', visibility);root.removeEventListener('ai-visibility',aiVisibility); dispose(); root.replaceChildren(); };
+  }, [userId, growthAllowed, owner]);
+  return <>{importOpen&&<DatoramaImport onClose={()=>setImportOpen(false)} onImported={()=>{setDatoramaRevision(v=>v+1);host.current.dispatchEvent(new CustomEvent('datorama-imported'));}}/>}{paidHost && createPortal(<PaidSearchSource active={sourcesActive}/>,paidHost)}{planHost && createPortal(<ContentPlan active={planActive}/>,planHost)}{aiHost && createPortal(<AiVisibility active={aiActive} />,aiHost)}{growthHost && createPortal(<GrowthHunter active={growthActive} />, growthHost)}{launching && <CharlieLaunch onComplete={finishLaunch} />}<div className="dashboard-page" ref={host} inert={launching} aria-hidden={launching || undefined}>
     <p role="status">Loading dashboard…</p>
     <noscript>Enable JavaScript to explore the interactive dashboard.</noscript>
-  </div>{searchHost && createPortal(<><SearchPerformance onData={setSearchData} />{growthAllowed && <TrackedKeywords searchData={searchData} />}</>, searchHost)}{analyticsHost && createPortal(<OrganicOverview days={days} setDays={setDays} />, analyticsHost)}{leadsHost && createPortal(<section className="organic-live"><DatoramaPeriods /><details className="organic-definitions"><summary>Archived July–September 2026 landing-page report</summary><DatoramaSnapshot /></details><div className="organic-heading"><span className="organic-badge">POSTHOG · ORGANIC SEARCH</span><OrganicDateControls key={periodParams(days)} selection={normalizePeriod(days)} onApply={setDays} /></div><OrganicConversions key={periodParams(days)} days={days} detailed /></section>, leadsHost)}{accountHost && createPortal(<>{owner&&<a className="button" href="/admin">Manage users</a>}<Walkthrough key={userId} allowed={growthAllowed}/><form action={signOut} className="account-form"><span className="account-email" title={userEmail}>{userEmail}</span><button type="submit" className="button">Sign out</button></form></>, accountHost)}</>;
+  </div>{searchHost && createPortal(<><SearchPerformance onData={setSearchData} />{growthAllowed && <TrackedKeywords searchData={searchData} />}</>, searchHost)}{analyticsHost && createPortal(<OrganicOverview days={days} setDays={setDays} />, analyticsHost)}{leadsHost && createPortal(<section className="organic-live"><DatoramaPeriods key={datoramaRevision} /><details className="organic-definitions"><summary>Archived July–September 2026 landing-page report</summary><DatoramaSnapshot /></details><div className="organic-heading"><span className="organic-badge">POSTHOG · ORGANIC SEARCH</span><OrganicDateControls key={periodParams(days)} selection={normalizePeriod(days)} onApply={setDays} /></div><OrganicConversions key={periodParams(days)} days={days} detailed /></section>, leadsHost)}{accountHost && createPortal(<>{owner&&<a className="button" href="/admin">Manage users</a>}<Walkthrough key={userId} allowed={growthAllowed}/><form action={signOut} className="account-form"><span className="account-email" title={userEmail}>{userEmail}</span><button type="submit" className="button">Sign out</button></form></>, accountHost)}</>;
 }
 

@@ -4,6 +4,13 @@ import { JSDOM, VirtualConsole } from 'jsdom';
 import { dashboardMarkup } from '../components/dashboard/markup.js';
 import { initializeDashboard } from '../components/dashboard/runtime.js';
 
+test('Datorama card offers the owner an import action and hides it from other users',()=>{
+ const dom=new JSDOM('<div id="host"></div>',{url:'http://localhost/dashboard'}),names=['window','document','localStorage','AbortController','scrollTo','fetch'],previous=names.map(n=>Object.getOwnPropertyDescriptor(globalThis,n));
+ Object.assign(globalThis,{window:dom.window,document:dom.window.document,localStorage:dom.window.localStorage,AbortController:dom.window.AbortController,scrollTo:()=>{},fetch:async()=>({ok:true,json:async()=>({sources:[]})})});
+ const root=document.getElementById('host');let dispose;
+ try{root.innerHTML=dashboardMarkup;dispose=initializeDashboard(root,'owner',{owner:true});root.querySelector('[data-nav="connections"]').click();let opened=0;root.addEventListener('datorama-import-request',()=>opened++);const button=root.querySelector('[data-datorama-import]');assert.equal(button.textContent,'Import report');assert.match(button.closest('details').textContent,/Datorama export/);button.click();assert.equal(opened,1);dispose();root.innerHTML=dashboardMarkup;dispose=initializeDashboard(root,'viewer');root.querySelector('[data-nav="connections"]').click();assert.equal(root.querySelector('[data-datorama-import]'),null);}finally{dispose?.();names.forEach((n,i)=>previous[i]?Object.defineProperty(globalThis,n,previous[i]):delete globalThis[n]);dom.window.close();}
+});
+
 test('dashboard exposes only source-backed reports and retains chat history and remount cleanup', async () => {
   const errors=[]; const virtualConsole=new VirtualConsole();virtualConsole.on('jsdomError',error=>errors.push(error));
   const dom = new JSDOM('<div id="host"></div>', { url: 'http://localhost/dashboard', virtualConsole });

@@ -1,5 +1,5 @@
 import {dashboardUser} from '../../../../lib/auth/access';
-import { datoramaSnapshot } from '../../../../lib/datorama/snapshot';
+import { datoramaDaily } from '../../../../lib/datorama/daily';
 import { serverAuth } from '../../../../lib/auth/server';
 import { isTeamUser } from '../../../../lib/auth/config';
 import { organicOverview } from '../../../../lib/posthog/server';
@@ -40,7 +40,7 @@ export async function GET(request) {
       sources.push({id:'otterly',checkedAt:new Date().toISOString(),status:report?(report.period.end<reportPeriod().end?'Saved report behind latest day':'Daily sync'):'Not synced',fetchedAt:report?.fetchedAt,period:report?.period,timezone:'US · source timezone not supplied'});
     }catch{sources.push({id:'otterly',checkedAt:new Date().toISOString(),status:'Unavailable',error:'Open AI visibility to check access and saved reports.'});}
     try {
-      const snapshot = datoramaSnapshot();
+      const snapshot = await datoramaDaily();
       sources.push({ id: 'datorama', checkedAt: new Date().toISOString(), status: snapshot ? 'Imported snapshot' : 'Not imported', ...(snapshot ? { fetchedAt: snapshot.exportedAt, period: snapshot.period, timezone: 'Timezone not supplied' } : {}) });
     } catch { sources.push({ id: 'datorama', status: 'Unavailable', error: 'Imported report could not be loaded.' }); }
   }

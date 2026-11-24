@@ -1,0 +1,17 @@
+'use client';
+import {useEffect,useRef,useState} from 'react';
+import './datorama-import.css';
+export default function DatoramaImport({onClose,onImported}){
+ const dialog=useRef(null),[file,setFile]=useState(null),[when,setWhen]=useState(''),[confirmed,setConfirmed]=useState(false),[preview,setPreview]=useState(null),[busy,setBusy]=useState(false),[error,setError]=useState(''),[saved,setSaved]=useState(false);
+ useEffect(()=>{dialog.current.showModal();},[]);
+ const reset=()=>{setPreview(null);setError('');};
+ async function submit(action){setBusy(true);setError('');try{const form=new FormData();form.set('file',file);form.set('action',action);form.set('exportedAt',new Date(when).toISOString());form.set('scopeConfirmed',confirmed?'yes':'no');if(preview)form.set('previewId',preview.id);const r=await fetch('/api/analytics/datorama/import',{method:'POST',body:form});const result=await r.json();if(!r.ok)throw Error(result.error||'Could not import the workbook.');setPreview(result.preview);if(result.saved){setSaved(true);onImported();}}catch(e){setError(e.message);}finally{setBusy(false);}}
+ return <dialog className="datorama-import" ref={dialog} aria-labelledby="datorama-import-title" onCancel={e=>{e.preventDefault();if(!busy)onClose();}}><div className="datorama-import-heading"><div><small>DATA SOURCES · DATORAMA</small><h2 id="datorama-import-title">Import report</h2></div><button type="button" disabled={busy} onClick={onClose} aria-label="Close import">×</button></div>
+ {saved?<><p role="status">Report imported. Leads &amp; funnel and the source card now use your saved data. Previous imports and cohort checkpoints are retained.</p><button className="button primary" onClick={onClose}>Done</button></>:<form onSubmit={e=>{e.preventDefault();submit(preview?'import':'preview');}}>
+ <p>Upload the full SEO report from Datorama, including the daily Gross / Approved and SEO KPIs sheets. Preview the dates and counts before updating the dashboard.</p>
+ <fieldset disabled={busy}><label>Excel report (.xlsx, up to 3 MB)<input type="file" accept=".xlsx" required onChange={e=>{setFile(e.target.files?.[0]||null);reset();}}/></label><label>When was this report exported?<input type="datetime-local" value={when} required onChange={e=>{setWhen(e.target.value);reset();}}/></label>
+ <label className="datorama-confirm"><input type="checkbox" required checked={confirmed} onChange={e=>{setConfirmed(e.target.checked);reset();}}/>This export is filtered to MedicareFAQ.com and SEO, with policies reported by lead-created date.</label></fieldset>
+ {error&&<p role="alert">{error}</p>}{preview&&<section aria-label="Import preview"><h3>Review your import</h3><p><strong>{preview.period.start} – {preview.period.end}</strong><br/>Lead data through {preview.leadDataThrough}</p><p>Blank values stay missing; they are not converted to zero.</p><div className="datorama-import-table"><table><thead><tr><th>Metric</th><th>Reported total</th><th>Missing days</th></tr></thead><tbody>{preview.metrics.map(m=><tr key={m.key}><th>{m.label}</th><td>{m.total.toLocaleString()}</td><td>{m.missingDays}</td></tr>)}</tbody></table></div>{preview.blocked&&<p role="alert">{preview.blocked}</p>}</section>}
+ <footer><button type="button" className="button" disabled={busy} onClick={onClose}>Cancel</button><button className="button primary" disabled={busy||!file||!when||!confirmed||!!preview?.blocked}>{busy?'Checking report…':preview?'Import report':'Preview report'}</button></footer></form>}
+ </dialog>;
+}
