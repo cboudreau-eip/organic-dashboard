@@ -37,3 +37,9 @@ test('derived angles retain seed evidence and never claim measured exact-query d
  assert.equal(result.items[0].evidence.semrush[0].keyword,'compare medigap quotes');
  assert.equal(plan.payload.items.length,0);
 });
+test('a later review timeout retains only previously verified additions',async()=>{
+ const plan={payload:{items:[]}},source={evidence:{semrush:{rows:[{keyword:'compare medigap quotes for travelers',volume:100},{keyword:'compare medicare advantage plans for couples',volume:50}]}},inventory:{pages:Array.from({length:20},(_,i)=>({url:'https://www.medicarefaq.com/overview-'+i,title:'Medigap Medicare Advantage comparison guide',headings:[]}))}};
+ const html='<title>Medicare comparison guide</title><main>'+('General insurance overview. '.repeat(40))+'</main>';let calls=0;
+ const result=await expandPlan(plan,source,null,{},async url=>({url,html}),new Date(),async input=>{if(input.stage==='live'&&++calls>1)throw Error('timeout');return review(input);});
+ assert.equal(calls,2);assert.equal(result.items.length,1);assert.match(result.summary.examples[0].reason,/did not finish/);assert.equal(plan.payload.items.length,0);
+});
