@@ -11,3 +11,5 @@
 /* Reserve space for the scope label without crowding the title. */
 .demo-day button{height:136px;gap:5px}.demo-day{min-height:164px}.demo-agenda button{grid-template-columns:110px minmax(0,1fr) 100px 110px;align-items:center}
 @media(max-width:800px){.demo-agenda button{grid-template-columns:1fr}}
+
+.calendar-filter-summary{display:flex;align-items:center;flex-wrap:wrap;gap:12px;margin-top:14px;font-size:13px;color:#526c60}.calendar-filter-summary button{padding:7px 10px;font-size:12px}

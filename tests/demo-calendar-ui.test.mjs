@@ -1,6 +1,27 @@
 import ScopeBadge from './scope-badge-loader.mjs';
 import test from 'node:test';import assert from 'node:assert/strict';import React,{act} from 'react';import {createRoot} from 'react-dom/client';import {JSDOM} from 'jsdom';import {readFile} from 'node:fs/promises';import {createRequire} from 'node:module';import {resolve} from 'node:path';import {transform,loadBindings} from 'next/dist/build/swc/index.js';import * as calendar from '../lib/research/demo-calendar.js';import {generateProposals} from '../lib/research/proposals.js';import {DEFAULTS} from '../lib/research/contracts.js';
-const require=createRequire(import.meta.url);await loadBindings();const filename=resolve('components/dashboard/DemoCalendar.jsx');const {code}=await transform(await readFile(filename,'utf8'),{filename,jsc:{parser:{syntax:'ecmascript',jsx:true},transform:{react:{runtime:'automatic'}}},module:{type:'commonjs'}});const mod={exports:{}};new Function('require','module','exports',code)(p=>p==='./AssignmentScopeBadge'?ScopeBadge:p.endsWith('.css')?{}:p==='./AssignmentQuality'?()=>null:p.includes('demo-calendar')?calendar:p==='../../lib/work-queue/model'?require('../lib/work-queue/model.js'):require(p),mod,mod.exports);
+const require=createRequire(import.meta.url);await loadBindings();const filename=resolve('components/dashboard/DemoCalendar.jsx');const {code}=await transform(await readFile(filename,'utf8'),{filename,jsc:{parser:{syntax:'ecmascript',jsx:true},transform:{react:{runtime:'automatic'}}},module:{type:'commonjs'}});const mod={exports:{}};new Function('require','module','exports',code)(p=>p==='./AssignmentScopeBadge'?ScopeBadge:p.endsWith('.css')?{}:p==='./AssignmentQuality'?()=>null:p.includes('demo-calendar')?calendar:p.endsWith('/assignment-scope')?require('../lib/research/assignment-scope.js'):p==='../../lib/work-queue/model'?require('../lib/work-queue/model.js'):require(p),mod,mod.exports);
+test('scope filters combine with category, work in both views and never change saved assignments',async()=>{
+ const dom=new JSDOM('<div id="root"></div>'),old={window:globalThis.window,document:globalThis.document,fetch:globalThis.fetch,IS_REACT_ACT_ENVIRONMENT:globalThis.IS_REACT_ACT_ENVIRONMENT};Object.assign(globalThis,{window:dom.window,document:dom.window.document,fetch:async()=>Response.json({queue:null}),IS_REACT_ACT_ENVIRONMENT:true});
+ const items=generateProposals({},DEFAULTS).items,dates=calendar.generateCalendar(items),plan={id:'p',payload:{items},calendar:dates};
+ for(const i of items){i.targetUrl='https://www.medicarefaq.com/example';i.type='Existing-page investigation';}
+ const newItem=items.find(i=>dates.dates[i.id]==='2027-03-25'),reviewItem=items.find(i=>dates.dates[i.id]==='2027-01-05');
+ Object.assign(newItem,{targetUrl:'',type:'New-page proposal'});Object.assign(reviewItem,{targetUrl:'',type:'New-page investigation'});
+ const before=JSON.stringify(plan),root=createRoot(document.getElementById('root'));let writes=0;
+ const click=text=>act(async()=>[...document.querySelectorAll('button')].find(b=>b.textContent===text).click());
+ const choose=async(label,value)=>act(async()=>{const el=[...document.querySelectorAll('label')].find(l=>l.textContent.startsWith(label)).querySelector('select');el.value=value;el.dispatchEvent(new dom.window.Event('change',{bubbles:true}));});
+ try{
+  await act(async()=>root.render(React.createElement(mod.exports.default,{plan,canEdit:true,onChange:()=>writes++,onEdit:()=>{}})));
+  await choose('Content scope','New content');assert.equal(document.querySelectorAll('.demo-day button').length,0);assert.match(document.body.textContent,/1 across January–March/);
+  await click('View all matches');assert.equal(document.querySelectorAll('.demo-agenda button').length,1);assert.match(document.querySelector('.demo-agenda').textContent,/2027-03-25/);
+  await choose('Calendar category',newItem.category==='Evergreen'?'High intent':'Evergreen');assert.equal(document.querySelectorAll('.demo-agenda button').length,0);assert.match(document.body.textContent,/No assignments match/);
+  await click('Clear filters');assert.equal(document.querySelectorAll('.demo-agenda button').length,90);
+  await choose('Content scope','Needs review');assert.equal(document.querySelectorAll('.demo-agenda button').length,1);
+  await click('Month view');assert.equal(document.querySelectorAll('.demo-day button').length,1);
+  await choose('Content scope','Refresh');assert.equal(document.querySelectorAll('.demo-day button').length,30);
+  assert.equal(JSON.stringify(plan),before);assert.equal(writes,0);
+ }finally{await act(async()=>root.unmount());Object.assign(globalThis,old);dom.window.close();}
+});
 test('calendar supports month navigation, agenda, date fixing and assignment editing',async()=>{
  const dom=new JSDOM('<div id="root"></div>'),old={window:globalThis.window,document:globalThis.document,IS_REACT_ACT_ENVIRONMENT:globalThis.IS_REACT_ACT_ENVIRONMENT};Object.assign(globalThis,{window:dom.window,document:dom.window.document,IS_REACT_ACT_ENVIRONMENT:true});
  const items=generateProposals({},DEFAULTS).items,plan={id:'p',version:1,payload:{items},calendar:calendar.generateCalendar(items)},actions=[];const root=createRoot(document.getElementById('root'));
