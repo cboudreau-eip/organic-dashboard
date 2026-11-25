@@ -22,6 +22,14 @@ test('scope filters combine with category, work in both views and never change s
   assert.equal(JSON.stringify(plan),before);assert.equal(writes,0);
  }finally{await act(async()=>root.unmount());Object.assign(globalThis,old);dom.window.close();}
 });
+test('month and agenda show all assignments sharing a date',async()=>{
+ const dom=new JSDOM('<div id="root"></div>'),old={window:globalThis.window,document:globalThis.document,fetch:globalThis.fetch,IS_REACT_ACT_ENVIRONMENT:globalThis.IS_REACT_ACT_ENVIRONMENT};Object.assign(globalThis,{window:dom.window,document:dom.window.document,fetch:async()=>Response.json({queue:null}),IS_REACT_ACT_ENVIRONMENT:true});
+ const items=generateProposals({},DEFAULTS).items,dates=calendar.generateCalendar(items),extra={...items[0],id:'extra',title:'Additional assignment'};items.push(extra);dates.dates.extra='2027-01-01';const root=createRoot(document.getElementById('root'));
+ try{await act(async()=>root.render(React.createElement(mod.exports.default,{plan:{id:'p',payload:{items},calendar:dates},canEdit:true,onChange:()=>{},onEdit:()=>{}})));
+ assert.equal(document.querySelectorAll('.demo-day button').length,32);assert.equal(document.querySelector('.demo-day').querySelectorAll('button').length,2);
+ await act(async()=>[...document.querySelectorAll('button')].find(b=>b.textContent==='Agenda view').click());assert.equal(document.querySelectorAll('.demo-agenda button').length,91);
+ }finally{await act(async()=>root.unmount());Object.assign(globalThis,old);dom.window.close();}
+});
 test('calendar supports month navigation, agenda, date fixing and assignment editing',async()=>{
  const dom=new JSDOM('<div id="root"></div>'),old={window:globalThis.window,document:globalThis.document,IS_REACT_ACT_ENVIRONMENT:globalThis.IS_REACT_ACT_ENVIRONMENT};Object.assign(globalThis,{window:dom.window,document:dom.window.document,IS_REACT_ACT_ENVIRONMENT:true});
  const items=generateProposals({},DEFAULTS).items,plan={id:'p',version:1,payload:{items},calendar:calendar.generateCalendar(items)},actions=[];const root=createRoot(document.getElementById('root'));

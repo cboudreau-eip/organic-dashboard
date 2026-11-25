@@ -15,6 +15,13 @@ test('Excel snapshot preserves all 90 assignments, edits, dates and fixed flags 
  for(const [m,count] of [['January',31],['February',28],['March',31]]){let links=0;w.getWorksheet(m).eachRow(r=>r.eachCell(c=>{if(c.value?.hyperlink)links++;}));assert.equal(links,count);assert.equal(w.getWorksheet(m).pageSetup.fitToHeight,1);}
  let notes='';w.getWorksheet('Full details').eachRow(r=>{notes+=r.getCell(2).text;});assert.ok(notes.includes('A note, with quotes "kept"\nSecond line'));
 });
+test('monthly export includes every title when assignments share a day',async()=>{
+ const p=fixture(),first=p.payload.items[0],extra={...first,id:'additional',title:'Additional new content'};
+ p.payload.items.push(extra);p.calendar.dates[extra.id]=p.calendar.dates[first.id];const before=structuredClone(p);
+ const wb=await buildProposalWorkbook(p),month=['January','February','March'][Number(p.calendar.dates[first.id].slice(5,7))-1];let titles=[];
+ wb.getWorksheet(month).eachRow(r=>r.eachCell(c=>{if(c.value?.hyperlink)titles.push(c.value.text);}));
+ assert.ok(titles.includes(first.title));assert.ok(titles.includes(extra.title));assert.equal(wb.getWorksheet('Assignment details').rowCount,96);assert.deepEqual(p,before);
+});
 test('untrusted text stays literal, long notes are retained, and missing dates remain unscheduled',async()=>{
  const p={payload:{items:[{id:'x',title:'=HYPERLINK("evil")',category:'Long-tail',notes:'n'.repeat(3000),action:'@SUM(A1)'}]}};
  const w=await buildProposalWorkbook(p);assert.equal(w.getWorksheet('Assignment details').getCell('B6').value,'Unscheduled');

@@ -13,3 +13,5 @@
 @media(max-width:800px){.demo-agenda button{grid-template-columns:1fr}}
 
 .calendar-filter-summary{display:flex;align-items:center;flex-wrap:wrap;gap:12px;margin-top:14px;font-size:13px;color:#526c60}.calendar-filter-summary button{padding:7px 10px;font-size:12px}
+
+.demo-day button+button{margin-top:8px}.demo-day{align-self:stretch}
