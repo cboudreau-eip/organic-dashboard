@@ -26,3 +26,14 @@ test('exam queries are excluded and semantic review fails closed',async()=>{
  const rejected=await expandPlan(plan,source,null,{},async url=>({url,html}),new Date(),async input=>input.stage==='shortlist'?review(input):[]);
  assert.equal(rejected.items.length,0);
 });
+test('derived angles retain seed evidence and never claim measured exact-query demand',async()=>{
+ const plan={payload:{items:[]}},source={evidence:{semrush:{rows:[{keyword:'compare medigap quotes',volume:100}]}},inventory:{pages:Array.from({length:20},(_,i)=>({url:'https://www.medicarefaq.com/overview-'+i,title:'Medigap guide',headings:[]}))}};
+ const html='<title>Medigap guide</title><main>'+('General insurance coverage overview. '.repeat(40))+'</main>';
+ const reviewer=async input=>(await review(input)).map(d=>({...d,query:'compare medigap quotes for frequent travelers'}));
+ const result=await expandPlan(plan,source,null,{},async url=>({url,html}),new Date(),reviewer);
+ assert.equal(result.items.length,1);assert.equal(result.items[0].basis,'Research suggestion');
+ assert.equal(result.items[0].expansionEvidence.sourceTerm,'compare medigap quotes');
+ assert.match(result.items[0].expansionEvidence.queryBasis,/not measured/);
+ assert.equal(result.items[0].evidence.semrush[0].keyword,'compare medigap quotes');
+ assert.equal(plan.payload.items.length,0);
+});
