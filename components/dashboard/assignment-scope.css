@@ -1,0 +1,5 @@
+.assignment-scope-badge{display:inline-flex;align-items:center;width:fit-content;max-width:100%;padding:3px 7px;border:1px solid;border-radius:5px;font-size:11px;font-weight:700;line-height:1.35;white-space:normal;text-align:left}
+.assignment-scope-badge[data-scope="new"]{background:#e9e2fa;color:#50317a;border-color:#cbbbe6}
+.assignment-scope-badge[data-scope="refresh"]{background:#e5f2ec;color:#205a43;border-color:#b9d6c6}
+.assignment-scope-badge[data-scope="review"]{background:#fff3dc;color:#79510d;border-color:#e6cf9e}
+.demo-day .assignment-scope-badge{margin:5px 0 2px}.work-task-bottom{flex-wrap:wrap;gap:6px}

@@ -10,7 +10,7 @@ import {generateProposals} from '../lib/research/proposals.js';
 import {generateCalendar} from '../lib/research/demo-calendar.js';
 import {DEFAULTS} from '../lib/research/contracts.js';
 const require=createRequire(import.meta.url),modules={};await loadBindings();
-for(const name of ['DemoCalendar','WorkQueue','ProposedAssignments','ContentWorkspace']){
+for(const name of ['AssignmentScopeBadge','DemoCalendar','WorkQueue','ProposedAssignments','ContentWorkspace']){
  const filename=resolve('components/dashboard/'+name+'.jsx'),{code}=await transform(await readFile(filename,'utf8'),{filename,jsc:{parser:{syntax:'ecmascript',jsx:true},transform:{react:{runtime:'automatic'}}},module:{type:'commonjs'}}),m={exports:{}};
  new Function('require','module','exports',code)(p=>p.endsWith('.css')?{}:p.startsWith('./')?(modules[p.slice(2)]||(()=>null)):p.endsWith('/proposal-export')?{exportProposalXlsx:()=>{throw Error('Unexpected export');}}:p.startsWith('../../lib/')?require('../lib/'+p.slice(10)+'.js'):require(p),m,m.exports);modules[name]=m.exports.default;
 }

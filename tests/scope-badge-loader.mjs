@@ -1,0 +1,11 @@
+import {readFile} from 'node:fs/promises';
+import {createRequire} from 'node:module';
+import {resolve} from 'node:path';
+import {transform,loadBindings} from 'next/dist/build/swc/index.js';
+const require=createRequire(import.meta.url);
+await loadBindings();
+const filename=resolve('components/dashboard/AssignmentScopeBadge.jsx');
+const {code}=await transform(await readFile(filename,'utf8'),{filename,jsc:{parser:{syntax:'ecmascript',jsx:true},transform:{react:{runtime:'automatic'}}},module:{type:'commonjs'}});
+const mod={exports:{}};
+new Function('require','module','exports',code)(p=>p.endsWith('.css')?{}:p.endsWith('/assignment-scope')?require('../lib/research/assignment-scope.js'):require(p),mod,mod.exports);
+export default mod.exports.default;
